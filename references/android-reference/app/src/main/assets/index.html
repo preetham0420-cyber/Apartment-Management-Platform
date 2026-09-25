@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>APARTMENT MANAGEMENT</title>
+  <style>
+    :root{--ink:#172033;--muted:#657087;--soft:#f4f6fb;--line:#e2e6ef;--blue:#5b6cf9;--green:#18a775;--orange:#f59e45;--red:#e95b64;--violet:#8b5cf6;--white:#fff;--navy:#26324d}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent} html,body{margin:0;min-height:100%;background:var(--soft);color:var(--ink);font-family:Arial,"Noto Sans",sans-serif;font-size:16px} button,input,textarea,select{font:inherit} button{cursor:pointer}
+    #app{min-height:100vh;padding-bottom:86px}.header{position:sticky;top:0;z-index:20;height:86px;padding:10px 14px;background:#fff;display:flex;align-items:center;border-bottom:1px solid var(--line)}
+    .logo{width:50px;height:50px;border-radius:16px;background:var(--blue);display:grid;place-items:center;color:#fff;font-size:29px;font-weight:900;box-shadow:0 6px 16px #5b6cf944}.headcopy{flex:1;margin-left:11px;min-width:0}.headtitle{font-size:19px;font-weight:900}.headsub{font-size:12px;color:var(--muted);font-weight:800;margin-top:3px;white-space:nowrap}.headrole{font-size:11px;color:var(--blue);font-weight:900;margin-top:3px}.bell{width:48px;height:48px;border:1px solid var(--line);border-radius:15px;background:#fff;font-size:25px;position:relative}.badge{position:absolute;right:-4px;top:-5px;width:21px;height:21px;border-radius:50%;background:var(--red);color:#fff;font-size:11px;display:grid;place-items:center;border:2px solid #fff;font-weight:900}
+    .screen{display:none;padding:14px 14px 112px}.screen.active{display:block}.hero{background:var(--blue);border-radius:23px;padding:22px;margin-bottom:13px;color:#fff;box-shadow:0 8px 18px #5b6cf933}.eyebrow{font-size:13px;font-weight:900;color:#e3e6ff}.hero h1{font-size:27px;margin:9px 0}.hero p{font-size:14px;line-height:1.45;margin:0;color:#eef0ff}.attention{width:100%;border:1px solid #ffd7a7;background:#fff3e5;border-radius:17px;padding:14px;display:flex;gap:11px;align-items:center;text-align:left;margin-bottom:13px}.roundicon{width:46px;height:46px;flex:0 0 46px;border-radius:14px;display:grid;place-items:center;font-size:23px;font-weight:900}.grow{flex:1;min-width:0}.strong{font-size:15px;font-weight:900}.small{font-size:13px;color:var(--muted);line-height:1.35;margin-top:4px}.chev{font-size:25px;color:#8c94a6}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}.stat,.quick,.module{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px}.stat{min-height:145px}.stat .label{font-size:13px;color:var(--muted);font-weight:900;margin-top:13px}.stat .value{font-size:25px;font-weight:900;margin-top:3px}.stat .note{font-size:12px;color:var(--muted);font-weight:700;margin-top:3px}.section{margin:20px 2px 10px}.section h2{font-size:20px;margin:0;font-weight:900}.section p{font-size:12px;color:var(--muted);font-weight:800;margin:4px 0 0}.quick{min-height:84px;display:flex;gap:10px;align-items:center;text-align:left}.quick b{font-size:13px;line-height:1.3}.activity,.vendor,.request,.visitor,.contact{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:9px;display:flex;gap:10px;align-items:center}.activity{min-height:81px}.pill{padding:7px 9px;border-radius:20px;font-size:11px;font-weight:900;white-space:nowrap}.primary{width:100%;min-height:56px;border:0;border-radius:15px;background:var(--blue);color:#fff;font-weight:900;font-size:15px;margin-bottom:13px}.request{align-items:flex-start}.line{width:6px;height:73px;border-radius:5px}.requestid{font-size:12px;color:var(--muted);font-weight:900}.vendor{min-height:90px;text-align:left;width:100%}.vendorname{font-size:14px;font-weight:900}.vendorphone{font-size:13px;color:var(--blue);font-weight:800;margin-top:4px}.secure{padding:13px;background:#eaf7f1;border-radius:15px;color:#277a5c;font-size:13px;font-weight:900;line-height:1.4;margin-bottom:10px}.search{width:100%;height:52px;border:1px solid var(--line);border-radius:15px;background:#fff;padding:0 14px;margin-bottom:9px}.contact{min-height:82px;width:100%;text-align:left}.avatar{width:51px;height:51px;border-radius:16px;background:var(--violet);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:900;flex:0 0 51px}.unread{width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:900}.conversation{display:none}.conversation.active{display:block}.chathead{display:flex;gap:10px;align-items:center;background:#fff;border-radius:16px;padding:12px;margin-bottom:9px}.back{border:0;background:transparent;font-size:32px}.online{font-size:11px;color:var(--green);font-weight:900}.messages{min-height:310px;padding:8px}.bubble{max-width:86%;padding:12px;border:1px solid var(--line);background:#fff;border-radius:16px;margin-bottom:10px;font-size:14px;line-height:1.45;font-weight:700}.bubble.mine{margin-left:auto;background:var(--blue);color:#fff;border-color:var(--blue)}.time{font-size:10px;opacity:.75;text-align:right;margin-top:5px}.composer{display:flex;gap:8px;position:sticky;bottom:78px;background:var(--soft);padding:8px 0}.composer input{flex:1;min-width:0;height:51px;border:1px solid var(--line);border-radius:15px;padding:0 13px}.send{width:51px;border:0;border-radius:15px;background:var(--blue);color:#fff;font-size:20px}.gate{background:var(--navy);color:#fff;border-radius:22px;padding:20px;margin-bottom:13px}.gate .live{color:#58dfaa;font-size:13px;font-weight:900}.gate h2{font-size:23px;margin:10px 0 6px}.gatenums{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #ffffff33;margin-top:17px;padding-top:14px}.gatenum{text-align:center;border-right:1px solid #ffffff33}.gatenum:last-child{border:0}.gatenum b{display:block;font-size:22px}.gatenum span{font-size:11px;color:#cbd5e7}.access{background:#fff;border:1px solid var(--line);border-radius:19px;padding:16px}.label{font-size:13px;color:var(--muted);font-weight:900;margin:15px 0 8px}.rolechips{display:flex;gap:8px;overflow:auto;padding-bottom:5px}.chip{white-space:nowrap;min-height:42px;border-radius:22px;border:1px solid var(--line);background:var(--soft);color:var(--muted);padding:0 13px;font-size:12px;font-weight:900}.chip.active{background:var(--blue);color:#fff;border-color:var(--blue)}select{width:100%;min-height:54px;border:1px solid var(--line);border-radius:15px;background:#fff;padding:0 12px;font-size:14px;font-weight:800}.permission{padding:13px;background:#eaf7f1;color:#277a5c;border-radius:14px;margin-top:14px;font-size:13px;font-weight:900;line-height:1.4}.module{min-height:150px;text-align:left;display:flex;flex-direction:column}.module b{font-size:14px;line-height:1.35;margin-top:12px}.module .arrow{margin-top:auto;text-align:right;color:var(--muted);font-size:22px}
+    .bottom{position:fixed;z-index:30;bottom:0;left:0;right:0;height:82px;padding:5px 4px max(5px,env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr)}.tab{border:0;background:#fff;color:var(--muted);border-radius:14px;font-size:10px;font-weight:900}.tab .ico{display:block;font-size:22px;margin-bottom:4px}.tab.active{background:#eef0ff;color:var(--blue)}.sos{position:fixed;z-index:31;right:14px;bottom:91px;width:59px;height:59px;border-radius:50%;border:4px solid #fff;background:var(--red);color:#fff;font-size:13px;font-weight:900;box-shadow:0 7px 18px #0003}
+    .modal{display:none;position:fixed;z-index:60;inset:0;background:#17203388;align-items:flex-end}.modal.open{display:flex}.sheet{width:100%;max-height:84vh;overflow:auto;background:#fff;border-radius:25px 25px 0 0;padding:17px 17px max(22px,env(safe-area-inset-bottom))}.handle{width:46px;height:5px;border-radius:5px;background:#d8dce6;margin:0 auto 15px}.modalhead{display:flex;align-items:center;gap:10px;margin-bottom:14px}.modalhead h2{flex:1;font-size:20px;margin:0}.close{border:0;background:transparent;color:var(--muted);font-size:34px}.row{min-height:62px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;font-size:14px;font-weight:900}.dot{width:9px;height:9px;border-radius:50%;background:var(--blue)}textarea{width:100%;min-height:110px;border:1px solid var(--line);background:var(--soft);border-radius:15px;padding:13px;margin:12px 0 15px;resize:none}.toast{display:none;position:fixed;z-index:90;left:18px;right:18px;bottom:104px;background:var(--ink);color:#fff;border-radius:14px;padding:14px;text-align:center;font-size:13px;font-weight:800}.toast.show{display:block}.orange{color:var(--orange)}.red{color:var(--red)}.green{color:var(--green)}.blue{color:var(--blue)}
+    @media(min-width:700px){#app{max-width:620px;margin:auto;background:var(--soft);box-shadow:0 0 30px #0001}.bottom{left:50%;right:auto;transform:translateX(-50%);width:620px}.sos{right:calc(50% - 300px)}.modal .sheet{max-width:620px;margin:auto}.toast{max-width:580px;left:50%;right:auto;transform:translateX(-50%);width:calc(100% - 36px)}}
+  </style>
+</head>
+<body>
+<div id="app">
+  <header class="header"><div class="logo">⌂</div><div class="headcopy"><div class="headtitle" id="headTitle">HOME</div><div class="headsub">COMMUNITY PORTAL</div><div class="headrole" id="headRole">ADMINISTRATOR ACCESS</div></div><button class="bell" onclick="openNotifications()">♢<span class="badge">4</span></button></header>
+
+  <main id="home" class="screen active">
+    <section class="hero"><div class="eyebrow">WEDNESDAY, 19 AUGUST</div><h1>GOOD EVENING, ARUN</h1><p>HERE IS WHAT IS HAPPENING ACROSS COMMUNITY PORTAL TODAY.</p></section>
+    <button class="attention" onclick="openModule('MAINTENANCE')"><span class="roundicon" style="background:#ffe6c7;color:var(--orange)">!</span><span class="grow"><span class="strong">5 ITEMS NEED YOUR ATTENTION</span><span class="small">2 OVERDUE PAYMENTS, 1 CCTV FAULT AND 2 APPROVALS</span></span><span class="chev">›</span></button>
+    <div class="grid2">
+      <div class="stat"><span class="roundicon" style="background:#eef0ff;color:var(--blue)">⌂</span><div class="label">TOTAL HOMES</div><div class="value">248</div><div class="note">12 BLOCKS</div></div>
+      <div class="stat"><span class="roundicon" style="background:#eaf7f1;color:var(--green)">♙</span><div class="label">OCCUPIED</div><div class="value">226</div><div class="note">91.1%</div></div>
+      <div class="stat"><span class="roundicon" style="background:#fff3e5;color:var(--orange)">⚒</span><div class="label">OPEN REQUESTS</div><div class="value">18</div><div class="note">5 ATTENTION</div></div>
+      <div class="stat"><span class="roundicon" style="background:#f2ecff;color:var(--violet)">₹</span><div class="label">COLLECTION</div><div class="value">₹18.4L</div><div class="note">86% PAID</div></div>
+    </div>
+    <div class="section"><h2>QUICK ACTIONS</h2><p>MOST-USED TASKS, ONE TAP AWAY</p></div>
+    <div class="grid2">
+      <button class="quick" onclick="openModule('RESIDENTS & HOMES')"><span class="roundicon" style="background:#f2ecff;color:var(--violet)">♙</span><b>ADD RESIDENT</b></button>
+      <button class="quick" onclick="openRequest()"><span class="roundicon" style="background:#fff3e5;color:var(--orange)">⚒</span><b>RAISE REQUEST</b></button>
+      <button class="quick" onclick="openModule('VISITORS & GATE')"><span class="roundicon" style="background:#eef0ff;color:var(--blue)">▣</span><b>GATE ENTRY</b></button>
+      <button class="quick" onclick="openModule('PAYMENTS & ACCOUNTS')"><span class="roundicon" style="background:#eaf7f1;color:var(--green)">₹</span><b>PAYMENT</b></button>
+      <button class="quick" onclick="openModule('CCTV & SECURITY')"><span class="roundicon" style="background:#ffedf0;color:var(--red)">◉</span><b>CCTV STATUS</b></button>
+      <button class="quick" onclick="openModule('NOTICES & MEETINGS')"><span class="roundicon" style="background:#eef0ff;color:var(--blue)">◇</span><b>SEND NOTICE</b></button>
+    </div>
+    <div class="section"><h2>RECENT ACTIVITY</h2><p>LIVE UPDATES FROM THE APARTMENT</p></div>
+    <div id="activities"></div>
+  </main>
+
+  <main id="services" class="screen">
+    <button class="primary" onclick="openRequest()">＋ CREATE MAINTENANCE REQUEST</button>
+    <div class="section"><h2>OPEN REQUESTS</h2><p>TRACK WORK FROM REPORT TO COMPLETION</p></div>
+    <div id="requests"></div>
+    <div class="section"><h2>TRUSTED SERVICE DIRECTORY</h2><p>TAP A PROVIDER TO VIEW CONTACT DETAILS</p></div>
+    <div id="vendors"></div>
+  </main>
+
+  <main id="chat" class="screen">
+    <div id="chatListView"><div class="secure">🔒 PRIVATE CHATS ARE VISIBLE ONLY TO AUTHORISED PARTICIPANTS.</div><input class="search" id="chatSearch" placeholder="SEARCH RESIDENT OR TEAM" oninput="renderContacts()"><div id="contacts"></div></div>
+    <div id="conversation" class="conversation"><div class="chathead"><button class="back" onclick="closeChat()">‹</button><div class="avatar" id="activeAvatar">AH</div><div class="grow"><div class="strong" id="activeName">APARTMENT HELPDESK</div><div class="online">● ONLINE · PRIVATE CHAT</div></div></div><div class="secure">🔒 AUTHORISED PARTICIPANTS ONLY</div><div class="messages" id="messages"></div><div class="composer"><input id="messageInput" placeholder="TYPE A PRIVATE MESSAGE..."><button class="send" onclick="sendMessage()">➤</button></div></div>
+  </main>
+
+  <main id="visitors" class="screen">
+    <div class="gate"><div class="live">● GATE LIVE</div><h2>12 VISITORS CURRENTLY INSIDE</h2><div class="small" style="color:#dde5f4">GATE 1 · 2 GUARDS ON DUTY · SYNCED NOW</div><div class="gatenums"><div class="gatenum"><b>46</b><span>ENTRIES</span></div><div class="gatenum"><b>38</b><span>EXITED</span></div><div class="gatenum"><b>8</b><span>EXPECTED</span></div></div></div>
+    <button class="primary" onclick="toast('VISITOR FORM AND DIGITAL GATE PASS WILL CONNECT TO THE BACKEND IN THE NEXT STAGE.')">＋ ADD EXPECTED VISITOR</button>
+    <div class="section"><h2>TODAY’S VISITORS</h2><p>GUESTS, DELIVERIES AND SERVICE ENTRIES</p></div><div id="visitorList"></div>
+  </main>
+
+  <main id="more" class="screen">
+    <section class="access"><h2 style="margin:0">ACCESS & LANGUAGE</h2><div class="label">VIEW AS ROLE</div><div class="rolechips" id="roleChips"></div><div class="label">SELECT LANGUAGE</div><select id="language" onchange="languageChanged()"></select><div class="permission" id="permission">✓ ADMINISTRATOR PERMISSIONS ARE ACTIVE AND SYNCHRONISED.</div></section>
+    <div class="section"><h2>AVAILABLE SERVICES</h2><p>ONLY AUTHORISED MODULES ARE SHOWN</p></div><div class="grid2" id="moduleGrid"></div>
+  </main>
+
+  <button class="sos" onclick="toast('EMERGENCY OPTIONS: SECURITY, AMBULANCE, POLICE, FIRE, LIFT RESCUE AND EMERGENCY PLUMBER. LIVE CONTACTS WILL CONNECT WITH THE BACKEND.')">SOS</button>
+  <nav class="bottom">
+    <button class="tab active" data-tab="home" onclick="showTab('home',this)"><span class="ico">⌂</span>HOME</button>
+    <button class="tab" data-tab="services" onclick="showTab('services',this)"><span class="ico">⚒</span>SERVICES</button>
+    <button class="tab" data-tab="chat" onclick="showTab('chat',this)"><span class="ico">✉</span>CHAT</button>
+    <button class="tab" data-tab="visitors" onclick="showTab('visitors',this)"><span class="ico">▣</span>VISITORS</button>
+    <button class="tab" data-tab="more" onclick="showTab('more',this)"><span class="ico">☷</span>MORE</button>
+  </nav>
+</div>
+
+<div id="moduleModal" class="modal"><section class="sheet"><div class="handle"></div><div class="modalhead"><span class="roundicon" id="moduleIcon" style="background:var(--blue);color:#fff">▥</span><h2 id="moduleTitle">MODULE</h2><button class="close" onclick="closeModal('moduleModal')">×</button></div><div class="small" style="margin-bottom:9px">DEMONSTRATION DATA · BACKEND READY</div><div id="moduleRows"></div></section></div>
+<div id="requestModal" class="modal"><section class="sheet"><div class="handle"></div><div class="modalhead"><h2>NEW MAINTENANCE REQUEST</h2><button class="close" onclick="closeModal('requestModal')">×</button></div><div class="small">SELECT A SERVICE AND DESCRIBE THE PROBLEM.</div><div class="label">SERVICE CATEGORY</div><select id="requestCategory"><option>PLUMBER</option><option>ELECTRICIAN</option><option>CCTV</option><option>LIFT</option><option>CARPENTER</option><option>PAINTER</option><option>INTERNET</option><option>HOUSEKEEPING</option></select><textarea id="requestDescription" placeholder="DESCRIBE THE PROBLEM IN SIMPLE WORDS..."></textarea><button class="primary" onclick="submitRequest()">SUBMIT REQUEST</button></section></div>
+<div id="notificationsModal" class="modal"><section class="sheet"><div class="handle"></div><div class="modalhead"><h2>NOTIFICATIONS</h2><button class="close" onclick="closeModal('notificationsModal')">×</button></div><div id="notificationRows"></div></section></div>
+<div id="toast" class="toast"></div>
+
+<script>
+const colors={blue:'#5b6cf9',green:'#18a775',orange:'#f59e45',red:'#e95b64',violet:'#8b5cf6'};
+const allModules=['RESIDENTS & HOMES','RENTAL MANAGEMENT','MAINTENANCE','PAYMENTS & ACCOUNTS','VISITORS & GATE','CCTV & SECURITY','AMENITIES','CHAT & MESSAGES','NOTICES & MEETINGS','STAFF & VENDORS','DOCUMENTS','REPORTS'];
+const roles=['ADMINISTRATOR','COMMITTEE MEMBER','OWNER','TENANT','SECURITY','MAINTENANCE','SERVICE VENDOR'];
+const access={
+ 'ADMINISTRATOR':allModules,'COMMITTEE MEMBER':allModules,
+ 'OWNER':['RENTAL MANAGEMENT','MAINTENANCE','PAYMENTS & ACCOUNTS','VISITORS & GATE','AMENITIES','CHAT & MESSAGES','NOTICES & MEETINGS','DOCUMENTS'],
+ 'TENANT':['MAINTENANCE','PAYMENTS & ACCOUNTS','VISITORS & GATE','AMENITIES','CHAT & MESSAGES','NOTICES & MEETINGS','DOCUMENTS'],
+ 'SECURITY':['VISITORS & GATE','CCTV & SECURITY','CHAT & MESSAGES','NOTICES & MEETINGS'],
+ 'MAINTENANCE':['MAINTENANCE','CHAT & MESSAGES','STAFF & VENDORS','NOTICES & MEETINGS'],
+ 'SERVICE VENDOR':['MAINTENANCE','CHAT & MESSAGES']};
+const moduleInfo={
+ 'RESIDENTS & HOMES':['REGISTERED RESIDENTS · 648','OWNERS · 161','TENANTS · 87','FAMILY MEMBERS','VEHICLES, PETS & DOMESTIC WORKERS'],
+ 'RENTAL MANAGEMENT':['ACTIVE AGREEMENTS · 87','RENEWALS PENDING · 6','SECURITY DEPOSITS','MOVE-IN & MOVE-OUT','PRIVATE RENT TRACKING'],
+ 'MAINTENANCE':['OPEN REQUESTS · 18','ASSIGNED WORK','SERVICE HISTORY','VENDOR DIRECTORY','AMC CONTRACTS'],
+ 'PAYMENTS & ACCOUNTS':['AUGUST COLLECTION · ₹18.4L','PENDING · ₹3.1L','INVOICES & RECEIPTS','EXPENSES','PAYMENT REMINDERS'],
+ 'VISITORS & GATE':['VISITORS INSIDE · 12','EXPECTED VISITORS · 8','DELIVERIES','SERVICE PERSONNEL','GATE PASSES'],
+ 'CCTV & SECURITY':['ONLINE CAMERAS · 33','OFFLINE · 1','ATTENTION · 1','RECORDING RETENTION · 28 DAYS','AMC SERVICE HISTORY'],
+ 'AMENITIES':['COMMUNITY HALL','BADMINTON COURT','GUEST ROOMS','SWIMMING POOL','BOOKING HISTORY'],
+ 'CHAT & MESSAGES':['PRIVATE CHAT','COMMUNITY GROUP','APARTMENT HELPDESK','SECURITY CONTROL ROOM','MAINTENANCE DESK'],
+ 'NOTICES & MEETINGS':['ACTIVE NOTICES · 7','UPCOMING MEETINGS · 2','RESIDENT POLLS','MINUTES & DECISIONS'],
+ 'STAFF & VENDORS':['STAFF ON DUTY · 34','APPROVED VENDORS · 42','ATTENDANCE','SHIFT ROSTER','CONTRACTS & AMC'],
+ 'DOCUMENTS':['APARTMENT BYLAWS','FIRE SAFETY CERTIFICATE','LIFT AMC','AGM MINUTES','RENTAL AGREEMENTS'],
+ 'REPORTS':['COLLECTION REPORT','MAINTENANCE PERFORMANCE','OCCUPANCY REPORT','VISITOR REPORT','AUDIT TRAIL']};
+const visuals={'RESIDENTS & HOMES':['♙','blue'],'RENTAL MANAGEMENT':['▤','violet'],'MAINTENANCE':['⚒','orange'],'PAYMENTS & ACCOUNTS':['₹','green'],'VISITORS & GATE':['▣','blue'],'CCTV & SECURITY':['◉','red'],'AMENITIES':['♢','blue'],'CHAT & MESSAGES':['✉','violet'],'NOTICES & MEETINGS':['◇','orange'],'STAFF & VENDORS':['♧','green'],'DOCUMENTS':['▤','blue'],'REPORTS':['▥','violet']};
+const languages=['ENGLISH','অসমীয়া · ASSAMESE','বাংলা · BENGALI','बर’ · BODO','डोगरी · DOGRI','ગુજરાતી · GUJARATI','हिन्दी · HINDI','ಕನ್ನಡ · KANNADA','کٲشُر · KASHMIRI','कोंकणी · KONKANI','मैथिली · MAITHILI','മലയാളം · MALAYALAM','ꯃꯤꯇꯩ ꯂꯣꯟ · MANIPURI','मराठी · MARATHI','नेपाली · NEPALI','ଓଡ଼ିଆ · ODIA','ਪੰਜਾਬੀ · PUNJABI','संस्कृतम् · SANSKRIT','ᱥᱟᱱᱛᱟᱲᱤ · SANTALI','سنڌي · SINDHI','தமிழ் · TAMIL','తెలుగు · TELUGU','اردو · URDU'];
+const activities=[['≈','orange','WATER LEAK REPORTED','B-804 · PLUMBING','URGENT'],['▣','blue','VISITOR APPROVED','AMAZON DELIVERY · A-302','AT GATE'],['₹','green','MAINTENANCE RECEIVED','C-1102 · ₹5,400','PAID'],['◉','red','CAMERA OFFLINE','BASEMENT B2 · CAM-28','CRITICAL']];
+const requests=[['MR-1048','WATER LEAKAGE UNDER KITCHEN SINK','B-804 · PLUMBING','ASSIGNED','red'],['MR-1047','CORRIDOR LIGHT FLICKERING','BLOCK C · ELECTRICAL','IN PROGRESS','orange'],['MR-1046','BEDROOM WINDOW LATCH BROKEN','A-302 · CARPENTRY','NEW','blue']];
+const vendors=[['RAVI PLUMBING SERVICES','PLUMBER','+91 98450 11882','◌','blue'],['KUMAR ELECTRICALS','ELECTRICIAN','+91 99012 73048','ϟ','orange'],['SECUREVISION SYSTEMS','CCTV & ACCESS','+91 98863 20114','◉','violet'],['ALUMAX FABRICATION','ALUMINIUM FABRICATION','+91 98451 20418','▦','blue'],['SRI GANESH WORKS','MASON & WELDER','+91 99804 22519','⚒','orange'],['WOODCRAFT CARE','CARPENTER','+91 97415 66829','⌑','violet'],['CLEANNEST FACILITY','SWEEPER & HOUSEKEEPING','+91 97415 66829','✦','green'],['COLOUR HOME SERVICES','PAINTER','+91 99001 77245','◒','red'],['FIBERNET SUPPORT','INTERNET SERVICE PROVIDER','1800 000 1122','⌁','blue'],['KONE SERVICE DESK','LIFT MAINTENANCE','1800 425 4254','↕','orange']];
+const contacts=[['APARTMENT HELPDESK','YOUR REQUEST HAS BEEN ASSIGNED.','AH',2],['COMMUNITY PORTAL','WATER SUPPLY UPDATE AT 8:00 PM.','AN',3],['NISHA RAO · B-804','THANK YOU FOR THE UPDATE.','NR',0],['MOHAMMED IRFAN · C-1102','CAN WE DISCUSS THE MEETING?','MI',0],['SECURITY CONTROL ROOM','GATE TEAM IS AVAILABLE.','SC',0],['MAINTENANCE DESK','TECHNICIAN WILL VISIT AT 6:30 PM.','MD',0]];
+const visitors=[['AMAZON DELIVERY','A-302 · DELIVERY','INSIDE','blue'],['RAJESH KUMAR','C-1102 · GUEST','INSIDE','green'],['URBAN COMPANY','B-804 · SERVICE','EXITED','orange'],['SWIGGY DELIVERY','D-406 · DELIVERY','EXITED','violet']];
+let role='ADMINISTRATOR',activeContact=null;
+function iconBox(icon,color){return `<span class="roundicon" style="background:${colors[color]}18;color:${colors[color]}">${icon}</span>`}
+function pill(text,color){return `<span class="pill" style="background:${colors[color]}18;color:${colors[color]}">● ${text}</span>`}
+function render(){document.getElementById('activities').innerHTML=activities.map(a=>`<div class="activity">${iconBox(a[0],a[1])}<div class="grow"><div class="strong">${a[2]}</div><div class="small">${a[3]}</div></div>${pill(a[4],a[1])}</div>`).join('');
+ document.getElementById('requests').innerHTML=requests.map(r=>`<div class="request"><span class="line" style="background:${colors[r[4]]}"></span><div class="grow"><div class="requestid">${r[0]}</div><div class="strong" style="margin-top:5px">${r[1]}</div><div class="small">${r[2]}</div></div>${pill(r[3],r[4])}</div>`).join('');
+ document.getElementById('vendors').innerHTML=vendors.map(v=>`<button class="vendor" onclick="toast('${v[0]} · ${v[1]} · ${v[2]}')">${iconBox(v[3],v[4])}<span class="grow"><span class="vendorname">${v[0]}</span><span class="small">${v[1]} · ★ 4.8</span><span class="vendorphone">${v[2]}</span></span><span class="green">●</span></button>`).join('');
+ document.getElementById('visitorList').innerHTML=visitors.map(v=>`<div class="visitor">${iconBox('▣',v[3])}<div class="grow"><div class="vendorname">${v[0]}</div><div class="small">${v[1]}</div></div>${pill(v[2],v[3])}</div>`).join('');
+ document.getElementById('language').innerHTML=languages.map(l=>`<option>${l}</option>`).join('');renderContacts();renderRoles();renderModules();}
+function showTab(id,button){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b===button));document.getElementById('headTitle').textContent=id.toUpperCase();window.scrollTo(0,0)}
+function renderContacts(){const q=(document.getElementById('chatSearch').value||'').toUpperCase();document.getElementById('contacts').innerHTML=contacts.filter(c=>c[0].includes(q)).map(c=>`<button class="contact" onclick="openChat('${c[0].replaceAll("'","\\'")}')"><span class="avatar">${c[2]}</span><span class="grow"><span class="strong">${c[0]}</span><span class="small">${c[1]}</span></span>${c[3]?`<span class="unread">${c[3]}</span>`:'<span class="chev">›</span>'}</button>`).join('')}
+function openChat(name){activeContact=contacts.find(c=>c[0]===name);document.getElementById('chatListView').style.display='none';document.getElementById('conversation').classList.add('active');document.getElementById('activeName').textContent=activeContact[0];document.getElementById('activeAvatar').textContent=activeContact[2];document.getElementById('messages').innerHTML=bubble('GOOD EVENING. HOW MAY WE HELP YOU?',false)+bubble('PLEASE SHARE AN UPDATE ABOUT MY MAINTENANCE REQUEST.',true)+bubble('THE TECHNICIAN IS EXPECTED BETWEEN 7:00 PM AND 7:30 PM.',false)}
+function closeChat(){document.getElementById('chatListView').style.display='block';document.getElementById('conversation').classList.remove('active')}
+function bubble(text,mine){return `<div class="bubble ${mine?'mine':''}">${text}<div class="time">6:18 PM</div></div>`}
+function sendMessage(){const input=document.getElementById('messageInput'),text=input.value.trim();if(!text)return;document.getElementById('messages').insertAdjacentHTML('beforeend',bubble(text.toUpperCase(),true));input.value='';window.scrollTo(0,document.body.scrollHeight)}
+function renderRoles(){document.getElementById('roleChips').innerHTML=roles.map(r=>`<button class="chip ${r===role?'active':''}" onclick="setRole('${r}')">${r}</button>`).join('')}
+function setRole(next){role=next;document.getElementById('headRole').textContent=role+' ACCESS';document.getElementById('permission').textContent='✓ '+role+' PERMISSIONS ARE ACTIVE AND SYNCHRONISED.';renderRoles();renderModules()}
+function renderModules(){document.getElementById('moduleGrid').innerHTML=access[role].map(m=>{const v=visuals[m];return `<button class="module" onclick="openModule('${m.replaceAll("'","\\'")}')">${iconBox(v[0],v[1])}<b>${m}</b><span class="arrow">→</span></button>`}).join('')}
+function openModule(name){if(!access[role].includes(name)){toast(name+' IS NOT AVAILABLE FOR '+role+'.');return}const v=visuals[name];document.getElementById('moduleIcon').textContent=v[0];document.getElementById('moduleIcon').style.background=colors[v[1]];document.getElementById('moduleTitle').textContent=name;document.getElementById('moduleRows').innerHTML=moduleInfo[name].map(x=>`<button class="row" style="width:100%;border-left:0;border-right:0;border-top:0;background:#fff;text-align:left" onclick="toast('${x} WILL CONNECT TO THE BACKEND IN THE NEXT STAGE.')"><span class="dot" style="background:${colors[v[1]]}"></span><span class="grow">${x}</span><span class="chev">›</span></button>`).join('')+(name==='CCTV & SECURITY'?'<div class="secure" style="margin-top:12px">🔒 EVERY AUTHORISED FOOTAGE VIEW OR DOWNLOAD WILL BE RECORDED IN THE AUDIT LOG.</div>':'');openModal('moduleModal')}
+function openRequest(){openModal('requestModal')}
+function submitRequest(){const c=document.getElementById('requestCategory').value;document.getElementById('requestDescription').value='';closeModal('requestModal');toast(c+' REQUEST CREATED. SERVICE TEAM NOTIFIED FOR DEMONSTRATION.')}
+function openNotifications(){document.getElementById('notificationRows').innerHTML=activities.slice(0,3).map(a=>`<div class="activity">${iconBox(a[0],a[1])}<div class="grow"><div class="strong">${a[2]}</div><div class="small">${a[3]}</div></div>${pill(a[4],a[1])}</div>`).join('');openModal('notificationsModal')}
+function languageChanged(){toast(document.getElementById('language').value+' SELECTED. VERIFIED FULL-SCREEN TRANSLATION WILL CONNECT IN THE LANGUAGE INTEGRATION STAGE.')}
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function toast(text){const el=document.getElementById('toast');el.textContent=text;el.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove('show'),3200)}
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));render();
+</script>
+</body>
+</html>

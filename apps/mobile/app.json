@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Apartment Resident",
+    "slug": "apartment-resident",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "in.communityportal.residentapp"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      },
+      "package": "in.communityportal.residentapp"
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

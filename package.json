@@ -1,0 +1,23 @@
+{
+  "name": "apartment-management-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cross-platform Apartment Management Platform (Mobile, Admin Web, API, Shared)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace=@apartment/api",
+    "dev:admin": "npm run dev --workspace=@apartment/admin-web",
+    "dev:mobile": "npm run start --workspace=@apartment/mobile",
+    "build:shared": "npm run build --workspace=@apartment/shared",
+    "typecheck:all": "npm run typecheck --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
