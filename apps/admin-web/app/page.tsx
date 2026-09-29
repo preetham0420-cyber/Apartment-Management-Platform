@@ -1,130 +1,310 @@
+"use client";
+
 import React from "react";
+import { AdminShell } from "../components/AdminShell";
+import { MetricCard } from "../components/MetricCard";
+import { StatusPill } from "../components/StatusPill";
 import { ROLE_MODEL_STATUS } from "@apartment/shared";
 
-export default function AdminHomePage() {
+interface ModuleSummary {
+  title: string;
+  category: string;
+  metric: string;
+  metricLabel: string;
+  statusText: string;
+  statusTone: "blue" | "green" | "orange" | "red" | "violet";
+  description: string;
+}
+
+const moduleCatalog: Record<string, ModuleSummary> = {
+  residents: {
+    title: "Residents & Homes Directory",
+    category: "Community Records",
+    metric: "248 Units",
+    metricLabel: "226 Occupied (91.1%)",
+    statusText: "648 Registered",
+    statusTone: "blue",
+    description: "Overview of flat owners, registered tenants, approved family members, and parking slots.",
+  },
+  rentals: {
+    title: "Rental & Lease Management",
+    category: "Tenancy Oversight",
+    metric: "87 Leases",
+    metricLabel: "6 Renewals Pending",
+    statusText: "Active Agreements",
+    statusTone: "violet",
+    description: "Tracking lease agreements, move-in/out checklists, and owner-tenant relationship records.",
+  },
+  maintenance: {
+    title: "Maintenance Operations Centre",
+    category: "Facility Management",
+    metric: "18 Open Tickets",
+    metricLabel: "5 High Priority",
+    statusText: "Assigned to Vendors",
+    statusTone: "orange",
+    description: "Service ticket workflow across plumbing, electrical, carpentry, lifts, and common areas.",
+  },
+  payments: {
+    title: "Payments & Financial Ledger",
+    category: "Accounting",
+    metric: "₹18.4L Collected",
+    metricLabel: "86% Collection Rate",
+    statusText: "22 Pending Homes",
+    statusTone: "green",
+    description: "Maintenance dues tracking, offline receipt recording, and community expense ledger.",
+  },
+  visitors: {
+    title: "Gate Operations & Visitor Register",
+    category: "Security Desk",
+    metric: "12 Inside",
+    metricLabel: "46 Total Entries Today",
+    statusText: "Gate 1 Active",
+    statusTone: "blue",
+    description: "Live entry/exit monitoring for guests, delivery agents, cabs, and daily service staff.",
+  },
+  cctv: {
+    title: "CCTV & Security Infrastructure",
+    category: "Perimeter Security",
+    metric: "33 / 36 Online",
+    metricLabel: "1 Offline (Basement B2)",
+    statusText: "28 Days Retention",
+    statusTone: "red",
+    description: "Camera network uptime, NVR storage metrics, and authorized surveillance audit logs.",
+  },
+  amenities: {
+    title: "Shared Amenities & Facilities",
+    category: "Recreation",
+    metric: "4 Facilities",
+    metricLabel: "Community Hall, Courts, Pool",
+    statusText: "Slots Available",
+    statusTone: "blue",
+    description: "Managing clubhouse reservation calendars, slots, maintenance windows, and usage policies.",
+  },
+  chat: {
+    title: "Administrative Communications",
+    category: "Support & Desk",
+    metric: "6 Channels",
+    metricLabel: "Helpdesk, Security, Maintenance",
+    statusText: "Direct Channels",
+    statusTone: "violet",
+    description: "Official broadcast channels and role-restricted service desks for community support.",
+  },
+  notices: {
+    title: "Community Notice Board",
+    category: "Announcements",
+    metric: "7 Notices",
+    metricLabel: "2 Emergency Updates",
+    statusText: "94% Reach",
+    statusTone: "orange",
+    description: "Broadcasting official circulars, AGM meeting announcements, and residential polls.",
+  },
+  staff: {
+    title: "Staff Attendance & Vendor Roster",
+    category: "Operations",
+    metric: "34 On Duty",
+    metricLabel: "42 Approved Partners",
+    statusText: "96% Attendance",
+    statusTone: "green",
+    description: "Security guard shifts, housekeeping schedules, and contractor AMC renewal tracking.",
+  },
+  documents: {
+    title: "Compliance & Document Centre",
+    category: "Legal Records",
+    metric: "389 Files",
+    metricLabel: "Bylaws, AMCs, Certificates",
+    statusText: "Audit Compliant",
+    statusTone: "blue",
+    description: "Central repository for fire safety certificates, association bylaws, and meeting minutes.",
+  },
+  reports: {
+    title: "Executive Reports & Audit Logs",
+    category: "Intelligence",
+    metric: "38 Reports",
+    metricLabel: "Generated This Month",
+    statusText: "Audit Trail Ready",
+    statusTone: "violet",
+    description: "Financial reconciliations, maintenance SLA statistics, and security audit histories.",
+  },
+};
+
+export default function SuperAdminHomePage() {
   return (
-    <div className="admin-layout">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="brand">
-          <span className="brand-badge">AP</span>
-          <div>
-            <div className="brand-title">APARTMENT</div>
-            <div className="brand-subtitle">Super Admin Console</div>
-          </div>
-        </div>
+    <AdminShell>
+      {(activeTab) => {
+        // If viewing a specific module tab:
+        if (activeTab !== "dashboard" && moduleCatalog[activeTab]) {
+          const mod = moduleCatalog[activeTab];
+          return (
+            <>
+              {/* Notice Banner */}
+              <div className="notice-banner">
+                <strong>Day 2 Responsive Skeleton:</strong> Viewing <strong>{mod.title}</strong> module shell. Business logic, database queries, and backend mutations are deferred to subsequent development days.
+              </div>
 
-        <nav>
-          <div className="nav-section-title">Overview</div>
-          <a href="#" className="nav-link active">Dashboard</a>
-          <a href="#" className="nav-link">Residents & Units</a>
-          <a href="#" className="nav-link">Rental Leases</a>
+              {/* Module Header Metrics */}
+              <section className="grid-cards">
+                <MetricCard label="Module Classification" value={mod.category} tone={mod.statusTone} />
+                <MetricCard label="Primary Metric" value={mod.metric} note={mod.metricLabel} tone={mod.statusTone} />
+                <MetricCard label="Operational Status" value={mod.statusText} tone={mod.statusTone} />
+                <MetricCard label="Architecture Tier" value="Next.js 16" note="Super Admin Web Console" tone="blue" />
+              </section>
 
-          <div className="nav-section-title">Operations</div>
-          <a href="#" className="nav-link">Maintenance</a>
-          <a href="#" className="nav-link">Accounts & Dues</a>
-          <a href="#" className="nav-link">Gate & Visitors</a>
-          <a href="#" className="nav-link">Security / CCTV</a>
+              {/* Module Details Panel */}
+              <section className="panel">
+                <div className="panel-header">
+                  <div>
+                    <h2 className="panel-title">{mod.title} — Operational Layout</h2>
+                    <p className="panel-subtitle">{mod.description}</p>
+                  </div>
+                  <StatusPill tone={mod.statusTone}>{mod.statusText}</StatusPill>
+                </div>
 
-          <div className="nav-section-title">Community</div>
-          <a href="#" className="nav-link">Notice Board</a>
-          <a href="#" className="nav-link">Staff & Vendors</a>
-          <a href="#" className="nav-link">Reports & Audit</a>
-        </nav>
-      </aside>
+                <div className="module-overview-grid">
+                  <div className="module-card">
+                    <h3>Workflow Definition</h3>
+                    <p>Designed to interact directly with the Node 22 / Express 5 API and MySQL backend once the data persistence layer is connected.</p>
+                    <StatusPill tone="blue">API Boundary Ready</StatusPill>
+                  </div>
 
-      {/* Main Content Area */}
-      <div className="main-content">
-        <header className="topbar">
-          <h1 className="topbar-title">Community Administration Overview</h1>
-          <div className="status-badge">
-            <span className="status-dot"></span>
-            Day 1 Foundation Active
-          </div>
-        </header>
+                  <div className="module-card">
+                    <h3>Security & Authorization</h3>
+                    <p>Access restricted exclusively to authorized Super Admin accounts. Role boundaries are verified on the server side.</p>
+                    <StatusPill tone="orange">Provisional Role Scope</StatusPill>
+                  </div>
 
-        <main className="content-body">
-          {/* Senior Developer Provisional Notice */}
-          <div className="notice-banner">
-            <strong>Provisional Role & Authorization Notice:</strong> {ROLE_MODEL_STATUS.statusNotes} No RBAC or authorization logic is enforced today.
-          </div>
+                  <div className="module-card">
+                    <h3>Reference Alignment</h3>
+                    <p>Preserves all layout concepts, terminology, and operational counters established in the approved reference UI package.</p>
+                    <StatusPill tone="green">Design Baseline Verified</StatusPill>
+                  </div>
+                </div>
+              </section>
+            </>
+          );
+        }
 
-          {/* Quick Metrics Grid */}
-          <section className="grid-cards">
-            <div className="metric-card">
-              <div className="metric-label">Architecture Foundation</div>
-              <div className="metric-value">Monorepo</div>
-              <div className="metric-note">Next.js 15, React 19, TypeScript</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-label">Backend API Target</div>
-              <div className="metric-value">Express 5</div>
-              <div className="metric-note">Node.js 22 LTS REST/JSON</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-label">Mobile Target</div>
-              <div className="metric-value">React Native</div>
-              <div className="metric-note">Expo Go Compatible (No WebView)</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-label">Database Target</div>
-              <div className="metric-value">MySQL</div>
-              <div className="metric-note">Migrations & Seeders directory ready</div>
-            </div>
-          </section>
-
-          {/* Foundation Status Panel */}
-          <section className="panel">
-            <div className="panel-header">
-              <h2 className="panel-title">Repository Foundation Components</h2>
-              <p className="panel-subtitle">Day 1 baseline verification across platform tiers</p>
+        // Default: Full Dashboard Overview
+        return (
+          <>
+            {/* Provisional Role Notice Banner */}
+            <div className="notice-banner">
+              <strong>Provisional Role & Authorization Notice:</strong> {ROLE_MODEL_STATUS.statusNotes} Day 2 focuses strictly on UI skeleton, responsive layout, and theme tokens.
             </div>
 
-            <table className="info-table">
-              <thead>
-                <tr>
-                  <th>Component</th>
-                  <th>Technology</th>
-                  <th>Path</th>
-                  <th>Day 1 Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>Tenant Mobile</strong></td>
-                  <td>React Native / Expo</td>
-                  <td><code>apps/mobile</code></td>
-                  <td>Shell & Native Theme Ready</td>
-                </tr>
-                <tr>
-                  <td><strong>Admin Web</strong></td>
-                  <td>Next.js / TypeScript</td>
-                  <td><code>apps/admin-web</code></td>
-                  <td>Console Shell & Layout Ready</td>
-                </tr>
-                <tr>
-                  <td><strong>Backend API</strong></td>
-                  <td>Node 22 / Express 5</td>
-                  <td><code>apps/api</code></td>
-                  <td>Layered Architecture & Health API Ready</td>
-                </tr>
-                <tr>
-                  <td><strong>Shared Package</strong></td>
-                  <td>TypeScript Contracts</td>
-                  <td><code>packages/shared</code></td>
-                  <td>Provisional Contracts & Types</td>
-                </tr>
-                <tr>
-                  <td><strong>Database Schema</strong></td>
-                  <td>MySQL Migrations</td>
-                  <td><code>database/migrations</code></td>
-                  <td>Directory Initialized (Pending Day 3)</td>
-                </tr>
-              </tbody>
-            </table>
-          </section>
-        </main>
-      </div>
-    </div>
+            {/* Quick KPI Overview */}
+            <section className="grid-cards">
+              <MetricCard label="Total Homes" value="248" note="12 blocks / 226 occupied" tone="blue" />
+              <MetricCard label="Occupancy Rate" value="91.1%" note="161 owners • 87 tenants" tone="green" />
+              <MetricCard label="Open Maintenance" value="18" note="5 high priority tickets" tone="orange" />
+              <MetricCard label="August Collection" value="₹18.4L" note="86% collected • ₹3.1L pending" tone="violet" />
+            </section>
+
+            {/* Platform Tiers Status Panel */}
+            <section className="panel">
+              <div className="panel-header">
+                <div>
+                  <h2 className="panel-title">Apartment Management Platform — Architecture Skeleton</h2>
+                  <p className="panel-subtitle">Day 2 modular responsive layout verified on Next.js 16.2.6 & React 19.2.6</p>
+                </div>
+                <StatusPill tone="green">Day 2 Foundation Active</StatusPill>
+              </div>
+
+              <table className="info-table">
+                <thead>
+                  <tr>
+                    <th>Platform Tier</th>
+                    <th>Technology Stack</th>
+                    <th>Repository Path</th>
+                    <th>Day 2 Scope</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Super Admin Web</strong></td>
+                    <td>Next.js 16.2.6 / React 19.2.6 / TypeScript</td>
+                    <td><code>apps/admin-web</code></td>
+                    <td>Responsive Skeleton & Modular Shell</td>
+                    <td><StatusPill tone="green">Verified</StatusPill></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Tenant Mobile</strong></td>
+                    <td>React Native 0.76 / Expo SDK 52 / TypeScript</td>
+                    <td><code>apps/mobile</code></td>
+                    <td>Native 5-Tab Shell & Design Tokens</td>
+                    <td><StatusPill tone="green">In Progress</StatusPill></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Backend REST API</strong></td>
+                    <td>Node.js 22 LTS / Express 5 / TypeScript</td>
+                    <td><code>apps/api</code></td>
+                    <td>Layered Routes, Services, Health API</td>
+                    <td><StatusPill tone="blue">Day 1 Ready</StatusPill></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Shared Package</strong></td>
+                    <td>TypeScript Contracts</td>
+                    <td><code>packages/shared</code></td>
+                    <td>Provisional Types & Standard Responses</td>
+                    <td><StatusPill tone="violet">Compiled</StatusPill></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Database Storage</strong></td>
+                    <td>MySQL 8.0+</td>
+                    <td><code>database/migrations</code></td>
+                    <td>Deferred to Day 3 (No ORM selected)</td>
+                    <td><StatusPill tone="orange">Pending Day 3</StatusPill></td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+
+            {/* Operations Summary Cards */}
+            <section className="panel">
+              <div className="panel-header">
+                <div>
+                  <h2 className="panel-title">Operations & Facilities Quick Matrix</h2>
+                  <p className="panel-subtitle">High-level operational summary across apartment systems</p>
+                </div>
+              </div>
+
+              <div className="module-overview-grid">
+                <div className="module-card">
+                  <div>
+                    <h3>Gate & Visitor Traffic</h3>
+                    <p>12 visitors currently on premises across Gate 1 and Gate 2. 46 total entries processed today.</p>
+                  </div>
+                  <StatusPill tone="blue">Live Gate Monitor</StatusPill>
+                </div>
+
+                <div className="module-card">
+                  <div>
+                    <h3>CCTV Camera Health</h3>
+                    <p>33 of 36 cameras online. 1 camera in Basement B2 offline for 31 minutes. AMC contract current.</p>
+                  </div>
+                  <StatusPill tone="red">1 Attention Required</StatusPill>
+                </div>
+
+                <div className="module-card">
+                  <div>
+                    <h3>Staff & Vendor Duty</h3>
+                    <p>34 service staff on duty across morning and general shifts. 96% recorded attendance today.</p>
+                  </div>
+                  <StatusPill tone="green">All Shifts Covered</StatusPill>
+                </div>
+
+                <div className="module-card">
+                  <div>
+                    <h3>Accounts & Billing</h3>
+                    <p>August maintenance collection reached ₹18,42,650 out of ₹21,49,200 total billed amount.</p>
+                  </div>
+                  <StatusPill tone="violet">86% Reconciled</StatusPill>
+                </div>
+              </div>
+            </section>
+          </>
+        );
+      }}
+    </AdminShell>
   );
 }
