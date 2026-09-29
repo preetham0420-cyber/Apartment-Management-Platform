@@ -1,17 +1,10 @@
-import { Request, Response } from "express";
-import { ApiErrorResponse } from "@apartment/shared";
+import { Request, Response, NextFunction } from "express";
+import { AppError } from "../errors/app-error.js";
 
-export function notFoundHandler(req: Request, res: Response): void {
-  const errorResponse: ApiErrorResponse = {
-    success: false,
-    error: {
-      code: "RESOURCE_NOT_FOUND",
-      message: `The requested endpoint '${req.method} ${req.originalUrl}' does not exist.`
-    },
-    meta: {
-      timestamp: new Date().toISOString(),
-      path: req.originalUrl
-    }
-  };
-  res.status(404).json(errorResponse);
+/**
+ * 404 Not Found Middleware
+ * Hands off an AppError.notFound to the central errorHandler.
+ */
+export function notFoundHandler(req: Request, _res: Response, next: NextFunction): void {
+  next(AppError.notFound(`Endpoint not found: ${req.method} ${req.originalUrl}`));
 }

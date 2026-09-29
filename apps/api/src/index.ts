@@ -27,4 +27,6 @@ app.listen(config.port, () => {
   console.log(`[API Server] Health endpoint ready at http://localhost:${config.port}/api/health`);
 });
 
+export { AppError } from "./errors/app-error.js";
+export { validateRequest } from "./middleware/validate.middleware.js";
 export default app;
