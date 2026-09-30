@@ -1,13 +1,16 @@
 "use client";
 
 import React from "react";
+import { AuthUser } from "@apartment/shared";
 
 interface TopbarProps {
   onToggleMenu: () => void;
   title: string;
+  adminUser?: AuthUser | null;
+  onLogout?: () => void;
 }
 
-export function Topbar({ onToggleMenu, title }: TopbarProps) {
+export function Topbar({ onToggleMenu, title, adminUser, onLogout }: TopbarProps) {
   return (
     <header className="topbar">
       <div className="topbar-left">
@@ -45,12 +48,25 @@ export function Topbar({ onToggleMenu, title }: TopbarProps) {
         </button>
 
         <div className="profile-chip">
-          <span className="profile-avatar">SA</span>
+          <span className="profile-avatar">
+            {adminUser ? adminUser.fullName.charAt(0).toUpperCase() : "SA"}
+          </span>
           <div className="profile-info">
-            <strong>Administrator</strong>
-            <small>Super Admin Authority</small>
+            <strong>{adminUser ? adminUser.fullName : "Administrator"}</strong>
+            <small>{adminUser ? adminUser.role : "Super Admin Authority"}</small>
           </div>
         </div>
+
+        {onLogout && (
+          <button
+            className="logout-button"
+            onClick={onLogout}
+            title="Sign out of Super Admin Console"
+            aria-label="Sign out"
+          >
+            Sign Out
+          </button>
+        )}
       </div>
     </header>
   );

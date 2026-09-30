@@ -639,3 +639,231 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Admin Authentication & Session Styles (Day 4)
+   ========================================================================== */
+
+.logout-button {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logout-button:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.login-overlay {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 20%, #1e293b 0%, #0b0f19 100%);
+  padding: 24px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 36px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  color: #f8fafc;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.login-shield-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(91, 108, 249, 0.12);
+  border: 1px solid rgba(91, 108, 249, 0.3);
+  font-size: 26px;
+  margin-bottom: 14px;
+}
+
+.login-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+
+.login-subtitle {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.login-error-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #fca5a5;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.login-error-alert .error-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login-form label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.login-form input {
+  height: 44px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 0 14px;
+  font-size: 14px;
+  color: #ffffff;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.login-form input:focus {
+  border-color: #5b6cf9;
+  background: rgba(30, 41, 59, 0.9);
+  box-shadow: 0 0 0 3px rgba(91, 108, 249, 0.25);
+}
+
+.login-submit-button {
+  height: 46px;
+  background: #5b6cf9;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background 0.2s;
+}
+
+.login-submit-button:hover:not(:disabled) {
+  background: #4856e0;
+}
+
+.login-submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.demo-credentials-box {
+  margin-top: 24px;
+}
+
+.demo-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.demo-divider::before,
+.demo-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.demo-divider span {
+  padding: 0 10px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.5px;
+}
+
+.demo-buttons-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.demo-btn-primary {
+  width: 100%;
+  padding: 9px 12px;
+  background: rgba(91, 108, 249, 0.12);
+  border: 1px solid rgba(91, 108, 249, 0.3);
+  border-radius: 6px;
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.demo-btn-primary:hover:not(:disabled) {
+  background: rgba(91, 108, 249, 0.2);
+}
+
+.demo-btn-secondary {
+  width: 100%;
+  padding: 9px 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 6px;
+  color: #fca5a5;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.demo-btn-secondary:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.18);
+}
+
+.login-security-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 11px;
+  color: #64748b;
+}
+

@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { AdminShell } from "../components/AdminShell";
 import { MetricCard } from "../components/MetricCard";
 import { StatusPill } from "../components/StatusPill";
-import { ROLE_MODEL_STATUS } from "@apartment/shared";
+import { AdminLogin } from "../components/AdminLogin";
+import { ROLE_MODEL_STATUS, AuthUser } from "@apartment/shared";
 
 interface ModuleSummary {
   title: string;
@@ -127,9 +128,75 @@ const moduleCatalog: Record<string, ModuleSummary> = {
   },
 };
 
+const USER_SESSION_KEY = "apartment_admin_session_user";
+const TOKEN_SESSION_KEY = "apartment_admin_session_token";
+
 export default function SuperAdminHomePage() {
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [sessionUser, setSessionUser] = useState<AuthUser | null>(null);
+
+  // Restore authenticated session on mount
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem(USER_SESSION_KEY);
+      const storedToken = localStorage.getItem(TOKEN_SESSION_KEY);
+
+      if (storedUser && storedToken) {
+        const parsed = JSON.parse(storedUser) as AuthUser;
+        if (parsed.role === "SUPER_ADMIN") {
+          setSessionUser(parsed);
+        } else {
+          localStorage.removeItem(USER_SESSION_KEY);
+          localStorage.removeItem(TOKEN_SESSION_KEY);
+        }
+      }
+    } catch {
+      localStorage.removeItem(USER_SESSION_KEY);
+      localStorage.removeItem(TOKEN_SESSION_KEY);
+    } finally {
+      setIsCheckingAuth(false);
+    }
+  }, []);
+
+  const handleLoginSuccess = (user: AuthUser, token: string) => {
+    try {
+      localStorage.setItem(USER_SESSION_KEY, JSON.stringify(user));
+      localStorage.setItem(TOKEN_SESSION_KEY, token);
+    } catch {
+      // Ignore localStorage errors
+    }
+    setSessionUser(user);
+  };
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem(USER_SESSION_KEY);
+      localStorage.removeItem(TOKEN_SESSION_KEY);
+    } catch {
+      // Ignore
+    }
+    setSessionUser(null);
+  };
+
+  // Auth checking state
+  if (isCheckingAuth) {
+    return (
+      <div className="login-overlay">
+        <div style={{ color: "#94a3b8", fontSize: "14px" }}>
+          Verifying Super Admin session privileges...
+        </div>
+      </div>
+    );
+  }
+
+  // Unauthenticated State: Show Super Admin Login Barrier
+  if (!sessionUser) {
+    return <AdminLogin onLoginSuccess={handleLoginSuccess} />;
+  }
+
+  // Authenticated State: Show Super Admin Console
   return (
-    <AdminShell>
+    <AdminShell adminUser={sessionUser} onLogout={handleLogout}>
       {(activeTab) => {
         // If viewing a specific module tab:
         if (activeTab !== "dashboard" && moduleCatalog[activeTab]) {
@@ -138,7 +205,7 @@ export default function SuperAdminHomePage() {
             <>
               {/* Notice Banner */}
               <div className="notice-banner">
-                <strong>Day 2 Responsive Skeleton:</strong> Viewing <strong>{mod.title}</strong> module shell. Business logic, database queries, and backend mutations are deferred to subsequent development days.
+                <strong>Super Admin Executive View:</strong> Viewing <strong>{mod.title}</strong> module. Logged in as <strong>{sessionUser.email}</strong> with <strong>{sessionUser.role}</strong> authority.
               </div>
 
               {/* Module Header Metrics */}
@@ -169,7 +236,7 @@ export default function SuperAdminHomePage() {
                   <div className="module-card">
                     <h3>Security & Authorization</h3>
                     <p>Access restricted exclusively to authorized Super Admin accounts. Role boundaries are verified on the server side.</p>
-                    <StatusPill tone="orange">Provisional Role Scope</StatusPill>
+                    <StatusPill tone="green">Session Verified (SUPER_ADMIN)</StatusPill>
                   </div>
 
                   <div className="module-card">
@@ -186,9 +253,9 @@ export default function SuperAdminHomePage() {
         // Default: Full Dashboard Overview
         return (
           <>
-            {/* Provisional Role Notice Banner */}
+            {/* Active Session Notice Banner */}
             <div className="notice-banner">
-              <strong>Provisional Role & Authorization Notice:</strong> {ROLE_MODEL_STATUS.statusNotes} Day 2 focuses strictly on UI skeleton, responsive layout, and theme tokens.
+              <strong>Super Admin Authenticated Session:</strong> Welcome back, <strong>{sessionUser.fullName}</strong> ({sessionUser.email}). Server-side authorization active.
             </div>
 
             {/* Quick KPI Overview */}
@@ -204,9 +271,9 @@ export default function SuperAdminHomePage() {
               <div className="panel-header">
                 <div>
                   <h2 className="panel-title">Apartment Management Platform — Architecture Skeleton</h2>
-                  <p className="panel-subtitle">Day 2 modular responsive layout verified on Next.js 16.2.6 & React 19.2.6</p>
+                  <p className="panel-subtitle">Day 4 authenticated foundation on Next.js 16.2.6 & React 19.2.6</p>
                 </div>
-                <StatusPill tone="green">Day 2 Foundation Active</StatusPill>
+                <StatusPill tone="green">Authenticated & Protected</StatusPill>
               </div>
 
               <table className="info-table">
@@ -215,7 +282,7 @@ export default function SuperAdminHomePage() {
                     <th>Platform Tier</th>
                     <th>Technology Stack</th>
                     <th>Repository Path</th>
-                    <th>Day 2 Scope</th>
+                    <th>Day 4 Security Scope</th>
                     <th>Status</th>
                   </tr>
                 </thead>
@@ -224,36 +291,36 @@ export default function SuperAdminHomePage() {
                     <td><strong>Super Admin Web</strong></td>
                     <td>Next.js 16.2.6 / React 19.2.6 / TypeScript</td>
                     <td><code>apps/admin-web</code></td>
-                    <td>Responsive Skeleton & Modular Shell</td>
-                    <td><StatusPill tone="green">Verified</StatusPill></td>
+                    <td>Admin Login Barrier & Session Management</td>
+                    <td><StatusPill tone="green">Protected</StatusPill></td>
                   </tr>
                   <tr>
                     <td><strong>Tenant Mobile</strong></td>
-                    <td>React Native 0.76 / Expo SDK 52 / TypeScript</td>
+                    <td>React Native 0.86 / Expo SDK 57 / TypeScript</td>
                     <td><code>apps/mobile</code></td>
-                    <td>Native 5-Tab Shell & Design Tokens</td>
-                    <td><StatusPill tone="green">In Progress</StatusPill></td>
+                    <td>Native Login & Hardware SecureStore</td>
+                    <td><StatusPill tone="green">Protected</StatusPill></td>
                   </tr>
                   <tr>
                     <td><strong>Backend REST API</strong></td>
                     <td>Node.js 22 LTS / Express 5 / TypeScript</td>
                     <td><code>apps/api</code></td>
-                    <td>Layered Routes, Services, Health API</td>
-                    <td><StatusPill tone="blue">Day 1 Ready</StatusPill></td>
+                    <td>JWT Auth, Zod Validation, RBAC Guards</td>
+                    <td><StatusPill tone="blue">Server Enforced</StatusPill></td>
                   </tr>
                   <tr>
                     <td><strong>Shared Package</strong></td>
                     <td>TypeScript Contracts</td>
                     <td><code>packages/shared</code></td>
-                    <td>Provisional Types & Standard Responses</td>
+                    <td>Auth Contracts, DTOs & Relational Models</td>
                     <td><StatusPill tone="violet">Compiled</StatusPill></td>
                   </tr>
                   <tr>
                     <td><strong>Database Storage</strong></td>
                     <td>MySQL 8.0+</td>
                     <td><code>database/migrations</code></td>
-                    <td>Deferred to Day 3 (No ORM selected)</td>
-                    <td><StatusPill tone="orange">Pending Day 3</StatusPill></td>
+                    <td>Pure SQL Schema & Parameterized Queries</td>
+                    <td><StatusPill tone="green">SQL Migration Ready</StatusPill></td>
                   </tr>
                 </tbody>
               </table>

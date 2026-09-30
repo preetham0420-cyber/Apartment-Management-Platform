@@ -3,10 +3,13 @@
 import React, { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
+import { AuthUser } from "@apartment/shared";
 
 interface AdminShellProps {
   children: (activeTab: string) => React.ReactNode;
   activeTitleMap?: Record<string, string>;
+  adminUser?: AuthUser | null;
+  onLogout?: () => void;
 }
 
 const defaultTitleMap: Record<string, string> = {
@@ -25,7 +28,12 @@ const defaultTitleMap: Record<string, string> = {
   reports: "Executive Reports & Audit Logs",
 };
 
-export function AdminShell({ children, activeTitleMap = defaultTitleMap }: AdminShellProps) {
+export function AdminShell({
+  children,
+  activeTitleMap = defaultTitleMap,
+  adminUser,
+  onLogout
+}: AdminShellProps) {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
@@ -44,6 +52,8 @@ export function AdminShell({ children, activeTitleMap = defaultTitleMap }: Admin
         <Topbar
           onToggleMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
           title={currentTitle}
+          adminUser={adminUser}
+          onLogout={onLogout}
         />
 
         <main className="admin-main">

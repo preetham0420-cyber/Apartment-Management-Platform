@@ -4,6 +4,7 @@ import { colors, ThemeTone } from "../theme/colors";
 import { spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
 import { IconBox } from "../components/IconBox";
+import { AuthUser, UnitSummary } from "@apartment/shared";
 
 interface ModuleGridItem {
   id: string;
@@ -28,9 +29,47 @@ const allModules: ModuleGridItem[] = [
   { id: "reports", title: "Reports & Insights", subtitle: "Collections & Audits", symbol: "📊", tone: "violet" }
 ];
 
-export function MoreScreen() {
+interface MoreScreenProps {
+  currentUser?: AuthUser | null;
+  currentUnit?: UnitSummary | null;
+  onLogout?: () => void;
+}
+
+export function MoreScreen({ currentUser, currentUnit, onLogout }: MoreScreenProps) {
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Resident Profile Card */}
+      {currentUser && (
+        <View style={styles.profileCard}>
+          <View style={styles.avatarCircle}>
+            <Text style={styles.avatarText}>
+              {currentUser.fullName ? currentUser.fullName.charAt(0).toUpperCase() : "R"}
+            </Text>
+          </View>
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileName}>{currentUser.fullName}</Text>
+            <Text style={styles.profileEmail}>{currentUser.email}</Text>
+            <View style={styles.roleBadge}>
+              <Text style={styles.roleText}>
+                {currentUnit ? `${currentUnit.block} - ${currentUnit.unitNumber}` : "Tower A - 402"} • {currentUser.role}
+              </Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Logout Action Button */}
+      {onLogout && (
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={onLogout}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.logoutIcon}>🚪</Text>
+          <Text style={styles.logoutText}>Sign Out of My Account</Text>
+        </TouchableOpacity>
+      )}
+
       <View style={styles.header}>
         <Text style={styles.pageHeading}>Community Services</Text>
         <Text style={styles.pageSubheading}>All 12 community management modules</Text>
@@ -58,8 +97,80 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     paddingBottom: spacing.xxl
   },
-  header: {
+  profileCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.bgSurface,
+    borderRadius: spacing.radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    marginBottom: spacing.md
+  },
+  avatarCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#3b82f620",
+    borderWidth: 1,
+    borderColor: "#3b82f650",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: spacing.md
+  },
+  avatarText: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#3b82f6"
+  },
+  profileInfo: {
+    flex: 1
+  },
+  profileName: {
+    fontSize: typography.sizes.body,
+    fontWeight: typography.weights.bold,
+    color: colors.textMain
+  },
+  profileEmail: {
+    fontSize: typography.sizes.caption,
+    color: colors.textMuted,
+    marginTop: 1
+  },
+  roleBadge: {
+    alignSelf: "flex-start",
+    backgroundColor: "#10b98120",
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginTop: 4
+  },
+  roleText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#10b981"
+  },
+  logoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#ef444415",
+    borderWidth: 1,
+    borderColor: "#ef444440",
+    borderRadius: spacing.radius.md,
+    paddingVertical: spacing.sm + 2,
     marginBottom: spacing.lg
+  },
+  logoutIcon: {
+    fontSize: 16,
+    marginRight: spacing.sm
+  },
+  logoutText: {
+    color: "#ef4444",
+    fontWeight: "700",
+    fontSize: 14
+  },
+  header: {
+    marginBottom: spacing.md
   },
   pageHeading: {
     fontSize: typography.sizes.title,
