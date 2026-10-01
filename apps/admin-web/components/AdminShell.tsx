@@ -6,7 +6,7 @@ import { Topbar } from "./Topbar";
 import { AuthUser } from "@apartment/shared";
 
 interface AdminShellProps {
-  children: (activeTab: string) => React.ReactNode;
+  children: (activeTab: string, onSelectTab: (tab: string) => void) => React.ReactNode;
   activeTitleMap?: Record<string, string>;
   adminUser?: AuthUser | null;
   onLogout?: () => void;
@@ -14,18 +14,15 @@ interface AdminShellProps {
 
 const defaultTitleMap: Record<string, string> = {
   dashboard: "Community Operations Dashboard",
-  residents: "Residents & Units Directory",
-  rentals: "Rental Management & Leases",
-  maintenance: "Maintenance Operations Centre",
-  payments: "Accounts & Collections Overview",
+  properties: "Properties Configuration & Infrastructure",
+  units: "Units & Residential Inventory",
+  residents: "Residents & Unit Assignments",
+  maintenance: "Maintenance & Facility Operations",
   visitors: "Gate Desk & Visitor Log",
-  cctv: "Security & CCTV Infrastructure",
-  amenities: "Shared Amenities & Facilities",
-  chat: "Administrative Communication",
-  notices: "Community Notice Board",
-  staff: "Facility Staff & Trusted Vendors",
-  documents: "Compliance & Document Centre",
-  reports: "Executive Reports & Audit Logs",
+  payments: "Accounts & Dues Collections Ledger",
+  amenities: "Shared Amenities & Facilities Booking",
+  notices: "Community Notice Board & Circulars",
+  reports: "Compliance, Security & Executive Audit Logs",
 };
 
 export function AdminShell({
@@ -57,7 +54,7 @@ export function AdminShell({
         />
 
         <main className="admin-main">
-          {children(activeTab)}
+          {children(activeTab, setActiveTab)}
         </main>
       </div>
     </div>

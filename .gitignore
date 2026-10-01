@@ -45,3 +45,8 @@ ehthumbs.db
 
 # Reference binary artifact
 references/apk-package/*.apk
+
+# Uploads
+apps/api/uploads/*
+!apps/api/uploads/.gitkeep
+apps/api/uploads/

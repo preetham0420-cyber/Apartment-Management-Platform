@@ -15,31 +15,29 @@ export interface NavGroup {
 
 export const navGroups: NavGroup[] = [
   {
-    label: "OVERVIEW",
+    label: "OVERVIEW & ASSETS",
     items: [
-      { id: "dashboard", label: "Dashboard" },
-      { id: "residents", label: "Residents & Homes" },
-      { id: "rentals", label: "Rental Management" },
+      { id: "dashboard", label: "Overview" },
+      { id: "properties", label: "Properties" },
+      { id: "units", label: "Units" },
+      { id: "residents", label: "Residents" },
     ],
   },
   {
     label: "OPERATIONS",
     items: [
-      { id: "maintenance", label: "Maintenance", badge: 8 },
-      { id: "payments", label: "Payments & Accounts" },
-      { id: "visitors", label: "Visitors & Gate" },
-      { id: "cctv", label: "CCTV & Security", badge: 3 },
+      { id: "maintenance", label: "Maintenance" },
+      { id: "visitors", label: "Visitors" },
+      { id: "payments", label: "Dues / Payments" },
       { id: "amenities", label: "Amenities" },
     ],
   },
   {
-    label: "COMMUNITY",
+    label: "COMMUNITY & COMPLIANCE",
     items: [
-      { id: "chat", label: "Chat & Messages", badge: 5 },
-      { id: "notices", label: "Notices & Meetings" },
-      { id: "staff", label: "Staff & Vendors" },
       { id: "documents", label: "Documents" },
-      { id: "reports", label: "Reports" },
+      { id: "notices", label: "Notices" },
+      { id: "reports", label: "Reports & Audits" },
     ],
   },
 ];

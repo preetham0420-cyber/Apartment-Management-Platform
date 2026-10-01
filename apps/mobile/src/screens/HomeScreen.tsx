@@ -1,52 +1,96 @@
-import React from "react";
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from "react-native";
 import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
 import { StatusPill } from "../components/StatusPill";
 import { IconBox } from "../components/IconBox";
 import { NoticeBanner } from "../components/NoticeBanner";
-import { ROLE_MODEL_STATUS } from "@apartment/shared";
+import { UnitSummary } from "@apartment/shared";
+import { mobileApiClient } from "../services/api-client";
 
 interface HomeScreenProps {
+  currentUnit?: UnitSummary | null;
   onNavigateTab: (tab: "services" | "chat" | "visitors" | "more") => void;
 }
 
-export function HomeScreen({ onNavigateTab }: HomeScreenProps) {
+export function HomeScreen({ currentUnit, onNavigateTab }: HomeScreenProps) {
+  const [homeData, setHomeData] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+
+  const fetchHomeData = async () => {
+    try {
+      const data = await mobileApiClient.getResidentHome();
+      setHomeData(data);
+    } catch {
+      // Fallback gracefully to default metrics
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchHomeData();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchHomeData();
+  };
+
+  const activeNotice = homeData?.notices?.[0];
+  const unit = homeData?.unit || currentUnit;
+  const unitTitle = unit ? `Unit ${unit.unitNumber}` : "Unit 402";
+  const unitSubtitle = unit
+    ? `${unit.block} • Floor ${unit.floor || 4} • ${unit.propertyName || "Greenfield Heights"}`
+    : "Tower A • 4th Floor • Greenfield Heights";
+
+  const currentDueFormatted = homeData?.metrics?.currentDue !== undefined
+    ? `₹${homeData.metrics.currentDue.toLocaleString()}`
+    : "₹4,850";
+  const openRequests = homeData?.metrics?.openRequestsCount ?? 1;
+  const expectedGuests = homeData?.metrics?.expectedGuestsCount ?? 2;
+
   return (
-    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />}
+    >
       {/* Notice Banner */}
       <NoticeBanner
-        title="Day 2 Native Mobile Shell"
-        message={`${ROLE_MODEL_STATUS.statusNotes} Displaying native UI components without WebView.`}
+        title={activeNotice?.title || "Community Announcement"}
+        message={activeNotice?.content || "Scheduled power backup drill this Saturday between 10:00 AM - 12:00 PM."}
       />
 
       {/* Resident Unit Summary Card */}
       <View style={styles.unitCard}>
         <View style={styles.unitHeader}>
           <View>
-            <Text style={styles.unitFlat}>Unit B-804</Text>
-            <Text style={styles.unitMeta}>Tower B • 8th Floor • 3 Residents</Text>
+            <Text style={styles.unitFlat}>{unitTitle}</Text>
+            <Text style={styles.unitMeta}>{unitSubtitle}</Text>
           </View>
-          <StatusPill label="Verified" tone="green" />
+          <StatusPill label="Verified Tenant" tone="green" />
         </View>
 
         <View style={styles.unitStatsRow}>
           <View style={styles.unitStat}>
             <Text style={styles.statLabel}>Current Due</Text>
-            <Text style={styles.statValue}>₹4,850</Text>
-            <Text style={styles.statNote}>Due by 10th</Text>
+            <Text style={styles.statValue}>{currentDueFormatted}</Text>
+            <Text style={styles.statNote}>Maintenance</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.unitStat}>
             <Text style={styles.statLabel}>Open Requests</Text>
-            <Text style={[styles.statValue, { color: colors.warning }]}>1 Active</Text>
-            <Text style={styles.statNote}>Plumbing</Text>
+            <Text style={[styles.statValue, { color: colors.warning }]}>{openRequests} Active</Text>
+            <Text style={styles.statNote}>Service Desk</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.unitStat}>
             <Text style={styles.statLabel}>Expected Today</Text>
-            <Text style={[styles.statValue, { color: colors.primary }]}>2 Guests</Text>
+            <Text style={[styles.statValue, { color: colors.primary }]}>{expectedGuests} Guests</Text>
             <Text style={styles.statNote}>Gate Passes</Text>
           </View>
         </View>

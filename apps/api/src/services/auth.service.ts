@@ -1,6 +1,6 @@
 import { LoginRequest, LoginResponseData, AuthUser } from "@apartment/shared";
 import { userRepository } from "../repositories/user.repository.js";
-import { comparePassword } from "../utils/password.js";
+import { comparePassword, hashPassword } from "../utils/password.js";
 import { signToken } from "../utils/jwt.js";
 import { AppError } from "../errors/app-error.js";
 
@@ -76,6 +76,52 @@ export class AuthService {
     return {
       user: authUser,
       unit: unit || undefined
+    };
+  }
+
+  /**
+   * Issue refreshed JWT token for authenticated active session.
+   */
+  public refreshToken(user: { userId: string; email: string; role: any }): { token: string } {
+    const token = signToken({
+      userId: user.userId,
+      email: user.email,
+      role: user.role
+    });
+    return { token };
+  }
+
+  /**
+   * Register a new resident account awaiting admin approval.
+   */
+  public async register(data: {
+    email: string;
+    password: string;
+    fullName: string;
+    phoneNumber?: string;
+    unitId: string;
+    role: "RESIDENT_TENANT" | "RESIDENT_OWNER";
+  }): Promise<{ message: string; userId: string; assignmentId: string; status: string }> {
+    const existing = await userRepository.findByEmail(data.email);
+    if (existing) {
+      throw AppError.badRequest("An account with this email address already exists.");
+    }
+
+    const passwordHash = await hashPassword(data.password);
+    const { userId, assignmentId } = await userRepository.registerResident({
+      email: data.email,
+      passwordHash,
+      fullName: data.fullName,
+      phoneNumber: data.phoneNumber,
+      unitId: data.unitId,
+      roleCode: data.role
+    });
+
+    return {
+      message: "Registration submitted successfully. Your account is pending management approval.",
+      userId,
+      assignmentId,
+      status: "PENDING_APPROVAL"
     };
   }
 }

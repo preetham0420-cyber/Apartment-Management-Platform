@@ -55,6 +55,53 @@ export class TenantController {
       next(error);
     }
   }
+
+  /**
+   * Fetch specific unit by unitId with server-side ownership verification.
+   * Prevents IDOR: Tenant can ONLY view units to which they are actively assigned.
+   */
+  public async getUnitById(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const unitId = req.params.unitId as string;
+      const user = await userRepository.findById(req.user!.userId);
+      if (!user) {
+        throw AppError.notFound("Resident account not found.");
+      }
+
+      // Server-Side Ownership Check:
+      // Super admins have global access; residents must be assigned to the requested unit
+      const isAssigned =
+        user.roleCode === "SUPER_ADMIN" ||
+        (await userRepository.isUserAssignedToUnit(user.id, unitId));
+
+      if (!isAssigned) {
+        throw AppError.forbidden("Access denied: You do not have tenancy rights for this unit.");
+      }
+
+      const unit = await userRepository.getUnitById(unitId);
+      if (!unit) {
+        throw AppError.notFound("Unit not found.");
+      }
+
+      const response: ApiSuccessResponse<{
+        unit: any;
+      }> = {
+        success: true,
+        data: {
+          unit
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          version: "0.1.0-alpha"
+        }
+      };
+
+      res.status(200).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const tenantController = new TenantController();
+
