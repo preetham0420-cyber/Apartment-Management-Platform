@@ -49,7 +49,8 @@ const allModules: ModuleGridItem[] = [
   { id: "visitors", title: "Gate Passes", subtitle: "Digital Entry Pass", symbol: "🛡️", tone: "blue" },
   { id: "cctv", title: "CCTV & Security", subtitle: "Gate Surveillance", symbol: "📹", tone: "red" },
   { id: "chat", title: "Helpdesk Chat", subtitle: "Security & Management", symbol: "💬", tone: "violet" },
-  { id: "notices", title: "Notices & Circulars", subtitle: "Official Broadcasts", symbol: "📢", tone: "orange" }
+  { id: "notices", title: "Notices & Circulars", subtitle: "Official Broadcasts", symbol: "📢", tone: "orange" },
+  { id: "notifications", title: "In-App Alerts", subtitle: "Inbox & Updates", symbol: "🔔", tone: "blue" }
 ];
 
 interface MoreScreenProps {
@@ -57,9 +58,10 @@ interface MoreScreenProps {
   currentUnit?: UnitSummary | null;
   onLogout?: () => void;
   onNavigateTab?: (tab: "services" | "chat" | "visitors" | "more") => void;
+  onOpenNotifications?: () => void;
 }
 
-export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab }: MoreScreenProps) {
+export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, onOpenNotifications }: MoreScreenProps) {
   const [profile, setProfile] = useState<AuthUser | null>(currentUser || null);
 
   // Edit Profile Modal State
@@ -68,11 +70,77 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab }
   const [editPhone, setEditPhone] = useState(currentUser?.phoneNumber || "");
   const [savingProfile, setSavingProfile] = useState(false);
 
+  // Helper types and slots for Amenities Booking
+  const AMENITY_TIME_SLOTS = [
+    { id: "slot-07-09", label: "07:00 AM - 09:00 AM", startHour: 7, startMin: 0, endHour: 9, endMin: 0, period: "Morning" },
+    { id: "slot-09-11", label: "09:00 AM - 11:00 AM", startHour: 9, startMin: 0, endHour: 11, endMin: 0, period: "Morning" },
+    { id: "slot-11-13", label: "11:00 AM - 01:00 PM", startHour: 11, startMin: 0, endHour: 13, endMin: 0, period: "Afternoon" },
+    { id: "slot-14-16", label: "02:00 PM - 04:00 PM", startHour: 14, startMin: 0, endHour: 16, endMin: 0, period: "Afternoon" },
+    { id: "slot-16-18", label: "04:00 PM - 06:00 PM", startHour: 16, startMin: 0, endHour: 18, endMin: 0, period: "Evening" },
+    { id: "slot-18-20", label: "06:00 PM - 08:00 PM", startHour: 18, startMin: 0, endHour: 20, endMin: 0, period: "Evening" },
+    { id: "slot-20-22", label: "08:00 PM - 10:00 PM", startHour: 20, startMin: 0, endHour: 22, endMin: 0, period: "Evening" }
+  ];
+
+  const getTomorrowDateStr = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split("T")[0];
+  };
+
+  const getAvailableBookingDates = () => {
+    const list = [];
+    const days = ["Today", "Tomorrow", "Day After"];
+    for (let i = 0; i < 3; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      const dateStr = d.toISOString().split("T")[0];
+      const month = d.toLocaleString("en-US", { month: "short" });
+      const day = d.getDate();
+      list.push({
+        dateStr,
+        label: `${days[i]} (${month} ${day})`,
+        dayName: days[i]
+      });
+    }
+    return list;
+  };
+
   // Amenities Modal State
   const [amenitiesModalVisible, setAmenitiesModalVisible] = useState(false);
+  const [amenitiesTab, setAmenitiesTab] = useState<"browse" | "my_bookings">("browse");
   const [amenities, setAmenities] = useState<Amenity[]>([]);
+  const [myBookings, setMyBookings] = useState<AmenityBooking[]>([]);
   const [loadingAmenities, setLoadingAmenities] = useState(false);
-  const [bookingAmenityId, setBookingAmenityId] = useState<string | null>(null);
+  const [selectedAmenity, setSelectedAmenity] = useState<Amenity | null>(null);
+  const [selectedDateStr, setSelectedDateStr] = useState<string>(getTomorrowDateStr());
+  const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
+  const [amenitySchedule, setAmenitySchedule] = useState<any[]>([]);
+  const [loadingSchedule, setLoadingSchedule] = useState(false);
+  const [bookingInProgress, setBookingInProgress] = useState(false);
+  const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
+
+  // Residents Directory State
+  const [directoryModalVisible, setDirectoryModalVisible] = useState(false);
+  const [directory, setDirectory] = useState<any[]>([]);
+  const [loadingDirectory, setLoadingDirectory] = useState(false);
+  const [directorySearch, setDirectorySearch] = useState("");
+  const [directoryBlockFilter, setDirectoryBlockFilter] = useState<"ALL" | "Tower A" | "Tower B">("ALL");
+
+  // Rental Management State
+  const [leaseModalVisible, setLeaseModalVisible] = useState(false);
+  const [leaseData, setLeaseData] = useState<any | null>(null);
+  const [loadingLease, setLoadingLease] = useState(false);
+
+  // Notices State
+  const [noticesModalVisible, setNoticesModalVisible] = useState(false);
+  const [notices, setNotices] = useState<any[]>([]);
+  const [loadingNotices, setLoadingNotices] = useState(false);
+  const [noticeCategoryFilter, setNoticeCategoryFilter] = useState<string>("ALL");
+
+  // CCTV & Security Desk State
+  const [securityModalVisible, setSecurityModalVisible] = useState(false);
+  const [securityData, setSecurityData] = useState<any | null>(null);
+  const [loadingSecurity, setLoadingSecurity] = useState(false);
 
   // Dues Modal State
   const [duesModalVisible, setDuesModalVisible] = useState(false);
@@ -142,9 +210,15 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab }
   const handleOpenAmenities = async () => {
     setAmenitiesModalVisible(true);
     setLoadingAmenities(true);
+    setSelectedAmenity(null);
+    setSelectedSlot(null);
     try {
-      const data = await mobileApiClient.getAmenities();
-      setAmenities(data);
+      const [amenitiesList, bookingsList] = await Promise.all([
+        mobileApiClient.getAmenities(),
+        mobileApiClient.getAmenityBookings()
+      ]);
+      setAmenities(amenitiesList);
+      setMyBookings(bookingsList);
     } catch {
       // Graceful error
     } finally {
@@ -152,22 +226,161 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab }
     }
   };
 
-  const handleBookAmenity = async (amenity: Amenity) => {
-    setBookingAmenityId(amenity.id);
+  const handleSelectAmenityForBooking = async (amenity: Amenity) => {
+    setSelectedAmenity(amenity);
+    setSelectedSlot(null);
+    setLoadingSchedule(true);
     try {
-      const startTime = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
-      const endTime = new Date(Date.now() + 26 * 3600 * 1000).toISOString();
-      await mobileApiClient.bookAmenity(amenity.id, startTime, endTime);
-      Alert.alert(
-        "Booking Confirmed",
-        `Your reservation for ${amenity.name} for tomorrow has been confirmed.`
-      );
-    } catch (err: any) {
-      Alert.alert("Booking Failed", err.message || "Could not complete reservation.");
+      const schedule = await mobileApiClient.getAmenitySchedule(amenity.id);
+      setAmenitySchedule(schedule);
+    } catch {
+      setAmenitySchedule([]);
     } finally {
-      setBookingAmenityId(null);
+      setLoadingSchedule(false);
     }
   };
+
+  const handleChangeBookingDate = async (dateStr: string) => {
+    setSelectedDateStr(dateStr);
+    setSelectedSlot(null);
+    if (selectedAmenity) {
+      setLoadingSchedule(true);
+      try {
+        const schedule = await mobileApiClient.getAmenitySchedule(selectedAmenity.id);
+        setAmenitySchedule(schedule);
+      } catch {
+        setAmenitySchedule([]);
+      } finally {
+        setLoadingSchedule(false);
+      }
+    }
+  };
+
+  const isSlotOccupied = (slot: any): boolean => {
+    if (!amenitySchedule || amenitySchedule.length === 0) return false;
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    const slotStart = new Date(`${selectedDateStr}T${pad(slot.startHour)}:${pad(slot.startMin)}:00.000Z`).getTime();
+    const slotEnd = new Date(`${selectedDateStr}T${pad(slot.endHour)}:${pad(slot.endMin)}:00.000Z`).getTime();
+    return amenitySchedule.some((b: any) => {
+      if (b.status !== "CONFIRMED") return false;
+      const bStart = new Date(b.startTime).getTime();
+      const bEnd = new Date(b.endTime).getTime();
+      return slotStart < bEnd && slotEnd > bStart;
+    });
+  };
+
+  const handleConfirmReservation = async () => {
+    if (!selectedAmenity || !selectedSlot) {
+      Alert.alert("Incomplete Selection", "Please choose an amenity date and time slot.");
+      return;
+    }
+
+    setBookingInProgress(true);
+    try {
+      const pad = (n: number) => n.toString().padStart(2, "0");
+      const startTime = `${selectedDateStr}T${pad(selectedSlot.startHour)}:${pad(selectedSlot.startMin)}:00.000Z`;
+      const endTime = `${selectedDateStr}T${pad(selectedSlot.endHour)}:${pad(selectedSlot.endMin)}:00.000Z`;
+
+      await mobileApiClient.bookAmenity(selectedAmenity.id, startTime, endTime);
+      const updatedBookings = await mobileApiClient.getAmenityBookings();
+      setMyBookings(updatedBookings);
+
+      const amenityName = selectedAmenity.name;
+      const confirmedSlot = selectedSlot.label;
+      setSelectedAmenity(null);
+      setSelectedSlot(null);
+      setAmenitiesTab("my_bookings");
+
+      Alert.alert(
+        "Booking Confirmed! 🎉",
+        `Your reservation for ${amenityName} on ${selectedDateStr} (${confirmedSlot}) has been confirmed.`
+      );
+    } catch (err: any) {
+      Alert.alert("Reservation Failed", err.message || "This slot is already booked or unavailable.");
+    } finally {
+      setBookingInProgress(false);
+    }
+  };
+
+  const handleCancelBooking = (booking: AmenityBooking) => {
+    Alert.alert(
+      "Cancel Reservation",
+      `Cancel your booking for ${booking.amenityName || "this facility"}?`,
+      [
+        { text: "Keep Booking", style: "cancel" },
+        {
+          text: "Yes, Cancel",
+          style: "destructive",
+          onPress: async () => {
+            setCancellingBookingId(booking.id);
+            try {
+              await mobileApiClient.cancelBooking(booking.id);
+              const updated = await mobileApiClient.getAmenityBookings();
+              setMyBookings(updated);
+              Alert.alert("Cancelled", "Your reservation has been cancelled.");
+            } catch (err: any) {
+              Alert.alert("Error", err.message || "Could not cancel booking.");
+            } finally {
+              setCancellingBookingId(null);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleOpenDirectory = async () => {
+    setDirectoryModalVisible(true);
+    setLoadingDirectory(true);
+    try {
+      const data = await mobileApiClient.getResidentsDirectory();
+      setDirectory(data);
+    } catch {
+      // Graceful error
+    } finally {
+      setLoadingDirectory(false);
+    }
+  };
+
+  const handleOpenLease = async () => {
+    setLeaseModalVisible(true);
+    setLoadingLease(true);
+    try {
+      const data = await mobileApiClient.getResidentLease();
+      setLeaseData(data);
+    } catch {
+      // Graceful error
+    } finally {
+      setLoadingLease(false);
+    }
+  };
+
+  const handleOpenNotices = async () => {
+    setNoticesModalVisible(true);
+    setLoadingNotices(true);
+    try {
+      const data = await mobileApiClient.getResidentNotices();
+      setNotices(data);
+    } catch {
+      // Graceful error
+    } finally {
+      setLoadingNotices(false);
+    }
+  };
+
+  const handleOpenSecurity = async () => {
+    setSecurityModalVisible(true);
+    setLoadingSecurity(true);
+    try {
+      const data = await mobileApiClient.getSecurityDesk();
+      setSecurityData(data);
+    } catch {
+      // Graceful error
+    } finally {
+      setLoadingSecurity(false);
+    }
+  };
+
 
   const handleOpenDues = async () => {
     setDuesModalVisible(true);
@@ -332,17 +545,22 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab }
       handleOpenAmenities();
     } else if (moduleId === "payments") {
       handleOpenDues();
+    } else if (moduleId === "residents") {
+      handleOpenDirectory();
+    } else if (moduleId === "rentals") {
+      handleOpenLease();
+    } else if (moduleId === "cctv") {
+      handleOpenSecurity();
+    } else if (moduleId === "notices") {
+      handleOpenNotices();
+    } else if (moduleId === "notifications" && onOpenNotifications) {
+      onOpenNotifications();
     } else if (moduleId === "visitors" && onNavigateTab) {
       onNavigateTab("visitors");
     } else if (moduleId === "maintenance" && onNavigateTab) {
       onNavigateTab("services");
     } else if (moduleId === "chat" && onNavigateTab) {
       onNavigateTab("chat");
-    } else {
-      Alert.alert(
-        "Service Information",
-        `Module: ${moduleId.toUpperCase()}\nFor updates or inquiries, contact building administration.`
-      );
     }
   };
 
@@ -457,36 +675,234 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab }
       {/* Amenities Modal */}
       <Modal visible={amenitiesModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxHeight: "85%" }]}>
-            <Text style={styles.modalTitle}>Shared Amenities</Text>
-            <Text style={styles.modalSubtitle}>Book clubhouses, courts, and facilities</Text>
+          <View style={[styles.modalContent, { maxHeight: "90%" }]}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <View>
+                <Text style={styles.modalTitle}>Shared Amenities</Text>
+                <Text style={styles.modalSubtitle}>Book clubhouses, sports courts, and facilities</Text>
+              </View>
+              <TouchableOpacity onPress={() => setAmenitiesModalVisible(false)} style={styles.closeRoundBtn}>
+                <Text style={styles.closeRoundBtnText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Segmented Tabs: Facilities vs My Reservations */}
+            <View style={styles.amenityTabBar}>
+              <TouchableOpacity
+                style={[styles.amenityTabBtn, amenitiesTab === "browse" && styles.amenityTabBtnActive]}
+                onPress={() => {
+                  setAmenitiesTab("browse");
+                  setSelectedAmenity(null);
+                }}
+              >
+                <Text style={[styles.amenityTabBtnText, amenitiesTab === "browse" && styles.amenityTabBtnTextActive]}>
+                  🏊 Facilities ({amenities.length})
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.amenityTabBtn, amenitiesTab === "my_bookings" && styles.amenityTabBtnActive]}
+                onPress={() => setAmenitiesTab("my_bookings")}
+              >
+                <Text style={[styles.amenityTabBtnText, amenitiesTab === "my_bookings" && styles.amenityTabBtnTextActive]}>
+                  📅 My Bookings ({myBookings.filter((b) => b.status === "CONFIRMED").length})
+                </Text>
+              </TouchableOpacity>
+            </View>
 
             {loadingAmenities ? (
-              <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 20 }} />
-            ) : (
-              <ScrollView style={{ maxHeight: 350 }}>
-                {amenities.map((amenity) => (
-                  <View key={amenity.id} style={styles.amenityCard}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.amenityName}>{amenity.name}</Text>
-                      <Text style={styles.amenityDesc}>{amenity.description}</Text>
-                      <Text style={styles.amenityMeta}>
-                        Capacity: {amenity.capacity} • Hours: {amenity.openTime} - {amenity.closeTime}
-                      </Text>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.bookBtn}
-                      onPress={() => handleBookAmenity(amenity)}
-                      disabled={bookingAmenityId === amenity.id}
-                    >
-                      {bookingAmenityId === amenity.id ? (
-                        <ActivityIndicator size="small" color="#fff" />
-                      ) : (
-                        <Text style={styles.bookBtnText}>Book Slot</Text>
-                      )}
-                    </TouchableOpacity>
+              <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 30 }} />
+            ) : amenitiesTab === "browse" ? (
+              selectedAmenity ? (
+                /* Facility Slot Booking Flow */
+                <ScrollView style={{ maxHeight: 420 }} showsVerticalScrollIndicator={false}>
+                  <TouchableOpacity
+                    style={styles.backLink}
+                    onPress={() => {
+                      setSelectedAmenity(null);
+                      setSelectedSlot(null);
+                    }}
+                  >
+                    <Text style={styles.backLinkText}>← Back to Facilities List</Text>
+                  </TouchableOpacity>
+
+                  <View style={styles.selectedFacilityHeader}>
+                    <Text style={styles.selectedFacilityTitle}>{selectedAmenity.name}</Text>
+                    <Text style={styles.selectedFacilityDesc}>{selectedAmenity.description}</Text>
+                    <Text style={styles.selectedFacilityMeta}>
+                      Hours: {selectedAmenity.openTime} - {selectedAmenity.closeTime} • Capacity: {selectedAmenity.capacity} persons
+                    </Text>
+                    {selectedAmenity.rules ? (
+                      <Text style={styles.selectedFacilityRules}>📌 {selectedAmenity.rules}</Text>
+                    ) : null}
                   </View>
-                ))}
+
+                  {/* Step 1: Select Date */}
+                  <Text style={styles.slotSectionTitle}>1. Select Booking Date</Text>
+                  <View style={styles.dateSelectorRow}>
+                    {getAvailableBookingDates().map((item) => {
+                      const isSelected = selectedDateStr === item.dateStr;
+                      return (
+                        <TouchableOpacity
+                          key={item.dateStr}
+                          style={[styles.dateChoiceBtn, isSelected && styles.dateChoiceBtnActive]}
+                          onPress={() => handleChangeBookingDate(item.dateStr)}
+                        >
+                          <Text style={[styles.dateChoiceDay, isSelected && styles.dateChoiceDayActive]}>
+                            {item.dayName}
+                          </Text>
+                          <Text style={[styles.dateChoiceDate, isSelected && styles.dateChoiceDateActive]}>
+                            {item.dateStr.slice(5)}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+
+                  {/* Step 2: Select Time Slot */}
+                  <Text style={styles.slotSectionTitle}>2. Choose Time Slot (2-Hour Window)</Text>
+                  {loadingSchedule ? (
+                    <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 12 }} />
+                  ) : (
+                    <View style={styles.slotsGrid}>
+                      {AMENITY_TIME_SLOTS.map((slot) => {
+                        const occupied = isSlotOccupied(slot);
+                        const isChosen = selectedSlot?.id === slot.id;
+                        return (
+                          <TouchableOpacity
+                            key={slot.id}
+                            style={[
+                              styles.slotChoiceChip,
+                              isChosen && styles.slotChoiceChipActive,
+                              occupied && styles.slotChoiceChipDisabled
+                            ]}
+                            disabled={occupied || bookingInProgress}
+                            onPress={() => setSelectedSlot(slot)}
+                          >
+                            <Text
+                              style={[
+                                styles.slotChoiceText,
+                                isChosen && styles.slotChoiceTextActive,
+                                occupied && styles.slotChoiceTextDisabled
+                              ]}
+                            >
+                              {slot.label}
+                            </Text>
+                            {occupied ? (
+                              <Text style={styles.slotStatusTagDisabled}>Reserved</Text>
+                            ) : isChosen ? (
+                              <Text style={styles.slotStatusTagActive}>Selected ✓</Text>
+                            ) : (
+                              <Text style={styles.slotStatusTagAvailable}>Available</Text>
+                            )}
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  )}
+
+                  {/* Booking Summary & Confirm */}
+                  {selectedSlot && (
+                    <View style={styles.bookingSummaryBox}>
+                      <Text style={styles.summaryTitle}>Reservation Summary</Text>
+                      <Text style={styles.summaryRow}>Facility: <Text style={styles.summaryBold}>{selectedAmenity.name}</Text></Text>
+                      <Text style={styles.summaryRow}>Date: <Text style={styles.summaryBold}>{selectedDateStr}</Text></Text>
+                      <Text style={styles.summaryRow}>Time: <Text style={styles.summaryBold}>{selectedSlot.label}</Text></Text>
+                      <Text style={styles.summaryRow}>Unit Flat: <Text style={styles.summaryBold}>{currentUnit ? `${currentUnit.block} - ${currentUnit.unitNumber}` : "Tower A - 402"}</Text></Text>
+
+                      <TouchableOpacity
+                        style={styles.confirmReservationBtn}
+                        onPress={handleConfirmReservation}
+                        disabled={bookingInProgress}
+                      >
+                        {bookingInProgress ? (
+                          <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                          <Text style={styles.confirmReservationBtnText}>Confirm Reservation</Text>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </ScrollView>
+              ) : (
+                /* List Facilities */
+                <ScrollView style={{ maxHeight: 380 }} showsVerticalScrollIndicator={false}>
+                  {amenities.map((amenity) => (
+                    <View key={amenity.id} style={styles.amenityCard}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.amenityName}>{amenity.name}</Text>
+                        <Text style={styles.amenityDesc}>{amenity.description}</Text>
+                        <Text style={styles.amenityMeta}>
+                          Capacity: {amenity.capacity} • Hours: {amenity.openTime} - {amenity.closeTime}
+                        </Text>
+                        {amenity.rules ? (
+                          <Text style={styles.amenityRulesSnippet}>Rule: {amenity.rules}</Text>
+                        ) : null}
+                      </View>
+                      <TouchableOpacity
+                        style={styles.bookBtn}
+                        onPress={() => handleSelectAmenityForBooking(amenity)}
+                      >
+                        <Text style={styles.bookBtnText}>Select Slot & Book</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </ScrollView>
+              )
+            ) : (
+              /* My Bookings View */
+              <ScrollView style={{ maxHeight: 380 }} showsVerticalScrollIndicator={false}>
+                {myBookings.length === 0 ? (
+                  <View style={styles.emptyBookingsBox}>
+                    <Text style={styles.emptyBookingsIcon}>📅</Text>
+                    <Text style={styles.emptyBookingsTitle}>No Active Reservations</Text>
+                    <Text style={styles.emptyBookingsSub}>
+                      You haven't reserved any facilities yet. Switch to Facilities to book a court, pool, or hall.
+                    </Text>
+                  </View>
+                ) : (
+                  myBookings.map((b) => {
+                    const isCancelled = b.status === "CANCELLED";
+                    const isCancelling = cancellingBookingId === b.id;
+                    const dateFormatted = new Date(b.startTime).toLocaleDateString("en-US", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric"
+                    });
+                    const timeFormatted = `${new Date(b.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - ${new Date(b.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+
+                    return (
+                      <View key={b.id} style={styles.myBookingCard}>
+                        <View style={{ flex: 1 }}>
+                          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                            <Text style={styles.myBookingTitle}>{b.amenityName || "Community Facility"}</Text>
+                            <StatusPill
+                              label={b.status}
+                              tone={b.status === "CONFIRMED" ? "green" : "blue"}
+                            />
+                          </View>
+                          <Text style={styles.myBookingDate}>📅 {dateFormatted}</Text>
+                          <Text style={styles.myBookingTime}>⏰ {timeFormatted}</Text>
+                          <Text style={styles.myBookingRef}>Ref ID: {b.id.slice(0, 16)}...</Text>
+                        </View>
+
+                        {!isCancelled && (
+                          <TouchableOpacity
+                            style={styles.cancelBookingBtn}
+                            onPress={() => handleCancelBooking(b)}
+                            disabled={isCancelling}
+                          >
+                            {isCancelling ? (
+                              <ActivityIndicator size="small" color={colors.danger} />
+                            ) : (
+                              <Text style={styles.cancelBookingBtnText}>Cancel</Text>
+                            )}
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    );
+                  })
+                )}
               </ScrollView>
             )}
 
@@ -501,6 +917,325 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab }
           </View>
         </View>
       </Modal>
+
+      {/* Residents Directory Modal */}
+      <Modal visible={directoryModalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxHeight: "88%" }]}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <View>
+                <Text style={styles.modalTitle}>Residents Directory</Text>
+                <Text style={styles.modalSubtitle}>Greenfield Heights • Neighbor Directory</Text>
+              </View>
+              <TouchableOpacity onPress={() => setDirectoryModalVisible(false)} style={styles.closeRoundBtn}>
+                <Text style={styles.closeRoundBtnText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Search Input */}
+            <TextInput
+              style={styles.directorySearchInput}
+              placeholder="Search by Flat, Tower, or Resident..."
+              value={directorySearch}
+              onChangeText={setDirectorySearch}
+            />
+
+            {/* Tower Filter Chips */}
+            <View style={styles.filterChipRow}>
+              {(["ALL", "Tower A", "Tower B"] as const).map((filter) => (
+                <TouchableOpacity
+                  key={filter}
+                  style={[styles.filterChip, directoryBlockFilter === filter && styles.filterChipActive]}
+                  onPress={() => setDirectoryBlockFilter(filter)}
+                >
+                  <Text style={[styles.filterChipText, directoryBlockFilter === filter && styles.filterChipTextActive]}>
+                    {filter === "ALL" ? "All Blocks" : filter}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {loadingDirectory ? (
+              <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 30 }} />
+            ) : (
+              <ScrollView style={{ maxHeight: 360 }} showsVerticalScrollIndicator={false}>
+                {directory
+                  .filter((item) => {
+                    const matchBlock = directoryBlockFilter === "ALL" || item.block === directoryBlockFilter;
+                    const q = directorySearch.toLowerCase();
+                    const matchSearch =
+                      !q ||
+                      item.unitNumber.toLowerCase().includes(q) ||
+                      item.block.toLowerCase().includes(q) ||
+                      item.residentName.toLowerCase().includes(q);
+                    return matchBlock && matchSearch;
+                  })
+                  .map((res) => (
+                    <View key={res.id} style={styles.directoryCard}>
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                          <Text style={styles.directoryUnit}>{res.block} - {res.unitNumber}</Text>
+                          {res.isSelf && <Text style={styles.selfBadge}>You</Text>}
+                          <StatusPill
+                            label={res.status === "OCCUPIED" ? "Occupied" : "Vacant"}
+                            tone={res.status === "OCCUPIED" ? "green" : "blue"}
+                          />
+                        </View>
+                        <Text style={styles.directoryName}>👤 {res.residentName}</Text>
+                        <Text style={styles.directoryMeta}>
+                          Floor {res.floor} • {res.unitType || "Residential"} • {res.squareFeet ? `${res.squareFeet} sq.ft` : "Standard"}
+                        </Text>
+                      </View>
+                      <TouchableOpacity
+                        style={styles.directoryChatBtn}
+                        onPress={() => {
+                          setDirectoryModalVisible(false);
+                          if (onNavigateTab) onNavigateTab("chat");
+                        }}
+                      >
+                        <Text style={styles.directoryChatBtnText}>Message</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+              </ScrollView>
+            )}
+
+            <View style={[styles.modalActions, { marginTop: spacing.md }]}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setDirectoryModalVisible(false)}
+              >
+                <Text style={styles.cancelBtnText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Rental & Tenancy Management Modal */}
+      <Modal visible={leaseModalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxHeight: "88%" }]}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <View>
+                <Text style={styles.modalTitle}>Rental & Lease Records</Text>
+                <Text style={styles.modalSubtitle}>Verified Tenancy & Freehold Title Records</Text>
+              </View>
+              <TouchableOpacity onPress={() => setLeaseModalVisible(false)} style={styles.closeRoundBtn}>
+                <Text style={styles.closeRoundBtnText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {loadingLease ? (
+              <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 30 }} />
+            ) : leaseData ? (
+              <ScrollView style={{ maxHeight: 400 }} showsVerticalScrollIndicator={false}>
+                {/* Verification Hero Badge */}
+                <View style={styles.leaseHeroCard}>
+                  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                    <Text style={styles.leaseHeroFlat}>{leaseData.block} — Unit {leaseData.unitNumber}</Text>
+                    <StatusPill
+                      label={leaseData.occupancyRole === "RESIDENT_OWNER" ? "Owner Title" : "Verified Tenant"}
+                      tone="green"
+                    />
+                  </View>
+                  <Text style={styles.leaseHeroProperty}>{leaseData.propertyName}</Text>
+                  <Text style={styles.leaseHeroStatus}>🛡️ {String(leaseData.verificationStatus || "").replace(/_/g, " ")}</Text>
+                </View>
+
+                {/* Details Section */}
+                <View style={styles.leaseDetailsCard}>
+                  <Text style={styles.leaseSectionHeading}>Agreement Overview</Text>
+
+                  <View style={styles.leaseRow}>
+                    <Text style={styles.leaseLabel}>Agreement / Deed ID</Text>
+                    <Text style={styles.leaseValue}>{leaseData.leaseAgreementNumber}</Text>
+                  </View>
+
+                  <View style={styles.leaseRow}>
+                    <Text style={styles.leaseLabel}>Tenancy Term</Text>
+                    <Text style={styles.leaseValue}>{leaseData.agreementStartDate} to {leaseData.agreementEndDate}</Text>
+                  </View>
+
+                  <View style={styles.leaseRow}>
+                    <Text style={styles.leaseLabel}>Managing Entity / Landlord</Text>
+                    <Text style={styles.leaseValue}>{leaseData.landlordOrEntity}</Text>
+                  </View>
+
+                  <View style={styles.leaseRow}>
+                    <Text style={styles.leaseLabel}>Association Dues (Monthly)</Text>
+                    <Text style={[styles.leaseValue, { color: colors.primary }]}>₹{Number(leaseData.monthlyMaintenance || 0).toLocaleString()}</Text>
+                  </View>
+
+                  {leaseData.monthlyRent && (
+                    <View style={styles.leaseRow}>
+                      <Text style={styles.leaseLabel}>Base Rent (Monthly)</Text>
+                      <Text style={[styles.leaseValue, { color: colors.success }]}>₹{Number(leaseData.monthlyRent).toLocaleString()}</Text>
+                    </View>
+                  )}
+
+                  <View style={styles.leaseRow}>
+                    <Text style={styles.leaseLabel}>Security Hotline</Text>
+                    <Text style={styles.leaseValue}>{leaseData.emergencyContact}</Text>
+                  </View>
+                </View>
+
+                <View style={styles.paymentInfoNote}>
+                  <Text style={styles.paymentInfoNoteTitle}>💳 Settlement & Payment Instructions</Text>
+                  <Text style={styles.paymentInfoNoteText}>{leaseData.paymentInstructions}</Text>
+                </View>
+              </ScrollView>
+            ) : null}
+
+            <View style={[styles.modalActions, { marginTop: spacing.md }]}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setLeaseModalVisible(false)}
+              >
+                <Text style={styles.cancelBtnText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Notices & Circulars Modal */}
+      <Modal visible={noticesModalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxHeight: "88%" }]}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <View>
+                <Text style={styles.modalTitle}>Notices & Circulars</Text>
+                <Text style={styles.modalSubtitle}>Official Society Announcements & Directives</Text>
+              </View>
+              <TouchableOpacity onPress={() => setNoticesModalVisible(false)} style={styles.closeRoundBtn}>
+                <Text style={styles.closeRoundBtnText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Category Filter Chips */}
+            <View style={styles.filterChipRow}>
+              {["ALL", "MAINTENANCE", "AMENITY", "GENERAL"].map((cat) => (
+                <TouchableOpacity
+                  key={cat}
+                  style={[styles.filterChip, noticeCategoryFilter === cat && styles.filterChipActive]}
+                  onPress={() => setNoticeCategoryFilter(cat)}
+                >
+                  <Text style={[styles.filterChipText, noticeCategoryFilter === cat && styles.filterChipTextActive]}>
+                    {cat}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {loadingNotices ? (
+              <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 30 }} />
+            ) : (
+              <ScrollView style={{ maxHeight: 380 }} showsVerticalScrollIndicator={false}>
+                {notices
+                  .filter((n) => noticeCategoryFilter === "ALL" || (n.category && n.category.toUpperCase() === noticeCategoryFilter))
+                  .map((notice) => (
+                    <View key={notice.id} style={styles.noticeModalCard}>
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                        <Text style={styles.noticeModalCategory}>{notice.category || "COMMUNITY"}</Text>
+                        <StatusPill
+                          label={notice.priority || "NORMAL"}
+                          tone={notice.priority === "HIGH" ? "red" : "blue"}
+                        />
+                      </View>
+                      <Text style={styles.noticeModalTitle}>{notice.title}</Text>
+                      <Text style={styles.noticeModalContent}>{notice.content}</Text>
+                      <Text style={styles.noticeModalMeta}>
+                        Issued by: {notice.authorName || "Administration"} • {new Date(notice.createdAt).toLocaleDateString()}
+                      </Text>
+                    </View>
+                  ))}
+              </ScrollView>
+            )}
+
+            <View style={[styles.modalActions, { marginTop: spacing.md }]}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setNoticesModalVisible(false)}
+              >
+                <Text style={styles.cancelBtnText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* CCTV & Security Desk Modal */}
+      <Modal visible={securityModalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxHeight: "88%" }]}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <View>
+                <Text style={styles.modalTitle}>Security & Surveillance Desk</Text>
+                <Text style={styles.modalSubtitle}>Gate Operations & Emergency Dispatch</Text>
+              </View>
+              <TouchableOpacity onPress={() => setSecurityModalVisible(false)} style={styles.closeRoundBtn}>
+                <Text style={styles.closeRoundBtnText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {loadingSecurity ? (
+              <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 30 }} />
+            ) : securityData ? (
+              <ScrollView style={{ maxHeight: 400 }} showsVerticalScrollIndicator={false}>
+                {/* Live Checkpoints */}
+                <Text style={styles.securitySectionHeading}>📹 Active Checkpoints & Gate Feeds</Text>
+                {securityData.checkpoints?.map((cp: any) => (
+                  <View key={cp.id} style={styles.securityCheckpointRow}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.checkpointName}>{cp.name}</Text>
+                      <Text style={styles.checkpointMeta}>{cp.type} • Guard: {cp.guardName}</Text>
+                    </View>
+                    <StatusPill label={cp.status} tone="green" />
+                  </View>
+                ))}
+
+                {/* Supervisor & Shift */}
+                <View style={styles.guardInfoCard}>
+                  <Text style={styles.guardInfoTitle}>👮 {securityData.supervisorOnDuty}</Text>
+                  <Text style={styles.guardInfoSub}>Current Shift: {securityData.currentShift}</Text>
+                </View>
+
+                {/* Emergency Helplines */}
+                <Text style={styles.securitySectionHeading}>🚨 Direct Emergency Dispatch</Text>
+                <View style={styles.helplineGrid}>
+                  <View style={styles.helplineCard}>
+                    <Text style={styles.helplineLabel}>Main Gate Intercom</Text>
+                    <Text style={styles.helplineNumber}>{securityData.emergencyHelplines?.gateIntercom}</Text>
+                  </View>
+                  <View style={styles.helplineCard}>
+                    <Text style={styles.helplineLabel}>Security Supervisor</Text>
+                    <Text style={styles.helplineNumber}>{securityData.emergencyHelplines?.securitySupervisor}</Text>
+                  </View>
+                  <View style={styles.helplineCard}>
+                    <Text style={styles.helplineLabel}>Police Emergency</Text>
+                    <Text style={styles.helplineNumber}>100</Text>
+                  </View>
+                  <View style={styles.helplineCard}>
+                    <Text style={styles.helplineLabel}>Ambulance Dispatch</Text>
+                    <Text style={styles.helplineNumber}>108</Text>
+                  </View>
+                </View>
+              </ScrollView>
+            ) : null}
+
+            <View style={[styles.modalActions, { marginTop: spacing.md }]}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setSecurityModalVisible(false)}
+              >
+                <Text style={styles.cancelBtnText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
 
       {/* Dues & Payments Modal */}
       <Modal visible={duesModalVisible} animationType="slide" transparent>
@@ -1212,5 +1947,546 @@ const styles = StyleSheet.create({
   docMeta: {
     fontSize: 10,
     color: colors.textMuted
+  },
+  closeRoundBtn: {
+    padding: 6,
+    borderRadius: 16,
+    backgroundColor: "#f1f5f9",
+    width: 28,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  closeRoundBtnText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.textMuted
+  },
+  amenityTabBar: {
+    flexDirection: "row",
+    backgroundColor: "#f1f5f9",
+    borderRadius: 8,
+    padding: 3,
+    marginVertical: 12
+  },
+  amenityTabBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: "center",
+    borderRadius: 6
+  },
+  amenityTabBtnActive: {
+    backgroundColor: "#fff"
+  },
+  amenityTabBtnText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.textMuted
+  },
+  amenityTabBtnTextActive: {
+    color: colors.primary,
+    fontWeight: "700"
+  },
+  backLink: {
+    paddingVertical: 6,
+    marginBottom: 8
+  },
+  backLinkText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.primary
+  },
+  selectedFacilityHeader: {
+    backgroundColor: "#eff6ff",
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#bfdbfe",
+    marginBottom: 12
+  },
+  selectedFacilityTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: colors.textMain
+  },
+  selectedFacilityDesc: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginVertical: 3
+  },
+  selectedFacilityMeta: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: colors.primary
+  },
+  selectedFacilityRules: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 4,
+    fontStyle: "italic"
+  },
+  slotSectionTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.textMain,
+    marginTop: 10,
+    marginBottom: 6
+  },
+  dateSelectorRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 10
+  },
+  dateChoiceBtn: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: "center"
+  },
+  dateChoiceBtnActive: {
+    backgroundColor: "#dbeafe",
+    borderColor: colors.primary
+  },
+  dateChoiceDay: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: colors.textMuted
+  },
+  dateChoiceDayActive: {
+    color: colors.primary,
+    fontWeight: "700"
+  },
+  dateChoiceDate: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.textMain,
+    marginTop: 2
+  },
+  dateChoiceDateActive: {
+    color: colors.primary
+  },
+  slotsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 12
+  },
+  slotChoiceChip: {
+    width: "48%",
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    padding: 8,
+    alignItems: "center"
+  },
+  slotChoiceChipActive: {
+    backgroundColor: "#dbeafe",
+    borderColor: colors.primary,
+    borderWidth: 2
+  },
+  slotChoiceChipDisabled: {
+    backgroundColor: "#f1f5f9",
+    borderColor: "#e2e8f0",
+    opacity: 0.6
+  },
+  slotChoiceText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.textMain
+  },
+  slotChoiceTextActive: {
+    color: colors.primary
+  },
+  slotChoiceTextDisabled: {
+    color: colors.textMuted
+  },
+  slotStatusTagDisabled: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: colors.danger,
+    marginTop: 3
+  },
+  slotStatusTagActive: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: colors.primary,
+    marginTop: 3
+  },
+  slotStatusTagAvailable: {
+    fontSize: 9,
+    fontWeight: "600",
+    color: colors.success,
+    marginTop: 3
+  },
+  bookingSummaryBox: {
+    backgroundColor: "#f8fafc",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    padding: 12,
+    marginTop: 8,
+    marginBottom: 16
+  },
+  summaryTitle: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: colors.textMain,
+    marginBottom: 6
+  },
+  summaryRow: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginVertical: 2
+  },
+  summaryBold: {
+    fontWeight: "700",
+    color: colors.textMain
+  },
+  confirmReservationBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: "center",
+    marginTop: 10
+  },
+  confirmReservationBtnText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "700"
+  },
+  amenityRulesSnippet: {
+    fontSize: 10,
+    color: colors.textMuted,
+    fontStyle: "italic",
+    marginTop: 2
+  },
+  emptyBookingsBox: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 36,
+    paddingHorizontal: 16
+  },
+  emptyBookingsIcon: {
+    fontSize: 32,
+    marginBottom: 8
+  },
+  emptyBookingsTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.textMain
+  },
+  emptyBookingsSub: {
+    fontSize: 12,
+    color: colors.textMuted,
+    textAlign: "center",
+    marginTop: 4
+  },
+  myBookingCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 12,
+    marginBottom: 8
+  },
+  myBookingTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.textMain
+  },
+  myBookingDate: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 4
+  },
+  myBookingTime: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: colors.primary,
+    marginTop: 2
+  },
+  myBookingRef: {
+    fontSize: 9,
+    color: colors.textMuted,
+    marginTop: 2
+  },
+  cancelBookingBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: "#fee2e2",
+    borderRadius: 6,
+    marginLeft: 10
+  },
+  cancelBookingBtnText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.danger
+  },
+  directorySearchInput: {
+    backgroundColor: colors.bgPage,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 13,
+    color: colors.textMain,
+    marginVertical: 10
+  },
+  filterChipRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 10
+  },
+  filterChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 16,
+    backgroundColor: "#f1f5f9",
+    borderWidth: 1,
+    borderColor: "#e2e8f0"
+  },
+  filterChipActive: {
+    backgroundColor: "#dbeafe",
+    borderColor: colors.primary
+  },
+  filterChipText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: colors.textMuted
+  },
+  filterChipTextActive: {
+    color: colors.primary,
+    fontWeight: "700"
+  },
+  directoryCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.bgPage,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 10,
+    marginBottom: 8
+  },
+  directoryUnit: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.textMain
+  },
+  selfBadge: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: "#fff",
+    backgroundColor: colors.primary,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 4
+  },
+  directoryName: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.textMain,
+    marginTop: 2
+  },
+  directoryMeta: {
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 2
+  },
+  directoryChatBtn: {
+    backgroundColor: "#eff6ff",
+    borderWidth: 1,
+    borderColor: "#bfdbfe",
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginLeft: 8
+  },
+  directoryChatBtnText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.primary
+  },
+  leaseHeroCard: {
+    backgroundColor: "#eff6ff",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#bfdbfe",
+    padding: 12,
+    marginBottom: 12
+  },
+  leaseHeroFlat: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: colors.textMain
+  },
+  leaseHeroProperty: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginVertical: 2
+  },
+  leaseHeroStatus: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#059669",
+    marginTop: 4
+  },
+  leaseDetailsCard: {
+    backgroundColor: colors.bgPage,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 12,
+    marginBottom: 12
+  },
+  leaseSectionHeading: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: colors.textMain,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 8
+  },
+  leaseRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f1f5f9"
+  },
+  leaseLabel: {
+    fontSize: 11,
+    color: colors.textMuted
+  },
+  leaseValue: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.textMain
+  },
+  paymentInfoNote: {
+    backgroundColor: "#fefce8",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#fef08a",
+    padding: 10,
+    marginBottom: 12
+  },
+  paymentInfoNoteTitle: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#854d0e",
+    marginBottom: 2
+  },
+  paymentInfoNoteText: {
+    fontSize: 11,
+    color: "#713f12"
+  },
+  noticeModalCard: {
+    backgroundColor: colors.bgPage,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 12,
+    marginBottom: 8
+  },
+  noticeModalCategory: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: colors.primary,
+    letterSpacing: 0.5
+  },
+  noticeModalTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.textMain,
+    marginTop: 3
+  },
+  noticeModalContent: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginVertical: 4
+  },
+  noticeModalMeta: {
+    fontSize: 10,
+    color: colors.textMuted
+  },
+  securitySectionHeading: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: colors.textMain,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginVertical: 8
+  },
+  securityCheckpointRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.bgPage,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 10,
+    marginBottom: 6
+  },
+  checkpointName: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.textMain
+  },
+  checkpointMeta: {
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 2
+  },
+  guardInfoCard: {
+    backgroundColor: "#f8fafc",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    padding: 10,
+    marginVertical: 8
+  },
+  guardInfoTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.textMain
+  },
+  guardInfoSub: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 2
+  },
+  helplineGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 12
+  },
+  helplineCard: {
+    width: "48%",
+    backgroundColor: colors.bgPage,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    padding: 10
+  },
+  helplineLabel: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: colors.textMuted
+  },
+  helplineNumber: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: colors.primary,
+    marginTop: 2
   }
 });

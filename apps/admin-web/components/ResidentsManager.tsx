@@ -270,13 +270,13 @@ export function ResidentsManager() {
                     </span>
                   </td>
                   <td>
-                    <StatusPill tone={isActive ? "green" : "red"}>
-                      {r.status}
+                    <StatusPill tone={r.status === "ACTIVE" || isActive ? "green" : "red"}>
+                      {r.status || (isActive ? "ACTIVE" : "INACTIVE")}
                     </StatusPill>
                   </td>
                   <td>
                     <code style={{ fontSize: "12px", background: "#f8fafc", padding: "2px 6px", borderRadius: "4px" }}>
-                      {r.unitId ? r.unitId.slice(0, 8) : "None"}
+                      {r.unitNumber ? `${r.unitNumber} (${r.block || 'Tower A'})` : (r.unitId ? r.unitId.slice(0, 8) : "None")}
                     </code>
                   </td>
                   <td>

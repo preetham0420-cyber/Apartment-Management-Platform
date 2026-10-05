@@ -210,6 +210,63 @@ export class ResidentController {
       next(error);
     }
   }
+
+  public async getDirectory(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const data = await residentService.getResidentsDirectory(req.user!.userId);
+      const response: ApiSuccessResponse<typeof data> = {
+        success: true,
+        data,
+        meta: { timestamp: new Date().toISOString(), version: "0.1.0-alpha" }
+      };
+      res.status(200).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async getLease(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const data = await residentService.getResidentLease(req.user!.userId);
+      const response: ApiSuccessResponse<typeof data> = {
+        success: true,
+        data,
+        meta: { timestamp: new Date().toISOString(), version: "0.1.0-alpha" }
+      };
+      res.status(200).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async getSecurity(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const data = await residentService.getSecurityDesk();
+      const response: ApiSuccessResponse<typeof data> = {
+        success: true,
+        data,
+        meta: { timestamp: new Date().toISOString(), version: "0.1.0-alpha" }
+      };
+      res.status(200).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async getNotices(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const data = await residentService.getResidentNotices();
+      const response: ApiSuccessResponse<typeof data> = {
+        success: true,
+        data,
+        meta: { timestamp: new Date().toISOString(), version: "0.1.0-alpha" }
+      };
+      res.status(200).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
+
 
 export const residentController = new ResidentController();

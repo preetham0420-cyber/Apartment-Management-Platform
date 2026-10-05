@@ -37,6 +37,25 @@ export class AmenityController {
     }
   }
 
+  public async getSchedule(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const amenityId = String(req.params.id);
+      const data = await amenityService.getAmenitySchedule(amenityId);
+      const response: ApiSuccessResponse<typeof data> = {
+        success: true,
+        data,
+        meta: {
+          timestamp: new Date().toISOString(),
+          version: "0.1.0-alpha"
+        }
+      };
+      res.status(200).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+
   public async createBooking(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const amenityId = req.params.id as string;

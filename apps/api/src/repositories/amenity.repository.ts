@@ -50,10 +50,10 @@ const DEV_SEED_BOOKINGS: AmenityBooking[] = [
     residentId: "user-resident-tenant-00000002",
     residentName: "Preetham (Resident Tenant)",
     unitId: "u1111111-2222-3333-4444-555555555551",
-    startTime: new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
-    endTime: new Date(Date.now() + 28 * 3600 * 1000).toISOString(),
+    startTime: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
+    endTime: new Date(Date.now() - 44 * 3600 * 1000).toISOString(),
     status: "CONFIRMED",
-    createdAt: new Date().toISOString()
+    createdAt: new Date(Date.now() - 50 * 3600 * 1000).toISOString()
   }
 ];
 
@@ -180,6 +180,77 @@ export class AmenityRepository {
       return DEV_SEED_BOOKINGS.find((b) => b.id === bookingId) || null;
     }
   }
+
+  public async findConflictingBooking(
+    amenityId: string,
+    startTime: string,
+    endTime: string
+  ): Promise<AmenityBooking | null> {
+    try {
+      const sql = `
+        SELECT 
+          b.id,
+          b.amenity_id AS amenityId,
+          a.name AS amenityName,
+          b.resident_id AS residentId,
+          u.full_name AS residentName,
+          b.unit_id AS unitId,
+          b.start_time AS startTime,
+          b.end_time AS endTime,
+          b.status,
+          b.created_at AS createdAt
+        FROM amenity_bookings b
+        INNER JOIN amenities a ON b.amenity_id = a.id
+        INNER JOIN users u ON b.resident_id = u.id
+        WHERE b.amenity_id = ?
+          AND b.status = 'CONFIRMED'
+          AND b.start_time < ?
+          AND b.end_time > ?
+        LIMIT 1
+      `;
+      const [rows] = await pool.execute<RowDataPacket[]>(sql, [amenityId, endTime, startTime]);
+      return rows.length > 0 ? (rows[0] as AmenityBooking) : null;
+    } catch {
+      const reqStart = new Date(startTime).getTime();
+      const reqEnd = new Date(endTime).getTime();
+      return (
+        DEV_SEED_BOOKINGS.find((b) => {
+          if (b.amenityId !== amenityId || b.status !== "CONFIRMED") return false;
+          const bStart = new Date(b.startTime).getTime();
+          const bEnd = new Date(b.endTime).getTime();
+          return reqStart < bEnd && reqEnd > bStart;
+        }) || null
+      );
+    }
+  }
+
+  public async getBookingsByAmenity(amenityId: string): Promise<AmenityBooking[]> {
+    try {
+      const sql = `
+        SELECT 
+          b.id,
+          b.amenity_id AS amenityId,
+          a.name AS amenityName,
+          b.resident_id AS residentId,
+          u.full_name AS residentName,
+          b.unit_id AS unitId,
+          b.start_time AS startTime,
+          b.end_time AS endTime,
+          b.status,
+          b.created_at AS createdAt
+        FROM amenity_bookings b
+        INNER JOIN amenities a ON b.amenity_id = a.id
+        INNER JOIN users u ON b.resident_id = u.id
+        WHERE b.amenity_id = ? AND b.status = 'CONFIRMED'
+        ORDER BY b.start_time ASC
+      `;
+      const [rows] = await pool.execute<RowDataPacket[]>(sql, [amenityId]);
+      return rows as AmenityBooking[];
+    } catch {
+      return DEV_SEED_BOOKINGS.filter((b) => b.amenityId === amenityId && b.status === "CONFIRMED");
+    }
+  }
+
 
   public async createBooking(data: {
     amenityId: string;

@@ -236,6 +236,7 @@ export interface UserSummary {
   status: "ACTIVE" | "INACTIVE";
   unitId?: string;
   unitNumber?: string;
+  block?: string;
   createdAt?: string;
 }
 

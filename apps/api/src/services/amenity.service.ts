@@ -13,12 +13,40 @@ export class AmenityService {
     return await amenityRepository.getBookingsByResident(user.userId);
   }
 
+  public async getAmenitySchedule(amenityId: string) {
+    const amenity = await amenityRepository.getAmenityById(amenityId);
+    if (!amenity) {
+      throw AppError.notFound("Amenity facility not found.");
+    }
+    return await amenityRepository.getBookingsByAmenity(amenityId);
+  }
+
   public async createBooking(
     user: TokenPayload,
     amenityId: string,
     startTime: string,
     endTime: string
   ) {
+    const startMs = new Date(startTime).getTime();
+    const endMs = new Date(endTime).getTime();
+
+    if (isNaN(startMs) || isNaN(endMs)) {
+      throw AppError.badRequest("Invalid ISO timestamp format for booking.");
+    }
+
+    if (startMs >= endMs) {
+      throw AppError.badRequest("Booking start time must be before end time.");
+    }
+
+    if (startMs < Date.now() - 5 * 60 * 1000) {
+      throw AppError.badRequest("Cannot reserve a time slot in the past.");
+    }
+
+    const durationMinutes = (endMs - startMs) / (1000 * 60);
+    if (durationMinutes > 8 * 60) {
+      throw AppError.badRequest("Maximum booking duration is 8 hours per session.");
+    }
+
     const amenity = await amenityRepository.getAmenityById(amenityId);
     if (!amenity) {
       throw AppError.notFound("Amenity facility not found.");
@@ -26,6 +54,12 @@ export class AmenityService {
 
     if (!amenity.isActive) {
       throw AppError.badRequest("This amenity is currently closed for maintenance.");
+    }
+
+    // Server-side conflict detection
+    const conflicting = await amenityRepository.findConflictingBooking(amenityId, startTime, endTime);
+    if (conflicting) {
+      throw AppError.badRequest("This time slot is already reserved. Please select another slot.");
     }
 
     const userUnit = await userRepository.getUserUnit(user.userId);

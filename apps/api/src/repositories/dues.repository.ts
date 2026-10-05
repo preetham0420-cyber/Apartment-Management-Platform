@@ -15,6 +15,32 @@ const DEV_SEED_DUES: Due[] = [
     status: "PENDING",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
+  },
+  {
+    id: "due-00000000-0000-0000-0000-000000000004",
+    unitId: "u1111111-2222-3333-4444-555555555552",
+    unitNumber: "101",
+    block: "Tower A",
+    residentId: "user-resident-tenant-00000004",
+    title: "October Society Maintenance & Sinking Fund",
+    amount: 3850.0,
+    dueDate: new Date(Date.now() + 12 * 24 * 3600 * 1000).toISOString().split("T")[0],
+    status: "PENDING",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: "due-00000000-0000-0000-0000-000000000005",
+    unitId: "u1111111-2222-3333-4444-555555555554",
+    unitNumber: "304",
+    block: "Tower B",
+    residentId: "user-resident-tenant-00000005",
+    title: "October Society Maintenance & Club Levy",
+    amount: 4500.0,
+    dueDate: new Date(Date.now() + 14 * 24 * 3600 * 1000).toISOString().split("T")[0],
+    status: "PENDING",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];
 

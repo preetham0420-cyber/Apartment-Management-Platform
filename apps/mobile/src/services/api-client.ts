@@ -310,6 +310,14 @@ export const mobileApiClient = {
     return await request<any[]>("/amenities", { method: "GET" });
   },
 
+  async getAmenityBookings(): Promise<any[]> {
+    return await request<any[]>("/amenity-bookings", { method: "GET" });
+  },
+
+  async getAmenitySchedule(amenityId: string): Promise<any[]> {
+    return await request<any[]>(`/amenities/${amenityId}/bookings`, { method: "GET" });
+  },
+
   async bookAmenity(id: string, startTime: string, endTime: string): Promise<any> {
     return await request<any>(`/amenities/${id}/bookings`, {
       method: "POST",
@@ -321,5 +329,24 @@ export const mobileApiClient = {
     return await request<any>(`/bookings/${bookingId}`, {
       method: "DELETE"
     });
+  },
+
+  /**
+   * Community Services APIs.
+   */
+  async getResidentsDirectory(): Promise<any[]> {
+    return await request<any[]>("/resident/directory", { method: "GET" });
+  },
+
+  async getResidentLease(): Promise<any> {
+    return await request<any>("/resident/lease", { method: "GET" });
+  },
+
+  async getSecurityDesk(): Promise<any> {
+    return await request<any>("/resident/security", { method: "GET" });
+  },
+
+  async getResidentNotices(): Promise<any[]> {
+    return await request<any[]>("/resident/notices", { method: "GET" });
   }
 };

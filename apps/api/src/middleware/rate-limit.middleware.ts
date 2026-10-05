@@ -23,7 +23,10 @@ setInterval(() => {
  * @param windowMs Time window in milliseconds (default 5 minutes)
  * @param maxAttempts Maximum requests allowed in the window (default 10)
  */
-export function rateLimiter(windowMs: number = 5 * 60 * 1000, maxAttempts: number = 10) {
+export function rateLimiter(
+  windowMs: number = 5 * 60 * 1000,
+  maxAttempts: number = process.env.NODE_ENV === "production" ? 10 : 200
+) {
   return (req: Request, res: Response, next: NextFunction): void => {
     // Derive client IP safely
     const clientIp =

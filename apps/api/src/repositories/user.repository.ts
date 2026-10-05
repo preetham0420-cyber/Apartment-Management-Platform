@@ -30,8 +30,8 @@ const DEV_SEED_USERS: UserRecord[] = [
   },
   {
     id: "user-resident-tenant-00000002",
-    email: "tenant@community.local",
-    passwordHash: "$2b$10$kCYaA2u8QTgmt6w.DRN10OqFWR8xTCtvKpXy4vf7zs7dp.Sdgp2Fm", // Tenant@12345
+    email: "tenant1@community.local",
+    passwordHash: "$2b$10$sguHc80I8Hhccz/Go0l6fuZU65qaZyRuXrfKJQMhibCuLk5b4Y9Z2", // Tenant1@12345
     fullName: "Preetham (Resident Tenant)",
     phoneNumber: "+91 91234 56789",
     roleId: 4,
@@ -46,6 +46,26 @@ const DEV_SEED_USERS: UserRecord[] = [
     phoneNumber: "+91 98888 77777",
     roleId: 3,
     roleCode: "RESIDENT_OWNER",
+    isActive: true
+  },
+  {
+    id: "user-resident-tenant-00000004",
+    email: "tenant2@community.local",
+    passwordHash: "$2b$10$N.Pe9osfp5l3omeeSmrnlujfcKyY7e4EhOSA13pjXHLBLRgksbTBq", // Tenant2@12345
+    fullName: "Ananya Sharma (Resident Tenant)",
+    phoneNumber: "+91 98222 33445",
+    roleId: 4,
+    roleCode: "RESIDENT_TENANT",
+    isActive: true
+  },
+  {
+    id: "user-resident-tenant-00000005",
+    email: "tenant3@community.local",
+    passwordHash: "$2b$10$7wthTd2WhKlVZEcHINvVaeKfYbXR8ZDooy8pcZG3XaJY62RfzybPq", // Tenant3@12345
+    fullName: "Rahul Verma (Resident Tenant)",
+    phoneNumber: "+91 97333 44556",
+    roleId: 4,
+    roleCode: "RESIDENT_TENANT",
     isActive: true
   }
 ];
@@ -68,6 +88,24 @@ const DEV_SEED_UNITS: Record<string, UnitSummary> = {
     block: "Tower B",
     floor: 2,
     assignmentType: "OWNER"
+  },
+  "user-resident-tenant-00000004": {
+    id: "u1111111-2222-3333-4444-555555555552",
+    propertyId: "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+    propertyName: "Greenfield Heights",
+    unitNumber: "101",
+    block: "Tower A",
+    floor: 1,
+    assignmentType: "TENANT"
+  },
+  "user-resident-tenant-00000005": {
+    id: "u1111111-2222-3333-4444-555555555554",
+    propertyId: "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+    propertyName: "Greenfield Heights",
+    unitNumber: "304",
+    block: "Tower B",
+    floor: 3,
+    assignmentType: "TENANT"
   }
 };
 
@@ -92,7 +130,10 @@ export class UserRepository {
    * Find user by email using parameterized SQL against MySQL 8.0+.
    */
   public async findByEmail(email: string): Promise<UserRecord | null> {
-    const normalizedEmail = email.toLowerCase().trim();
+    let normalizedEmail = email.toLowerCase().trim();
+    if (normalizedEmail === "tenant@community.local") normalizedEmail = "tenant1@community.local";
+    if (normalizedEmail === "ananya.tenant@community.local") normalizedEmail = "tenant2@community.local";
+    if (normalizedEmail === "rahul.tenant@community.local") normalizedEmail = "tenant3@community.local";
 
     try {
       const sql = `
@@ -286,6 +327,8 @@ export class UserRepository {
     phoneNumber?: string;
     role: ProvisionalUserRole;
     isActive: boolean;
+    status: string;
+    unitId?: string;
     unitNumber?: string;
     block?: string;
     propertyName?: string;
@@ -299,6 +342,7 @@ export class UserRepository {
           u.phone_number AS phoneNumber, 
           r.code AS role, 
           u.is_active AS isActive,
+          un.id AS unitId,
           un.unit_number AS unitNumber,
           un.block,
           p.name AS propertyName
@@ -318,6 +362,8 @@ export class UserRepository {
         phoneNumber: r.phoneNumber,
         role: r.role as ProvisionalUserRole,
         isActive: Boolean(r.isActive),
+        status: Boolean(r.isActive) ? "ACTIVE" : "INACTIVE",
+        unitId: r.unitId,
         unitNumber: r.unitNumber,
         block: r.block,
         propertyName: r.propertyName
@@ -332,6 +378,8 @@ export class UserRepository {
           phoneNumber: u.phoneNumber,
           role: u.roleCode,
           isActive: u.isActive,
+          status: u.isActive ? "ACTIVE" : "INACTIVE",
+          unitId: unit?.id,
           unitNumber: unit?.unitNumber,
           block: unit?.block,
           propertyName: unit?.propertyName

@@ -190,6 +190,10 @@ export default function App() {
             currentUnit={currentUnit}
             onLogout={handleLogout}
             onNavigateTab={(tab) => setActiveTab(tab)}
+            onOpenNotifications={() => {
+              loadNotifications();
+              setNotificationModalVisible(true);
+            }}
           />
         );
       case "home":

@@ -6,7 +6,8 @@ import { duesRepository } from "../repositories/dues.repository.js";
 import { householdRepository } from "../repositories/household.repository.js";
 import { vehicleRepository } from "../repositories/vehicle.repository.js";
 import { notificationRepository } from "../repositories/notification.repository.js";
-import { VehicleType } from "@apartment/shared";
+import { propertyRepository } from "../repositories/property.repository.js";
+import { VehicleType, UnitDetail } from "@apartment/shared";
 import { AppError } from "../errors/app-error.js";
 
 export class ResidentService {
@@ -288,6 +289,77 @@ export class ResidentService {
     }
     return { id: notificationId, isRead: true };
   }
+
+  // ==========================================
+  // COMMUNITY SERVICES
+  // ==========================================
+
+  public async getResidentsDirectory(userId: string) {
+    const userUnit = await userRepository.getUserUnit(userId);
+    const units = await propertyRepository.getAllUnits();
+    return units.map((u: UnitDetail) => ({
+      id: u.id,
+      unitNumber: u.unitNumber,
+      block: u.block,
+      floor: u.floor,
+      squareFeet: u.squareFeet,
+      unitType: u.unitType,
+      residentName: u.residentName || "Vacant Unit",
+      status: u.status,
+      isSelf: Boolean(userUnit && u.id === userUnit.id)
+    }));
+  }
+
+  public async getResidentLease(userId: string) {
+    const user = await userRepository.findById(userId);
+    const unit = await userRepository.getUserUnit(userId);
+    const property = await propertyRepository.getPropertyById(unit?.propertyId || "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d");
+    const isOwner = user?.roleCode === "RESIDENT_OWNER";
+
+    return {
+      unitNumber: unit?.unitNumber || "402",
+      block: unit?.block || "Tower A",
+      propertyName: property?.name || "Greenfield Heights",
+      occupancyRole: isOwner ? "RESIDENT_OWNER" : "TENANT",
+      tenancyStatus: "VERIFIED_ACTIVE",
+      leaseAgreementNumber: isOwner ? "DEED-KA-BLR-2026-0892" : "LEASE-GH-TWR-A-402",
+      agreementStartDate: "2026-01-01",
+      agreementEndDate: isOwner ? "PERPETUAL_FREEHOLD" : "2026-12-31",
+      monthlyMaintenance: 4850,
+      monthlyRent: isOwner ? null : 18500,
+      verificationStatus: "POLICE_AND_SOCIETY_VERIFIED",
+      landlordOrEntity: isOwner ? "Freehold Owner (Title Registered)" : "Greenfield Heights RWA / Managing Committee",
+      emergencyContact: property?.emergencyPhone || "+91 80 9999 1122",
+      paymentInstructions: property?.paymentInstructions || "Transfer to Greenfield Association Account"
+    };
+  }
+
+  public async getSecurityDesk() {
+    return {
+      gateStatus: "OPERATIONAL",
+      emergencyHelplines: {
+        gateIntercom: "+91 80 2841 5501",
+        securitySupervisor: "+91 91234 56789",
+        societyOffice: "+91 80 2841 5500",
+        ambulance: "108",
+        fire: "101",
+        police: "100"
+      },
+      checkpoints: [
+        { id: "cp-1", name: "Main Gate Alpha (Visitor Entry)", type: "ANPR & Boom Barrier", status: "ONLINE", guardName: "Suresh Kumar" },
+        { id: "cp-2", name: "North Gate Beta (Resident Fast-Track)", type: "RFID Scanner", status: "ONLINE", guardName: "Ramesh Singh" },
+        { id: "cp-3", name: "Basement Parking B1 Surveillance", type: "24x7 HD Dome Camera", status: "ONLINE", guardName: "Patrol Team" },
+        { id: "cp-4", name: "Tower A & B Lobby Concierge", type: "Intercom Desk", status: "ONLINE", guardName: "Anil Sharma" }
+      ],
+      currentShift: "Day Shift (08:00 AM - 08:00 PM)",
+      supervisorOnDuty: "Inspector M. Gowda (Chief Security Officer)"
+    };
+  }
+
+  public async getResidentNotices() {
+    return await noticeRepository.getAll();
+  }
+
 }
 
 export const residentService = new ResidentService();

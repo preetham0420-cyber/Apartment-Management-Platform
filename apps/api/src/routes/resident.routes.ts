@@ -112,4 +112,10 @@ router.patch(
   (req, res, next) => residentController.markNotificationRead(req, res, next)
 );
 
+// Community Services
+router.get("/directory", (req, res, next) => residentController.getDirectory(req, res, next));
+router.get("/lease", (req, res, next) => residentController.getLease(req, res, next));
+router.get("/security", (req, res, next) => residentController.getSecurity(req, res, next));
+router.get("/notices", (req, res, next) => residentController.getNotices(req, res, next));
+
 export default router;
