@@ -24,7 +24,8 @@ import {
   ChevronRightIcon,
   AlertCircleIcon,
   FileTextIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  SearchIcon
 } from "../components/MobileIcons";
 
 interface ServicesScreenProps {
@@ -34,6 +35,7 @@ interface ServicesScreenProps {
 export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
   const [activeSection, setActiveSection] = useState<"hub" | "maintenance">("hub");
   const [tickets, setTickets] = useState<MaintenanceRequest[]>([]);
+  const [ticketSearch, setTicketSearch] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
@@ -514,6 +516,25 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
               </TouchableOpacity>
             </View>
 
+            {/* Ticket Search Bar */}
+            {tickets.length > 0 && (
+              <View style={styles.searchBarContainer}>
+                <SearchIcon size={16} color={colors.textMuted} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search tickets by title, category, status..."
+                  placeholderTextColor={colors.textMuted}
+                  value={ticketSearch}
+                  onChangeText={setTicketSearch}
+                />
+                {ticketSearch.length > 0 && (
+                  <TouchableOpacity onPress={() => setTicketSearch("")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                    <Text style={styles.clearSearchBtn}>✕</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+
             {loading ? (
               <ActivityIndicator size="small" color={colors.primary} style={{ marginTop: 30 }} />
             ) : tickets.length === 0 ? (
@@ -531,8 +552,33 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
                   <Text style={styles.raisePrimaryBtnText}>+ Log Service Issue</Text>
                 </TouchableOpacity>
               </View>
+            ) : tickets.filter((ticket) => {
+                const q = ticketSearch.toLowerCase();
+                return (
+                  ticket.title.toLowerCase().includes(q) ||
+                  ticket.description.toLowerCase().includes(q) ||
+                  ticket.category.toLowerCase().includes(q) ||
+                  ticket.status.toLowerCase().includes(q) ||
+                  ticket.priority.toLowerCase().includes(q)
+                );
+              }).length === 0 ? (
+              <View style={styles.emptyCard}>
+                <Text style={styles.emptyTitle}>No matching tickets</Text>
+                <Text style={styles.emptyDesc}>
+                  No maintenance requests found matching "{ticketSearch}".
+                </Text>
+              </View>
             ) : (
-              tickets.map((ticket) => (
+              tickets.filter((ticket) => {
+                const q = ticketSearch.toLowerCase();
+                return (
+                  ticket.title.toLowerCase().includes(q) ||
+                  ticket.description.toLowerCase().includes(q) ||
+                  ticket.category.toLowerCase().includes(q) ||
+                  ticket.status.toLowerCase().includes(q) ||
+                  ticket.priority.toLowerCase().includes(q)
+                );
+              }).map((ticket) => (
                 <TouchableOpacity
                   key={ticket.id}
                   style={styles.ticketCard}
@@ -1288,5 +1334,28 @@ const styles = StyleSheet.create({
     color: colors.textMain,
     fontSize: 12,
     fontWeight: "600"
+  },
+  searchBarContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 14,
+    gap: 8
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.textMain,
+    paddingVertical: 0
+  },
+  clearSearchBtn: {
+    fontSize: 13,
+    color: colors.textMuted,
+    paddingHorizontal: 4
   }
 });

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { AuthUser } from "@apartment/shared";
-import { SearchIcon, BellIcon } from "./icons";
+import { BellIcon } from "./icons";
 
 interface TopbarProps {
   onToggleMenu: () => void;
@@ -108,21 +108,6 @@ export function Topbar({ onToggleMenu, title, adminUser, onLogout }: TopbarProps
         </div>
       </div>
 
-      {/* Global Search */}
-      <div className="topbar-center">
-        <div className="global-search-container">
-          <span className="search-icon-wrapper">
-            <SearchIcon size={15} color="var(--text-muted)" />
-          </span>
-          <input
-            type="search"
-            placeholder="Search units, residents, tickets, passes..."
-            aria-label="Search console"
-            className="global-search-input"
-          />
-          <kbd className="search-shortcut">⌘K</kbd>
-        </div>
-      </div>
 
       {/* Actions & Profile */}
       <div className="topbar-right">

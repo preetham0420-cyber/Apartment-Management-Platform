@@ -110,6 +110,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
   const [amenitiesModalVisible, setAmenitiesModalVisible] = useState(false);
   const [amenitiesTab, setAmenitiesTab] = useState<"browse" | "my_bookings">("browse");
   const [amenities, setAmenities] = useState<Amenity[]>([]);
+  const [amenitySearch, setAmenitySearch] = useState("");
   const [myBookings, setMyBookings] = useState<AmenityBooking[]>([]);
   const [loadingAmenities, setLoadingAmenities] = useState(false);
   const [selectedAmenity, setSelectedAmenity] = useState<Amenity | null>(null);
@@ -137,6 +138,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
   const [notices, setNotices] = useState<any[]>([]);
   const [loadingNotices, setLoadingNotices] = useState(false);
   const [noticeCategoryFilter, setNoticeCategoryFilter] = useState<string>("ALL");
+  const [noticeSearch, setNoticeSearch] = useState("");
 
   // CCTV & Security Desk State
   const [securityModalVisible, setSecurityModalVisible] = useState(false);
@@ -172,6 +174,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
   const [documentsModalVisible, setDocumentsModalVisible] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loadingDocuments, setLoadingDocuments] = useState(false);
+  const [docSearch, setDocSearch] = useState("");
 
   useEffect(() => {
     if (currentUser) {
@@ -826,28 +829,47 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                 </ScrollView>
               ) : (
                 /* List Facilities */
-                <ScrollView style={{ maxHeight: 380 }} showsVerticalScrollIndicator={false}>
-                  {amenities.map((amenity) => (
-                    <View key={amenity.id} style={styles.amenityCard}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.amenityName}>{amenity.name}</Text>
-                        <Text style={styles.amenityDesc}>{amenity.description}</Text>
-                        <Text style={styles.amenityMeta}>
-                          Capacity: {amenity.capacity} • Hours: {amenity.openTime} - {amenity.closeTime}
-                        </Text>
-                        {amenity.rules ? (
-                          <Text style={styles.amenityRulesSnippet}>Rule: {amenity.rules}</Text>
-                        ) : null}
+                <View>
+                  <TextInput
+                    style={styles.directorySearchInput}
+                    placeholder="Search facilities (pool, gym, court...)"
+                    placeholderTextColor={colors.textMuted}
+                    value={amenitySearch}
+                    onChangeText={setAmenitySearch}
+                  />
+                  <ScrollView style={{ maxHeight: 340 }} showsVerticalScrollIndicator={false}>
+                    {amenities
+                      .filter((amenity) => {
+                        const q = amenitySearch.toLowerCase();
+                        return (
+                          !q ||
+                          amenity.name.toLowerCase().includes(q) ||
+                          (amenity.description && amenity.description.toLowerCase().includes(q)) ||
+                          (amenity.rules && amenity.rules.toLowerCase().includes(q))
+                        );
+                      })
+                      .map((amenity) => (
+                      <View key={amenity.id} style={styles.amenityCard}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.amenityName}>{amenity.name}</Text>
+                          <Text style={styles.amenityDesc}>{amenity.description}</Text>
+                          <Text style={styles.amenityMeta}>
+                            Capacity: {amenity.capacity} • Hours: {amenity.openTime} - {amenity.closeTime}
+                          </Text>
+                          {amenity.rules ? (
+                            <Text style={styles.amenityRulesSnippet}>Rule: {amenity.rules}</Text>
+                          ) : null}
+                        </View>
+                        <TouchableOpacity
+                          style={styles.bookBtn}
+                          onPress={() => handleSelectAmenityForBooking(amenity)}
+                        >
+                          <Text style={styles.bookBtnText}>Select Slot & Book</Text>
+                        </TouchableOpacity>
                       </View>
-                      <TouchableOpacity
-                        style={styles.bookBtn}
-                        onPress={() => handleSelectAmenityForBooking(amenity)}
-                      >
-                        <Text style={styles.bookBtnText}>Select Slot & Book</Text>
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                </ScrollView>
+                    ))}
+                  </ScrollView>
+                </View>
               )
             ) : (
               /* My Bookings View */
@@ -968,7 +990,8 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                       !q ||
                       item.unitNumber.toLowerCase().includes(q) ||
                       item.block.toLowerCase().includes(q) ||
-                      item.residentName.toLowerCase().includes(q);
+                      item.residentName.toLowerCase().includes(q) ||
+                      (item.phoneNumber && String(item.phoneNumber).includes(q));
                     return matchBlock && matchSearch;
                   })
                   .map((res) => (
@@ -1129,12 +1152,30 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
               ))}
             </View>
 
+            {/* Notice Search Input */}
+            <TextInput
+              style={styles.directorySearchInput}
+              placeholder="Search circulars by headline or text..."
+              placeholderTextColor={colors.textMuted}
+              value={noticeSearch}
+              onChangeText={setNoticeSearch}
+            />
+
             {loadingNotices ? (
               <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 30 }} />
             ) : (
-              <ScrollView style={{ maxHeight: 380 }} showsVerticalScrollIndicator={false}>
+              <ScrollView style={{ maxHeight: 340 }} showsVerticalScrollIndicator={false}>
                 {notices
                   .filter((n) => noticeCategoryFilter === "ALL" || (n.category && n.category.toUpperCase() === noticeCategoryFilter))
+                  .filter((n) => {
+                    const q = noticeSearch.toLowerCase();
+                    return (
+                      !q ||
+                      (n.title && n.title.toLowerCase().includes(q)) ||
+                      (n.content && n.content.toLowerCase().includes(q)) ||
+                      (n.category && n.category.toLowerCase().includes(q))
+                    );
+                  })
                   .map((notice) => (
                     <View key={notice.id} style={styles.noticeModalCard}>
                       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
@@ -1493,6 +1534,15 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
             <Text style={styles.modalTitle}>Documents & Bylaws</Text>
             <Text style={styles.modalSubtitle}>Statutory compliance, audit reports, AMC & society guidelines</Text>
 
+            {/* Documents Search Input */}
+            <TextInput
+              style={styles.directorySearchInput}
+              placeholder="Search bylaws, AMC, NOC, circulars..."
+              placeholderTextColor={colors.textMuted}
+              value={docSearch}
+              onChangeText={setDocSearch}
+            />
+
             {loadingDocuments ? (
               <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 20 }} />
             ) : documents.length === 0 ? (
@@ -1500,8 +1550,18 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                 No documents currently available for your access level.
               </Text>
             ) : (
-              <ScrollView style={{ maxHeight: 380, marginTop: 12 }}>
-                {documents.map((doc) => (
+              <ScrollView style={{ maxHeight: 340, marginTop: 12 }}>
+                {documents
+                  .filter((doc) => {
+                    const q = docSearch.toLowerCase();
+                    return (
+                      !q ||
+                      (doc.title && doc.title.toLowerCase().includes(q)) ||
+                      (doc.description && doc.description.toLowerCase().includes(q)) ||
+                      (doc.category && doc.category.toLowerCase().includes(q))
+                    );
+                  })
+                  .map((doc) => (
                   <View key={doc.id} style={styles.docCard}>
                     <Text style={{ fontSize: 24 }}>📄</Text>
                     <View style={{ flex: 1, marginLeft: 10 }}>

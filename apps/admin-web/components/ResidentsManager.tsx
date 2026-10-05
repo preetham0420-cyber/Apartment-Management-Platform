@@ -118,7 +118,9 @@ export function ResidentsManager() {
       r.fullName.toLowerCase().includes(query) ||
       r.email.toLowerCase().includes(query) ||
       (r.phoneNumber && r.phoneNumber.includes(query)) ||
-      (r.unitId && r.unitId.toLowerCase().includes(query));
+      (r.unitId && r.unitId.toLowerCase().includes(query)) ||
+      ((r as any).unitNumber && String((r as any).unitNumber).toLowerCase().includes(query)) ||
+      ((r as any).block && String((r as any).block).toLowerCase().includes(query));
 
     if (statusFilter !== "ALL" && r.status !== statusFilter) return false;
     if (roleFilter !== "ALL" && r.role !== roleFilter) return false;

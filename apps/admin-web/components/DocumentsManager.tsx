@@ -5,6 +5,7 @@ import { Document, DocumentCategory, DocumentAccessLevel } from "@apartment/shar
 import { adminApi } from "../lib/api";
 import { useToast } from "./Toast";
 import { ConfirmationModal } from "./ConfirmationModal";
+import { SearchIcon } from "./icons";
 
 const CATEGORIES: { label: string; value: DocumentCategory }[] = [
   { label: "Bylaws & Rules", value: "APARTMENT_BYLAWS" },
@@ -155,26 +156,33 @@ export function DocumentsManager() {
       </div>
 
       {/* Filter and Category Tabs */}
-      <div className="table-controls" style={{ marginTop: "1rem" }}>
-        <input
-          type="text"
-          className="search-input"
-          placeholder="Search by title or description..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select
-          className="filter-select"
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-        >
-          <option value="ALL">All Categories</option>
-          {CATEGORIES.map((c) => (
-            <option key={c.value} value={c.value}>
-              {c.label}
-            </option>
-          ))}
-        </select>
+      <div className="admin-filter-bar" style={{ marginTop: "1rem" }}>
+        <div className="admin-search-box">
+          <SearchIcon size={15} color="#68716D" />
+          <input
+            type="text"
+            placeholder="Search documents by title or description..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-muted)" }}>
+            CATEGORY:
+          </label>
+          <select
+            className="admin-filter-select"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            <option value="ALL">All Categories</option>
+            {CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {fetchError && (

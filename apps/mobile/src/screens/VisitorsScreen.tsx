@@ -23,11 +23,13 @@ import {
   PlusIcon,
   CheckCircleIcon,
   ClockIcon,
-  UsersIcon
+  UsersIcon,
+  SearchIcon
 } from "../components/MobileIcons";
 
 export function VisitorsScreen() {
   const [visitors, setVisitors] = useState<Visitor[]>([]);
+  const [search, setSearch] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -140,6 +142,16 @@ export function VisitorsScreen() {
     (v) => v.status === "PRE_APPROVED" || v.status === "AT_GATE"
   ).length;
 
+  const filteredVisitors = visitors.filter((v) => {
+    const q = search.toLowerCase();
+    return (
+      v.visitorName.toLowerCase().includes(q) ||
+      v.visitorPhone.includes(q) ||
+      v.accessCode.toLowerCase().includes(q) ||
+      (v.purpose && v.purpose.toLowerCase().includes(q))
+    );
+  });
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.bgPage }}>
       <ScrollView
@@ -196,6 +208,25 @@ export function VisitorsScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Search Bar when visitors exist */}
+        {visitors.length > 0 && (
+          <View style={styles.searchBarContainer}>
+            <SearchIcon size={16} color={colors.textMuted} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search by visitor name, pass code, phone..."
+              placeholderTextColor={colors.textMuted}
+              value={search}
+              onChangeText={setSearch}
+            />
+            {search.length > 0 && (
+              <TouchableOpacity onPress={() => setSearch("")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Text style={styles.clearSearchBtn}>✕</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
         {/* Visitor Register Cards */}
         {loading ? (
           <ActivityIndicator size="small" color={colors.primary} style={{ marginTop: 24 }} />
@@ -214,9 +245,16 @@ export function VisitorsScreen() {
               <Text style={styles.emptyCtaText}>+ Pre-Approve Visitor</Text>
             </TouchableOpacity>
           </View>
+        ) : filteredVisitors.length === 0 ? (
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyText}>No matching visitors</Text>
+            <Text style={styles.emptySubtext}>
+              No visitors found matching "{search}".
+            </Text>
+          </View>
         ) : (
           <View style={styles.visitorList}>
-            {visitors.map((visitor, index) => (
+            {filteredVisitors.map((visitor, index) => (
               <View
                 key={visitor.id}
                 style={[
@@ -660,5 +698,28 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "700",
     fontSize: 13
+  },
+  searchBarContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 14,
+    gap: 8
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.textMain,
+    paddingVertical: 0
+  },
+  clearSearchBtn: {
+    fontSize: 13,
+    color: colors.textMuted,
+    paddingHorizontal: 4
   }
 });

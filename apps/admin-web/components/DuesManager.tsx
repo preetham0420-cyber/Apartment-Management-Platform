@@ -78,7 +78,9 @@ export function DuesManager() {
     const q = search.toLowerCase();
     const matchesSearch =
       d.title.toLowerCase().includes(q) ||
-      (d.unitNumber && d.unitNumber.includes(q)) ||
+      (d.unitNumber && d.unitNumber.toLowerCase().includes(q)) ||
+      ((d as any).residentName && String((d as any).residentName).toLowerCase().includes(q)) ||
+      ((d as any).paymentReference && String((d as any).paymentReference).toLowerCase().includes(q)) ||
       d.id.toLowerCase().includes(q);
 
     if (statusFilter !== "ALL" && d.status !== statusFilter) return false;

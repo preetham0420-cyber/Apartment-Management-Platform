@@ -6,7 +6,7 @@ import { StatusPill } from "./StatusPill";
 import { ConfirmationModal } from "./ConfirmationModal";
 import { useToast } from "./Toast";
 import { adminApi } from "../lib/api";
-import { RefreshIcon, AlertTriangleIcon } from "./icons";
+import { RefreshIcon, AlertTriangleIcon, SearchIcon } from "./icons";
 
 export function AmenitiesManager() {
   const [amenities, setAmenities] = useState<Amenity[]>([]);
@@ -14,6 +14,7 @@ export function AmenitiesManager() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bookingFilter, setBookingFilter] = useState("ALL");
+  const [search, setSearch] = useState("");
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   // Cancellation State
@@ -67,9 +68,26 @@ export function AmenitiesManager() {
     }
   };
 
+  const filteredAmenities = amenities.filter((a) => {
+    const q = search.toLowerCase();
+    return (
+      a.name.toLowerCase().includes(q) ||
+      (a.description && a.description.toLowerCase().includes(q)) ||
+      (a.rules && a.rules.toLowerCase().includes(q))
+    );
+  });
+
   const filteredBookings = bookings.filter((b) => {
+    const q = search.toLowerCase();
+    const matchesSearch =
+      (b.amenityName && b.amenityName.toLowerCase().includes(q)) ||
+      (b.residentName && b.residentName.toLowerCase().includes(q)) ||
+      (b.unitId && b.unitId.toLowerCase().includes(q)) ||
+      ((b as any).unitNumber && String((b as any).unitNumber).toLowerCase().includes(q)) ||
+      b.id.toLowerCase().includes(q);
+
     if (bookingFilter !== "ALL" && b.status !== bookingFilter) return false;
-    return true;
+    return matchesSearch;
   });
 
   return (
@@ -96,16 +114,31 @@ export function AmenitiesManager() {
           </div>
         )}
 
+        {/* Search Bar */}
+        <div className="admin-filter-bar" style={{ marginBottom: "16px" }}>
+          <div className="admin-search-box">
+            <SearchIcon size={15} color="#68716D" />
+            <input
+              type="text"
+              placeholder="Search amenities, rules, or bookings by resident, unit, facility..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+        </div>
+
         {loading ? (
           <div style={{ padding: "16px 0" }}>
             <div className="skeleton-box" style={{ height: "60px", marginBottom: "12px" }} />
             <div className="skeleton-box" style={{ height: "60px" }} />
           </div>
-        ) : amenities.length === 0 ? (
-          <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>No amenities configured.</p>
+        ) : filteredAmenities.length === 0 ? (
+          <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>
+            {amenities.length === 0 ? "No amenities configured." : "No amenities match your search criteria."}
+          </p>
         ) : (
           <div className="module-overview-grid">
-            {amenities.map((a) => (
+            {filteredAmenities.map((a) => (
               <div key={a.id} className="module-card">
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
