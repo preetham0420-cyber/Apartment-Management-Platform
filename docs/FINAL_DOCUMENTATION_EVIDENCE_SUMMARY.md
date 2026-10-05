@@ -207,7 +207,7 @@ During initial automated execution, two specific verification blockers were iden
 | :---: | :--- | :--- | :--- | :---: |
 | **FLOW 1** | Tenant login → Home → Visitor creation → Admin sees visitor | Pass created with 6-digit access code; appears in `/admin/visitors` | `core_features_audit.cjs` & `admin_endpoints_audit.cjs` | **PASS** |
 | **FLOW 2** | Tenant login → Maintenance request → API → DB → Admin updates status → Resident sees update | Ticket created `OPEN` → Admin updates `IN_PROGRESS` → Status reflected in resident query | `core_features_audit.cjs` (Step 4) | **PASS** |
-| **FLOW 3** | Resident → Amenity availability → Booking → Reservation list | Slot checked for Clubhouse → Booking created → Second booking returns 409 conflict | `community_services_verification.cjs` | **PASS** |
+| **FLOW 3** | Resident → Amenity availability → Booking → Reservation list | Slot checked for Clubhouse → Booking created → Second booking returns 400 Bad Request (scheduling conflict) | `community_services_verification.cjs` | **PASS** |
 | **FLOW 4** | Resident → Dues → Payment/status → Admin visibility | Due identified → Mock payment recorded → Status updated to `PAID` → Reflected in admin ledger | `core_features_audit.cjs` (Step 5) | **PASS** |
 | **FLOW 5** | Admin → Notice creation → Resident sees notice | Admin posts announcement → Resident queries `/notices` → New notice rendered | `community_services_verification.cjs` | **PASS** |
 | **FLOW 6** | Resident → Documents → Document access | Resident views society bylaws; `OWNERS_ONLY` documents denied to tenant (403) | `amp_phase_verification.cjs` (Phase 6) | **PASS** |
