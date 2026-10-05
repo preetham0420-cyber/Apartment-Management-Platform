@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback } from "react";
+import { CheckCircleIcon, AlertTriangleIcon, InfoIcon } from "./icons";
 
 export interface ToastMessage {
   id: string;
@@ -45,8 +46,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div className="toast-container" aria-live="polite">
         {toasts.map((t) => (
           <div key={t.id} className={`toast toast-${t.type}`} role="alert">
-            <span style={{ fontSize: "16px" }}>
-              {t.type === "success" ? "✓" : t.type === "error" ? "⚠️" : "ℹ️"}
+            <span style={{ display: "inline-flex", alignItems: "center" }}>
+              {t.type === "success" ? (
+                <CheckCircleIcon size={16} color="#159A72" />
+              ) : t.type === "error" ? (
+                <AlertTriangleIcon size={16} color="#D95757" />
+              ) : (
+                <InfoIcon size={16} color="#3A8F83" />
+              )}
             </span>
             <span className="toast-message">{t.message}</span>
             <button

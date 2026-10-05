@@ -178,7 +178,7 @@ export default function App() {
   const renderActiveScreen = () => {
     switch (activeTab) {
       case "services":
-        return <ServicesScreen />;
+        return <ServicesScreen onNavigateTab={(tab) => setActiveTab(tab)} />;
       case "chat":
         return <ChatScreen />;
       case "visitors":

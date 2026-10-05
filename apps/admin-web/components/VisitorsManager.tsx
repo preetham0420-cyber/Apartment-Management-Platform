@@ -6,6 +6,7 @@ import { StatusPill } from "./StatusPill";
 import { ConfirmationModal } from "./ConfirmationModal";
 import { useToast } from "./Toast";
 import { adminApi } from "../lib/api";
+import { RefreshIcon, AlertTriangleIcon, SearchIcon } from "./icons";
 
 export function VisitorsManager() {
   const [visitors, setVisitors] = useState<Visitor[]>([]);
@@ -75,20 +76,20 @@ export function VisitorsManager() {
     return matchesSearch;
   });
 
-  const getStatusTone = (status: string): "blue" | "green" | "orange" | "red" | "violet" => {
+  const getStatusTone = (status: string): "teal" | "green" | "orange" | "red" => {
     switch (status) {
       case "CHECKED_IN":
         return "green";
       case "CHECKED_OUT":
-        return "blue";
+        return "teal";
       case "AT_GATE":
         return "orange";
       case "PRE_APPROVED":
-        return "violet";
+        return "teal";
       case "REJECTED":
         return "red";
       default:
-        return "blue";
+        return "teal";
     }
   };
 
@@ -99,21 +100,25 @@ export function VisitorsManager() {
           <h2 className="panel-title">Gate Operations & Visitor Register</h2>
           <p className="panel-subtitle">Real-time gate pass management, digital entry approvals, and visitor logs</p>
         </div>
-        <button className="action-btn btn-outline" onClick={fetchVisitors} disabled={loading}>
-          {loading ? "Loading..." : "🔄 Refresh Gate Log"}
+        <button className="action-btn btn-outline" onClick={fetchVisitors} disabled={loading} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+          <RefreshIcon size={14} />
+          <span>{loading ? "Loading..." : "Refresh Gate Log"}</span>
         </button>
       </div>
 
       {error && (
         <div className="feedback-banner error">
-          <span>⚠️ {error}</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <AlertTriangleIcon size={14} color="#D95757" />
+            <span>{error}</span>
+          </span>
         </div>
       )}
 
       {/* Filter and Search Bar */}
       <div className="admin-filter-bar">
         <div className="admin-search-box">
-          <span>🔍</span>
+          <SearchIcon size={15} color="#68716D" />
           <input
             type="text"
             placeholder="Search by visitor name, phone, pass code, host..."
@@ -154,89 +159,91 @@ export function VisitorsManager() {
       ) : filteredVisitors.length === 0 ? (
         <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>No visitors match the current filter.</p>
       ) : (
-        <table className="info-table">
-          <thead>
-            <tr>
-              <th>Visitor Details</th>
-              <th>Host & Destination</th>
-              <th>Visit Purpose</th>
-              <th>Digital Pass Code</th>
-              <th>Expected Arrival</th>
-              <th>Gate Status</th>
-              <th>Gate Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredVisitors.map((v) => {
-              const isUpdating = updatingId === v.id;
+        <div className="table-responsive">
+          <table className="info-table">
+            <thead>
+              <tr>
+                <th>Visitor Details</th>
+                <th>Host & Destination</th>
+                <th>Visit Purpose</th>
+                <th>Digital Pass Code</th>
+                <th>Expected Arrival</th>
+                <th>Gate Status</th>
+                <th>Gate Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredVisitors.map((v) => {
+                const isUpdating = updatingId === v.id;
 
-              return (
-                <tr key={v.id}>
-                  <td>
-                    <strong>{v.visitorName}</strong>
-                    <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>{v.visitorPhone}</div>
-                  </td>
-                  <td>
-                    <strong>{v.hostName || "Host Resident"}</strong>
-                    <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-                      {v.unitNumber ? `Unit ${v.unitNumber}` : "Tower A - 402"}
-                    </div>
-                  </td>
-                  <td>
-                    <span style={{ fontSize: "12px", padding: "2px 8px", background: "#f1f5f9", borderRadius: "4px" }}>
-                      {v.purpose}
-                    </span>
-                  </td>
-                  <td>
-                    <code style={{ fontSize: "12px", background: "#f8fafc", padding: "3px 8px", borderRadius: "4px", border: "1px solid #e2e8f0" }}>
-                      {v.accessCode}
-                    </code>
-                  </td>
-                  <td style={{ whiteSpace: "nowrap", fontSize: "12px", color: "var(--text-muted)" }}>
-                    {new Date(v.expectedArrival).toLocaleString()}
-                  </td>
-                  <td>
-                    <StatusPill tone={getStatusTone(v.status)}>{v.status}</StatusPill>
-                  </td>
-                  <td>
-                    <div style={{ display: "flex", gap: "6px" }}>
-                      {v.status !== "CHECKED_IN" && (
-                        <button
-                          className="action-btn btn-success"
-                          disabled={isUpdating}
-                          onClick={() =>
-                            setPendingAction({
-                              visitorId: v.id,
-                              visitorName: v.visitorName,
-                              newStatus: "CHECKED_IN"
-                            })
-                          }
-                        >
-                          Check In
-                        </button>
-                      )}
-                      {v.status === "CHECKED_IN" && (
-                        <button
-                          className="action-btn btn-primary"
-                          disabled={isUpdating}
-                          onClick={() =>
-                            setPendingAction({
-                              visitorId: v.id,
-                              visitorName: v.visitorName,
-                              newStatus: "CHECKED_OUT"
-                            })
-                          }
-                        >
-                          Check Out
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                return (
+                  <tr key={v.id}>
+                    <td>
+                      <strong>{v.visitorName}</strong>
+                      <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>{v.visitorPhone}</div>
+                    </td>
+                    <td>
+                      <strong>{v.hostName || "Host Resident"}</strong>
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                        {v.unitNumber ? `Unit ${v.unitNumber}` : "Tower A - 402"}
+                      </div>
+                    </td>
+                    <td>
+                      <span style={{ fontSize: "12px", padding: "2px 8px", background: "var(--bg-secondary)", border: "1px solid var(--border)", borderRadius: "4px" }}>
+                        {v.purpose}
+                      </span>
+                    </td>
+                    <td>
+                      <code style={{ fontSize: "12px", background: "var(--bg-secondary)", padding: "3px 8px", borderRadius: "4px", border: "1px solid var(--border)" }}>
+                        {v.accessCode}
+                      </code>
+                    </td>
+                    <td style={{ whiteSpace: "nowrap", fontSize: "12px", color: "var(--text-muted)" }}>
+                      {new Date(v.expectedArrival).toLocaleString()}
+                    </td>
+                    <td>
+                      <StatusPill tone={getStatusTone(v.status)}>{v.status}</StatusPill>
+                    </td>
+                    <td>
+                      <div style={{ display: "flex", gap: "6px" }}>
+                        {v.status !== "CHECKED_IN" && (
+                          <button
+                            className="action-btn btn-success"
+                            disabled={isUpdating}
+                            onClick={() =>
+                              setPendingAction({
+                                visitorId: v.id,
+                                visitorName: v.visitorName,
+                                newStatus: "CHECKED_IN"
+                              })
+                            }
+                          >
+                            Check In
+                          </button>
+                        )}
+                        {v.status === "CHECKED_IN" && (
+                          <button
+                            className="action-btn btn-primary"
+                            disabled={isUpdating}
+                            onClick={() =>
+                              setPendingAction({
+                                visitorId: v.id,
+                                visitorName: v.visitorName,
+                                newStatus: "CHECKED_OUT"
+                              })
+                            }
+                          >
+                            Check Out
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {/* Confirmation Dialog */}

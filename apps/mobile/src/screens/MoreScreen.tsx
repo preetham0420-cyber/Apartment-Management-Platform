@@ -28,6 +28,7 @@ import {
   VehicleType
 } from "@apartment/shared";
 import { mobileApiClient } from "../services/api-client";
+import { EditIcon, LogOutIcon, FileTextIcon, CalendarIcon, ChevronRightIcon } from "../components/MobileIcons";
 
 interface ModuleGridItem {
   id: string;
@@ -38,19 +39,19 @@ interface ModuleGridItem {
 }
 
 const allModules: ModuleGridItem[] = [
-  { id: "household", title: "Household Members", subtitle: "Family & Occupants", symbol: "👨‍👩‍👧‍👦", tone: "blue" },
-  { id: "vehicles", title: "Vehicles & Parking", subtitle: "Slots & Registrations", symbol: "🚗", tone: "green" },
-  { id: "documents", title: "Bylaws & Documents", subtitle: "Rules & Compliance", symbol: "📁", tone: "violet" },
-  { id: "payments", title: "Payments & Dues", subtitle: "Maintenance Invoices", symbol: "💳", tone: "green" },
-  { id: "amenities", title: "Amenities Booking", subtitle: "Hall, Courts, Pool", symbol: "🏊", tone: "blue" },
-  { id: "residents", title: "Residents Directory", subtitle: "Society Directory", symbol: "👥", tone: "blue" },
-  { id: "rentals", title: "Rental Management", subtitle: "Lease Verification", symbol: "📋", tone: "violet" },
-  { id: "maintenance", title: "Maintenance Desk", subtitle: "Service Requests", symbol: "🔧", tone: "orange" },
-  { id: "visitors", title: "Gate Passes", subtitle: "Digital Entry Pass", symbol: "🛡️", tone: "blue" },
-  { id: "cctv", title: "CCTV & Security", subtitle: "Gate Surveillance", symbol: "📹", tone: "red" },
-  { id: "chat", title: "Helpdesk Chat", subtitle: "Security & Management", symbol: "💬", tone: "violet" },
-  { id: "notices", title: "Notices & Circulars", subtitle: "Official Broadcasts", symbol: "📢", tone: "orange" },
-  { id: "notifications", title: "In-App Alerts", subtitle: "Inbox & Updates", symbol: "🔔", tone: "blue" }
+  { id: "household", title: "Household Members", subtitle: "Family & Occupants", symbol: "household", tone: "teal" },
+  { id: "vehicles", title: "Vehicles & Parking", subtitle: "Slots & Registrations", symbol: "car", tone: "green" },
+  { id: "documents", title: "Bylaws & Documents", subtitle: "Rules & Compliance", symbol: "doc", tone: "teal" },
+  { id: "payments", title: "Payments & Dues", subtitle: "Maintenance Invoices", symbol: "card", tone: "green" },
+  { id: "amenities", title: "Amenities Booking", subtitle: "Hall, Courts, Pool", symbol: "amenity", tone: "emerald" },
+  { id: "residents", title: "Residents Directory", subtitle: "Society Directory", symbol: "user", tone: "teal" },
+  { id: "rentals", title: "Rental Management", subtitle: "Lease Verification", symbol: "doc", tone: "teal" },
+  { id: "maintenance", title: "Maintenance Desk", subtitle: "Service Requests", symbol: "wrench", tone: "orange" },
+  { id: "visitors", title: "Gate Passes", subtitle: "Digital Entry Pass", symbol: "shield", tone: "emerald" },
+  { id: "cctv", title: "CCTV & Security", subtitle: "Gate Surveillance", symbol: "shield", tone: "red" },
+  { id: "chat", title: "Helpdesk Chat", subtitle: "Security & Management", symbol: "chat", tone: "teal" },
+  { id: "notices", title: "Notices & Circulars", subtitle: "Official Broadcasts", symbol: "bell", tone: "orange" },
+  { id: "notifications", title: "In-App Alerts", subtitle: "Inbox & Updates", symbol: "bell", tone: "teal" }
 ];
 
 interface MoreScreenProps {
@@ -589,7 +590,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                 </Text>
               </View>
             </View>
-            <Text style={{ fontSize: 18, color: colors.textMuted }}>✏️</Text>
+            <EditIcon size={16} color={colors.textMuted} />
           </TouchableOpacity>
         )}
 
@@ -600,7 +601,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
             onPress={onLogout}
             activeOpacity={0.8}
           >
-            <Text style={styles.logoutIcon}>🚪</Text>
+            <LogOutIcon size={16} color={colors.danger} />
             <Text style={styles.logoutText}>Sign Out of My Account</Text>
           </TouchableOpacity>
         )}
@@ -696,7 +697,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                 }}
               >
                 <Text style={[styles.amenityTabBtnText, amenitiesTab === "browse" && styles.amenityTabBtnTextActive]}>
-                  🏊 Facilities ({amenities.length})
+                  Facilities ({amenities.length})
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -704,7 +705,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                 onPress={() => setAmenitiesTab("my_bookings")}
               >
                 <Text style={[styles.amenityTabBtnText, amenitiesTab === "my_bookings" && styles.amenityTabBtnTextActive]}>
-                  📅 My Bookings ({myBookings.filter((b) => b.status === "CONFIRMED").length})
+                  My Bookings ({myBookings.filter((b) => b.status === "CONFIRMED").length})
                 </Text>
               </TouchableOpacity>
             </View>
@@ -732,7 +733,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                       Hours: {selectedAmenity.openTime} - {selectedAmenity.closeTime} • Capacity: {selectedAmenity.capacity} persons
                     </Text>
                     {selectedAmenity.rules ? (
-                      <Text style={styles.selectedFacilityRules}>📌 {selectedAmenity.rules}</Text>
+                      <Text style={styles.selectedFacilityRules}>Guidelines: {selectedAmenity.rules}</Text>
                     ) : null}
                   </View>
 
@@ -878,7 +879,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                             <Text style={styles.myBookingTitle}>{b.amenityName || "Community Facility"}</Text>
                             <StatusPill
                               label={b.status}
-                              tone={b.status === "CONFIRMED" ? "green" : "blue"}
+                              tone={b.status === "CONFIRMED" ? "green" : "teal"}
                             />
                           </View>
                           <Text style={styles.myBookingDate}>📅 {dateFormatted}</Text>
@@ -978,7 +979,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                           {res.isSelf && <Text style={styles.selfBadge}>You</Text>}
                           <StatusPill
                             label={res.status === "OCCUPIED" ? "Occupied" : "Vacant"}
-                            tone={res.status === "OCCUPIED" ? "green" : "blue"}
+                            tone={res.status === "OCCUPIED" ? "green" : "teal"}
                           />
                         </View>
                         <Text style={styles.directoryName}>👤 {res.residentName}</Text>
@@ -1140,7 +1141,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                         <Text style={styles.noticeModalCategory}>{notice.category || "COMMUNITY"}</Text>
                         <StatusPill
                           label={notice.priority || "NORMAL"}
-                          tone={notice.priority === "HIGH" ? "red" : "blue"}
+                          tone={notice.priority === "HIGH" ? "red" : "teal"}
                         />
                       </View>
                       <Text style={styles.noticeModalTitle}>{notice.title}</Text>

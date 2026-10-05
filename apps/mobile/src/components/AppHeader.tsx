@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
+import { BellIcon } from "./MobileIcons";
 
 interface AppHeaderProps {
   title?: string;
@@ -21,6 +22,7 @@ export function AppHeader({
     <View style={styles.header}>
       <View style={styles.titleArea}>
         <View style={styles.roleChip}>
+          <View style={styles.pulseDot} />
           <Text style={styles.roleChipText}>{roleBadge.toUpperCase()}</Text>
         </View>
         <Text style={styles.titleText}>{title}</Text>
@@ -32,7 +34,7 @@ export function AppHeader({
         activeOpacity={0.7}
         accessibilityLabel="Notifications"
       >
-        <Text style={styles.bellIcon}>🔔</Text>
+        <BellIcon size={18} color={colors.textMain} />
         {unreadNotifications > 0 && (
           <View style={styles.badge}>
             <Text style={styles.badgeText}>{unreadNotifications}</Text>
@@ -49,7 +51,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingVertical: 14,
     backgroundColor: colors.bgSurface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border
@@ -58,37 +60,44 @@ const styles = StyleSheet.create({
     flex: 1
   },
   roleChip: {
+    flexDirection: "row",
+    alignItems: "center",
     alignSelf: "flex-start",
-    backgroundColor: colors.primaryLight,
+    backgroundColor: "#E8F4EF",
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 3,
     borderRadius: spacing.radius.sm,
     marginBottom: 4
   },
+  pulseDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.primary,
+    marginRight: 6
+  },
   roleChipText: {
-    fontSize: typography.sizes.tiny,
+    fontSize: 10,
     fontWeight: typography.weights.bold,
     color: colors.primary,
     letterSpacing: 0.6
   },
   titleText: {
-    fontSize: typography.sizes.h2,
+    fontSize: 22,
     fontWeight: typography.weights.heavy,
-    color: colors.textMain
+    color: colors.textMain,
+    letterSpacing: -0.3
   },
   notificationButton: {
-    width: 40,
-    height: 40,
-    borderRadius: spacing.radius.md,
+    width: 42,
+    height: 42,
+    borderRadius: 12,
     backgroundColor: colors.bgPage,
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: "center",
     justifyContent: "center",
     position: "relative"
-  },
-  bellIcon: {
-    fontSize: 16
   },
   badge: {
     position: "absolute",

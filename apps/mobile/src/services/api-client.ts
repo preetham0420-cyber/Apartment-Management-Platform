@@ -1,4 +1,4 @@
-import { Platform } from "react-native";
+import { Platform, NativeModules } from "react-native";
 import {
   LoginRequest,
   LoginResponseData,
@@ -14,13 +14,27 @@ import {
 import { authStorage } from "./auth-storage";
 
 // Determine API Base URL dynamically
-const getBaseUrl = (): string => {
+export const getBaseUrl = (): string => {
   if (process.env.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL;
   }
+  if (process.env.EXPO_PUBLIC_API_BASE_URL) {
+    return process.env.EXPO_PUBLIC_API_BASE_URL;
+  }
   // If testing on a physical iOS/Android device over hotspot/LAN
   if (Platform.OS !== "web") {
-    return "http://10.190.221.208:4000/api";
+    try {
+      const scriptURL = (NativeModules as any)?.SourceCode?.scriptURL;
+      if (scriptURL && typeof scriptURL === "string") {
+        const match = scriptURL.match(/^https?:\/\/([^:/]+)/);
+        if (match && match[1] && match[1] !== "localhost" && match[1] !== "127.0.0.1") {
+          return `http://${match[1]}:4000/api`;
+        }
+      }
+    } catch {
+      // Fall through to active LAN IP
+    }
+    return "http://172.20.10.2:4000/api";
   }
   return "http://localhost:4000/api";
 };
@@ -41,7 +55,8 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}${endpoint}`, {
     ...options,
     headers
   });

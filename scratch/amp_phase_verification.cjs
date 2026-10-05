@@ -93,18 +93,18 @@ async function runAllPhaseTests() {
   const tenantLogin = await apiRequest({
     method: "POST",
     endpoint: "/api/auth/login",
-    body: { email: "tenant@community.local", password: "Tenant@12345" }
+    body: { email: "preetham@community.local", password: "Tenant1@12345" }
   });
-  assert(tenantLogin.statusCode === 200, "Resident Tenant login succeeds (tenant@community.local)");
+  assert(tenantLogin.statusCode === 200, "Resident Tenant login succeeds (preetham@community.local)");
   const tenantToken = tenantLogin.data.data.token || tenantLogin.data.data.accessToken;
 
   // Phase 4: Deterministic RESIDENT_OWNER account
   const ownerLogin = await apiRequest({
     method: "POST",
     endpoint: "/api/auth/login",
-    body: { email: "owner@community.local", password: "Owner@12345" }
+    body: { email: "vikramaditya@community.local", password: "Owner@12345" }
   });
-  assert(ownerLogin.statusCode === 200, "Deterministic Resident Owner login succeeds (owner@community.local)");
+  assert(ownerLogin.statusCode === 200, "Deterministic Resident Owner login succeeds (vikramaditya@community.local)");
   assert(ownerLogin.data.data.user.role === "RESIDENT_OWNER", "Owner role confirmed as RESIDENT_OWNER");
   const ownerToken = ownerLogin.data.data.token || ownerLogin.data.data.accessToken;
 

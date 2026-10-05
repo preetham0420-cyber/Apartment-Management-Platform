@@ -18,6 +18,13 @@ import { StatusPill } from "../components/StatusPill";
 import { IconBox } from "../components/IconBox";
 import { mobileApiClient } from "../services/api-client";
 import { Visitor } from "@apartment/shared";
+import {
+  ShieldIcon,
+  PlusIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  UsersIcon
+} from "../components/MobileIcons";
 
 export function VisitorsScreen() {
   const [visitors, setVisitors] = useState<Visitor[]>([]);
@@ -36,7 +43,7 @@ export function VisitorsScreen() {
     try {
       const data = await mobileApiClient.getVisitors();
       setVisitors(data);
-    } catch (err: any) {
+    } catch {
       // Graceful error display
     } finally {
       setLoading(false);
@@ -55,11 +62,11 @@ export function VisitorsScreen() {
 
   const handleCreateVisitor = async () => {
     if (!visitorName.trim()) {
-      setFormError("Visitor name is required.");
+      setFormError("Visitor full name is required.");
       return;
     }
     if (!visitorPhone.trim() || visitorPhone.length < 5) {
-      setFormError("Valid phone number is required.");
+      setFormError("Valid contact number is required.");
       return;
     }
 
@@ -80,7 +87,10 @@ export function VisitorsScreen() {
       setVisitorName("");
       setVisitorPhone("");
       setPurpose("GUEST");
-      Alert.alert("Visitor Pass Created", `Access Code: ${newVisitor.accessCode}`);
+      Alert.alert(
+        "Digital Pass Issued",
+        `Access Code: ${newVisitor.accessCode}\nShare this with ${newVisitor.visitorName} for instant gate clearance.`
+      );
     } catch (err: any) {
       setFormError(err.message || "Failed to create visitor pass.");
     } finally {
@@ -97,21 +107,21 @@ export function VisitorsScreen() {
     }
   };
 
-  const getPurposeSymbol = (pur: string) => {
+  const getPurposeIcon = (pur: string) => {
     switch (pur?.toUpperCase()) {
       case "DELIVERY":
-        return "📦";
+        return "package";
       case "CAB":
-        return "🚕";
+        return "car";
       case "SERVICE":
-        return "🛠️";
+        return "wrench";
       case "GUEST":
       default:
-        return "👤";
+        return "user";
     }
   };
 
-  const getStatusTone = (status: string): "blue" | "green" | "orange" | "red" => {
+  const getStatusTone = (status: string): "teal" | "green" | "orange" | "red" => {
     switch (status) {
       case "CHECKED_IN":
         return "green";
@@ -121,28 +131,36 @@ export function VisitorsScreen() {
         return "red";
       case "PRE_APPROVED":
       default:
-        return "blue";
+        return "teal";
     }
   };
 
   const insideCount = visitors.filter((v) => v.status === "CHECKED_IN").length;
-  const expectedCount = visitors.filter((v) => v.status === "PRE_APPROVED" || v.status === "AT_GATE").length;
+  const expectedCount = visitors.filter(
+    (v) => v.status === "PRE_APPROVED" || v.status === "AT_GATE"
+  ).length;
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: colors.bgPage }}>
       <ScrollView
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
+        }
       >
         {/* Gate Live Monitor Banner */}
         <View style={styles.gateBanner}>
           <View style={styles.gateLiveTag}>
             <View style={styles.livePulseDot} />
-            <Text style={styles.gateLiveText}>GATE 1 LIVE</Text>
+            <Text style={styles.gateLiveText}>PERIMETER ACCESS • GATE 1</Text>
           </View>
-          <Text style={styles.gateTitle}>{insideCount} Visitors Inside Unit</Text>
-          <Text style={styles.gateSubtitle}>Tower A Gate Pass Register • Security Verified</Text>
+          <Text style={styles.gateTitle}>
+            {insideCount === 1 ? "1 Guest Inside Unit" : `${insideCount} Guests Inside Unit`}
+          </Text>
+          <Text style={styles.gateSubtitle}>
+            Pre-approved entry codes and digital visitor register
+          </Text>
 
           <View style={styles.countersRow}>
             <View style={styles.counterBox}>
@@ -151,36 +169,50 @@ export function VisitorsScreen() {
             </View>
             <View style={styles.counterDivider} />
             <View style={styles.counterBox}>
-              <Text style={[styles.counterNum, { color: colors.success }]}>{insideCount}</Text>
+              <Text style={[styles.counterNum, { color: colors.primary }]}>{insideCount}</Text>
               <Text style={styles.counterLabel}>Checked In</Text>
             </View>
             <View style={styles.counterDivider} />
             <View style={styles.counterBox}>
-              <Text style={[styles.counterNum, { color: colors.primary }]}>{expectedCount}</Text>
-              <Text style={styles.counterLabel}>Expected</Text>
+              <Text style={[styles.counterNum, { color: colors.warning }]}>{expectedCount}</Text>
+              <Text style={styles.counterLabel}>Expected Today</Text>
             </View>
           </View>
         </View>
 
         {/* Action Header */}
         <View style={styles.listHeader}>
-          <Text style={styles.sectionTitle}>My Visitor Passes</Text>
+          <View>
+            <Text style={styles.sectionTitle}>Gate Passes</Text>
+            <Text style={styles.sectionSubtitle}>Active passes & arrival history</Text>
+          </View>
           <TouchableOpacity
             style={styles.preApproveBtn}
             onPress={() => setModalVisible(true)}
             activeOpacity={0.8}
           >
-            <Text style={styles.preApproveText}>+ Add Visitor</Text>
+            <PlusIcon size={14} color="#ffffff" strokeWidth={2.5} />
+            <Text style={styles.preApproveText}>Add Visitor</Text>
           </TouchableOpacity>
         </View>
 
         {/* Visitor Register Cards */}
         {loading ? (
-          <ActivityIndicator size="small" color={colors.primary} style={{ marginTop: 20 }} />
+          <ActivityIndicator size="small" color={colors.primary} style={{ marginTop: 24 }} />
         ) : visitors.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>No visitors registered yet.</Text>
-            <Text style={styles.emptySubtext}>Tap "+ Add Visitor" to generate a digital gate pass.</Text>
+            <IconBox symbol="shield" tone="emerald" size={48} />
+            <Text style={styles.emptyText}>No Active Visitor Passes</Text>
+            <Text style={styles.emptySubtext}>
+              Generate a digital OTP pass for deliveries, cab drivers, or guests.
+            </Text>
+            <TouchableOpacity
+              style={styles.emptyCtaBtn}
+              onPress={() => setModalVisible(true)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.emptyCtaText}>+ Pre-Approve Visitor</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.visitorList}>
@@ -193,7 +225,7 @@ export function VisitorsScreen() {
                 ]}
               >
                 <IconBox
-                  symbol={getPurposeSymbol(visitor.purpose)}
+                  symbol={getPurposeIcon(visitor.purpose)}
                   tone={getStatusTone(visitor.status)}
                   size={42}
                 />
@@ -203,12 +235,13 @@ export function VisitorsScreen() {
                   <Text style={styles.visitorPurpose}>
                     {visitor.purpose} • {visitor.visitorPhone}
                   </Text>
-                  <Text style={styles.visitorCode}>
-                    Code: <Text style={{ fontWeight: "700", color: colors.primary }}>{visitor.accessCode}</Text>
-                  </Text>
+                  <View style={styles.codeBadge}>
+                    <Text style={styles.codeBadgeLabel}>PASS CODE:</Text>
+                    <Text style={styles.codeBadgeValue}>{visitor.accessCode}</Text>
+                  </View>
                 </View>
 
-                <View style={{ alignItems: "flex-end" }}>
+                <View style={styles.statusCol}>
                   <StatusPill
                     label={visitor.status.replace("_", " ")}
                     tone={getStatusTone(visitor.status)}
@@ -218,15 +251,17 @@ export function VisitorsScreen() {
                       style={styles.actionPillBtn}
                       onPress={() => handleUpdateStatus(visitor.id, "CHECKED_IN")}
                     >
-                      <Text style={styles.actionPillText}>Approve</Text>
+                      <Text style={styles.actionPillText}>Approve Entry</Text>
                     </TouchableOpacity>
                   )}
                   {visitor.status === "CHECKED_IN" && (
                     <TouchableOpacity
-                      style={[styles.actionPillBtn, { backgroundColor: "#fef3c7" }]}
+                      style={[styles.actionPillBtn, { backgroundColor: "#FEE2E2" }]}
                       onPress={() => handleUpdateStatus(visitor.id, "CHECKED_OUT")}
                     >
-                      <Text style={[styles.actionPillText, { color: "#92400e" }]}>Check Out</Text>
+                      <Text style={[styles.actionPillText, { color: colors.danger }]}>
+                        Check Out
+                      </Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -240,8 +275,10 @@ export function VisitorsScreen() {
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Generate Visitor Pass</Text>
-            <Text style={styles.modalSubtitle}>Create instant digital gate pass for Tower A - 402</Text>
+            <Text style={styles.modalTitle}>Issue Visitor Pass</Text>
+            <Text style={styles.modalSubtitle}>
+              Pre-authorizes digital clearance at society security gates
+            </Text>
 
             {formError && (
               <View style={styles.errorBox}>
@@ -249,7 +286,7 @@ export function VisitorsScreen() {
               </View>
             )}
 
-            <Text style={styles.inputLabel}>Visitor Full Name</Text>
+            <Text style={styles.inputLabel}>VISITOR FULL NAME</Text>
             <TextInput
               style={styles.textInput}
               placeholder="e.g. Ramesh Kumar / Flipkart Agent"
@@ -258,7 +295,7 @@ export function VisitorsScreen() {
               onChangeText={setVisitorName}
             />
 
-            <Text style={styles.inputLabel}>Phone Number</Text>
+            <Text style={styles.inputLabel}>PHONE NUMBER</Text>
             <TextInput
               style={styles.textInput}
               placeholder="+91 98765 43210"
@@ -268,7 +305,7 @@ export function VisitorsScreen() {
               onChangeText={setVisitorPhone}
             />
 
-            <Text style={styles.inputLabel}>Purpose of Visit</Text>
+            <Text style={styles.inputLabel}>PURPOSE OF VISIT</Text>
             <View style={styles.purposeRow}>
               {["GUEST", "DELIVERY", "CAB", "SERVICE"].map((p) => (
                 <TouchableOpacity
@@ -276,7 +313,12 @@ export function VisitorsScreen() {
                   style={[styles.purposeBtn, purpose === p && styles.purposeBtnActive]}
                   onPress={() => setPurpose(p)}
                 >
-                  <Text style={[styles.purposeBtnText, purpose === p && styles.purposeBtnTextActive]}>
+                  <Text
+                    style={[
+                      styles.purposeBtnText,
+                      purpose === p && styles.purposeBtnTextActive
+                    ]}
+                  >
                     {p}
                   </Text>
                 </TouchableOpacity>
@@ -314,97 +356,111 @@ export function VisitorsScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: spacing.lg,
-    paddingBottom: spacing.xxl
+    paddingBottom: 40
   },
   gateBanner: {
-    backgroundColor: colors.bgSurface,
-    borderRadius: spacing.radius.lg,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: spacing.lg,
-    marginBottom: spacing.lg
+    padding: 18,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6
   },
   gateLiveTag: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: spacing.xs
+    marginBottom: 4
   },
   livePulseDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.danger,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: colors.primary,
     marginRight: 6
   },
   gateLiveText: {
-    fontSize: typography.sizes.tiny,
+    fontSize: 10,
     fontWeight: typography.weights.bold,
-    color: colors.danger,
-    letterSpacing: 0.8
+    color: colors.primary,
+    letterSpacing: 0.7
   },
   gateTitle: {
-    fontSize: typography.sizes.title,
+    fontSize: 22,
     fontWeight: typography.weights.heavy,
-    color: colors.textMain
+    color: colors.textMain,
+    letterSpacing: -0.3
   },
   gateSubtitle: {
-    fontSize: typography.sizes.caption,
+    fontSize: 12,
     color: colors.textMuted,
     marginTop: 2,
-    marginBottom: spacing.md
+    marginBottom: 14
   },
   countersRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.bgPage,
-    borderRadius: spacing.radius.md,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.sm
+    backgroundColor: "#F7F8F6",
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 8
   },
   counterBox: {
     flex: 1,
     alignItems: "center"
   },
   counterNum: {
-    fontSize: typography.sizes.h3,
+    fontSize: 18,
     fontWeight: typography.weights.heavy,
     color: colors.textMain
   },
   counterLabel: {
-    fontSize: typography.sizes.tiny,
+    fontSize: 10,
     color: colors.textMuted,
-    marginTop: 2
+    marginTop: 1
   },
   counterDivider: {
     width: 1,
-    height: 24,
+    height: 28,
     backgroundColor: colors.border
   },
   listHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: spacing.sm
+    marginBottom: 12,
+    paddingHorizontal: 2
   },
   sectionTitle: {
-    fontSize: typography.sizes.h3,
+    fontSize: 16,
     fontWeight: typography.weights.bold,
     color: colors.textMain
   },
+  sectionSubtitle: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 1
+  },
   preApproveBtn: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.primary,
-    borderRadius: spacing.radius.round,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs + 2
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 4
   },
   preApproveText: {
     color: "#fff",
-    fontSize: typography.sizes.caption,
+    fontSize: 12,
     fontWeight: typography.weights.bold
   },
   visitorList: {
-    backgroundColor: colors.bgSurface,
-    borderRadius: spacing.radius.lg,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.border,
     overflow: "hidden"
@@ -412,123 +468,159 @@ const styles = StyleSheet.create({
   visitorRow: {
     flexDirection: "row",
     alignItems: "center",
-    padding: spacing.md,
+    padding: 14,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border
+    borderBottomColor: "#F7F8F6"
   },
   visitorDetails: {
     flex: 1,
-    marginLeft: spacing.md
+    marginLeft: 12,
+    marginRight: 8
   },
   visitorName: {
-    fontSize: typography.sizes.body,
+    fontSize: 14,
     fontWeight: typography.weights.bold,
     color: colors.textMain
   },
   visitorPurpose: {
-    fontSize: typography.sizes.caption,
+    fontSize: 11,
     color: colors.textMuted,
     marginTop: 2
   },
-  visitorCode: {
-    fontSize: typography.sizes.tiny,
-    color: colors.textMuted,
-    marginTop: 2
+  codeBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E8F4EF",
+    alignSelf: "flex-start",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginTop: 4,
+    gap: 4
+  },
+  codeBadgeLabel: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: colors.primary
+  },
+  codeBadgeValue: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: colors.primary,
+    letterSpacing: 0.5
+  },
+  statusCol: {
+    alignItems: "flex-end"
   },
   actionPillBtn: {
-    backgroundColor: "#dbeafe",
+    backgroundColor: "#E8F4EF",
     borderRadius: 6,
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 4,
     marginTop: 6
   },
   actionPillText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "700",
     color: colors.primary
   },
   emptyCard: {
-    backgroundColor: colors.bgSurface,
-    borderRadius: spacing.radius.md,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: spacing.xl,
+    padding: 30,
     alignItems: "center"
   },
   emptyText: {
-    fontSize: typography.sizes.body,
+    fontSize: 15,
     fontWeight: typography.weights.bold,
-    color: colors.textMain
+    color: colors.textMain,
+    marginTop: 12
   },
   emptySubtext: {
-    fontSize: typography.sizes.caption,
+    fontSize: 12,
     color: colors.textMuted,
-    marginTop: 4
+    marginTop: 4,
+    textAlign: "center"
+  },
+  emptyCtaBtn: {
+    marginTop: 14,
+    backgroundColor: "#E8F4EF",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8
+  },
+  emptyCtaText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.primary
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(24, 32, 29, 0.4)",
     justifyContent: "flex-end"
   },
   modalContent: {
-    backgroundColor: colors.bgSurface,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: spacing.xl
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    paddingBottom: 32
   },
   modalTitle: {
-    fontSize: typography.sizes.title,
+    fontSize: 18,
     fontWeight: typography.weights.heavy,
     color: colors.textMain
   },
   modalSubtitle: {
-    fontSize: typography.sizes.caption,
+    fontSize: 12,
     color: colors.textMuted,
     marginTop: 2,
-    marginBottom: spacing.md
+    marginBottom: 14
   },
   errorBox: {
-    backgroundColor: "#fee2e2",
+    backgroundColor: "#FEE2E2",
     borderRadius: 8,
     padding: 8,
-    marginBottom: spacing.md
+    marginBottom: 10
   },
   errorText: {
-    color: "#b91c1c",
-    fontSize: 12,
+    color: "#B91C1C",
+    fontSize: 11,
     fontWeight: "600"
   },
   inputLabel: {
-    fontSize: typography.sizes.caption,
+    fontSize: 10,
     fontWeight: typography.weights.bold,
-    color: colors.textMain,
+    color: colors.textMuted,
+    letterSpacing: 0.6,
     marginBottom: 4,
     marginTop: 8
   },
   textInput: {
-    backgroundColor: colors.bgPage,
-    borderRadius: 8,
+    backgroundColor: "#F7F8F6",
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textMain
   },
   purposeRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 6,
-    marginBottom: spacing.lg
+    gap: 6,
+    marginTop: 4,
+    marginBottom: 14
   },
   purposeBtn: {
     flex: 1,
-    backgroundColor: colors.bgPage,
+    backgroundColor: "#F7F8F6",
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 6,
+    borderRadius: 8,
     paddingVertical: 8,
-    marginHorizontal: 2,
     alignItems: "center"
   },
   purposeBtnActive: {
@@ -536,35 +628,37 @@ const styles = StyleSheet.create({
     borderColor: colors.primary
   },
   purposeBtnText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "700",
     color: colors.textMuted
   },
   purposeBtnTextActive: {
-    color: "#fff"
+    color: "#FFFFFF"
   },
   modalActions: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    marginTop: spacing.md
+    gap: 8,
+    marginTop: 8
   },
   cancelBtn: {
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    marginRight: 8
+    paddingVertical: 10
   },
   cancelBtnText: {
     color: colors.textMuted,
-    fontWeight: "600"
+    fontWeight: "600",
+    fontSize: 13
   },
   submitBtn: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingHorizontal: 20,
+    borderRadius: 10,
+    paddingHorizontal: 18,
     paddingVertical: 10
   },
   submitBtnText: {
-    color: "#fff",
-    fontWeight: "700"
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 13
   }
 });

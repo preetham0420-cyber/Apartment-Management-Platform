@@ -6,6 +6,7 @@ import { StatusPill } from "./StatusPill";
 import { ConfirmationModal } from "./ConfirmationModal";
 import { useToast } from "./Toast";
 import { adminApi } from "../lib/api";
+import { RefreshIcon, AlertTriangleIcon, SearchIcon } from "./icons";
 
 export function UnitsManager() {
   const [units, setUnits] = useState<UnitDetail[]>([]);
@@ -128,12 +129,12 @@ export function UnitsManager() {
     return matchesQuery;
   });
 
-  const getStatusTone = (status: string): "green" | "blue" | "orange" => {
+  const getStatusTone = (status: string): "emerald" | "teal" | "orange" => {
     switch (status) {
       case "OCCUPIED":
-        return "green";
+        return "emerald";
       case "VACANT":
-        return "blue";
+        return "teal";
       default:
         return "orange";
     }
@@ -146,21 +147,25 @@ export function UnitsManager() {
           <h2 className="panel-title">Units & Residential Inventory</h2>
           <p className="panel-subtitle">Manage flat occupancy, structural configurations, and resident tenancy</p>
         </div>
-        <button className="action-btn btn-outline" onClick={fetchUnits} disabled={loading}>
-          {loading ? "Loading..." : "🔄 Refresh Units"}
+        <button className="action-btn btn-outline" onClick={fetchUnits} disabled={loading} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+          <RefreshIcon size={14} />
+          <span>{loading ? "Loading..." : "Refresh Units"}</span>
         </button>
       </div>
 
       {error && (
         <div className="feedback-banner error">
-          <span>⚠️ {error}</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <AlertTriangleIcon size={14} color="#D95757" />
+            <span>{error}</span>
+          </span>
         </div>
       )}
 
       {/* Filter and Search Bar */}
       <div className="admin-filter-bar">
         <div className="admin-search-box">
-          <span>🔍</span>
+          <SearchIcon size={15} color="#68716D" />
           <input
             type="text"
             placeholder="Search by unit number, block, resident..."
@@ -199,6 +204,7 @@ export function UnitsManager() {
       ) : filteredUnits.length === 0 ? (
         <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>No units match the filter criteria.</p>
       ) : (
+        <div className="table-responsive">
         <table className="info-table">
           <thead>
             <tr>
@@ -289,6 +295,7 @@ export function UnitsManager() {
             })}
           </tbody>
         </table>
+        </div>
       )}
 
       {/* Unit Inspection Modal (Household, Vehicles & Parking) */}

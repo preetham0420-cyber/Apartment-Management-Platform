@@ -9,7 +9,7 @@
 --
 -- Demo Accounts:
 -- 1. Super Admin: admin@community.local / Admin@12345
--- 2. Resident Tenant: tenant@community.local / Tenant@12345
+-- 2. Resident Tenant: preetham@community.local / Tenant1@12345
 -- ==============================================================================
 
 -- 1. Seed Roles
@@ -39,17 +39,17 @@ ON DUPLICATE KEY UPDATE `status` = VALUES(`status`), `unit_number` = VALUES(`uni
 
 -- 4. Seed Demo Users (Development Accounts with bcrypt password hashes)
 -- Demo Admin: admin@community.local / Admin@12345
--- Demo Tenant 1: tenant1@community.local / Tenant1@12345
--- Demo Owner: owner@community.local / Owner@12345
--- Demo Tenant 2: tenant2@community.local / Tenant2@12345
--- Demo Tenant 3: tenant3@community.local / Tenant3@12345
+-- Demo Tenant 1: preetham@community.local / Tenant1@12345
+-- Demo Owner: vikramaditya@community.local / Owner@12345
+-- Demo Tenant 2: ananya.sharma@community.local / Tenant2@12345
+-- Demo Tenant 3: rahul.verma@community.local / Tenant3@12345
 INSERT INTO `users` (`id`, `email`, `password_hash`, `full_name`, `phone_number`, `role_id`, `is_active`) VALUES
   ('user-super-admin-000000000001', 'admin@community.local', '$2b$10$IZkfYeJR8vAgs6zoGnuG7O8warVx46mGVn6NlWoS2tdGCrcHS3cR6', 'Platform Super Admin', '+91 98765 43210', 1, TRUE),
-  ('user-resident-tenant-00000002', 'tenant1@community.local', '$2b$10$sguHc80I8Hhccz/Go0l6fuZU65qaZyRuXrfKJQMhibCuLk5b4Y9Z2', 'Preetham (Resident Tenant)', '+91 91234 56789', 4, TRUE),
-  ('user-resident-owner-000000000003', 'owner@community.local', '$2b$10$48zk05HzR3xQB1sZk4vDtu562zcTm02soWULGva6Cy0Li8y/LITxW', 'Vikramaditya (Resident Owner)', '+91 98888 77777', 3, TRUE),
-  ('user-resident-tenant-00000004', 'tenant2@community.local', '$2b$10$N.Pe9osfp5l3omeeSmrnlujfcKyY7e4EhOSA13pjXHLBLRgksbTBq', 'Ananya Sharma (Resident Tenant)', '+91 98222 33445', 4, TRUE),
-  ('user-resident-tenant-00000005', 'tenant3@community.local', '$2b$10$7wthTd2WhKlVZEcHINvVaeKfYbXR8ZDooy8pcZG3XaJY62RfzybPq', 'Rahul Verma (Resident Tenant)', '+91 97333 44556', 4, TRUE)
-ON DUPLICATE KEY UPDATE `full_name` = VALUES(`full_name`), `password_hash` = VALUES(`password_hash`), `is_active` = VALUES(`is_active`);
+  ('user-resident-tenant-00000002', 'preetham@community.local', '$2b$10$sguHc80I8Hhccz/Go0l6fuZU65qaZyRuXrfKJQMhibCuLk5b4Y9Z2', 'Preetham (Resident Tenant)', '+91 91234 56789', 4, TRUE),
+  ('user-resident-owner-000000000003', 'vikramaditya@community.local', '$2b$10$48zk05HzR3xQB1sZk4vDtu562zcTm02soWULGva6Cy0Li8y/LITxW', 'Vikramaditya (Resident Owner)', '+91 98888 77777', 3, TRUE),
+  ('user-resident-tenant-00000004', 'ananya.sharma@community.local', '$2b$10$N.Pe9osfp5l3omeeSmrnlujfcKyY7e4EhOSA13pjXHLBLRgksbTBq', 'Ananya Sharma (Resident Tenant)', '+91 98222 33445', 4, TRUE),
+  ('user-resident-tenant-00000005', 'rahul.verma@community.local', '$2b$10$7wthTd2WhKlVZEcHINvVaeKfYbXR8ZDooy8pcZG3XaJY62RfzybPq', 'Rahul Verma (Resident Tenant)', '+91 97333 44556', 4, TRUE)
+ON DUPLICATE KEY UPDATE `full_name` = VALUES(`full_name`), `email` = VALUES(`email`), `password_hash` = VALUES(`password_hash`), `is_active` = VALUES(`is_active`);
 
 -- 5. Seed Demo User-Unit Assignment
 INSERT INTO `user_unit_assignments` (`id`, `user_id`, `unit_id`, `assignment_type`, `is_primary`, `valid_from`, `status`) VALUES

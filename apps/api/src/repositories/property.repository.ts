@@ -36,7 +36,7 @@ const DEV_SEED_UNITS: UnitDetail[] = [
     unitType: "3BHK",
     status: "OCCUPIED",
     residentName: "Preetham (Resident Tenant)",
-    residentEmail: "tenant1@community.local",
+    residentEmail: "preetham@community.local",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
@@ -51,7 +51,7 @@ const DEV_SEED_UNITS: UnitDetail[] = [
     unitType: "2BHK",
     status: "OCCUPIED",
     residentName: "Ananya Sharma (Resident Tenant)",
-    residentEmail: "tenant2@community.local",
+    residentEmail: "ananya.sharma@community.local",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
@@ -66,7 +66,7 @@ const DEV_SEED_UNITS: UnitDetail[] = [
     unitType: "4BHK",
     status: "OCCUPIED",
     residentName: "Vikramaditya (Resident Owner)",
-    residentEmail: "owner@community.local",
+    residentEmail: "vikramaditya@community.local",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
@@ -81,7 +81,7 @@ const DEV_SEED_UNITS: UnitDetail[] = [
     unitType: "3BHK",
     status: "OCCUPIED",
     residentName: "Rahul Verma (Resident Tenant)",
-    residentEmail: "tenant3@community.local",
+    residentEmail: "rahul.verma@community.local",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },

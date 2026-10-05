@@ -16,6 +16,13 @@ import { typography } from "../theme/typography";
 import { spacing } from "../theme/spacing";
 import { mobileApiClient } from "../services/api-client";
 import { AuthUser, UnitSummary } from "@apartment/shared";
+import {
+  BuildingIcon,
+  CheckCircleIcon,
+  AlertCircleIcon,
+  LockIcon,
+  ChevronRightIcon
+} from "../components/MobileIcons";
 
 interface LoginScreenProps {
   onLoginSuccess: (user: AuthUser, unit?: UnitSummary) => void;
@@ -58,7 +65,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       onLoginSuccess(result.user, result.unit);
     } catch (error) {
       const err = error as Error;
-      setErrorMessage(err.message || "Failed to log in. Please try again.");
+      setErrorMessage(err.message || "Failed to log in. Please check credentials.");
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +92,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       });
 
       setSuccessMessage(
-        "Application submitted successfully! Your account is pending Super Admin review. You will be activated upon society verification."
+        "Application submitted! Your account is pending estate manager review. You will be activated upon society verification."
       );
       setMode("LOGIN");
       setEmail(regEmail.trim());
@@ -99,13 +106,13 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   };
 
   const handleFillDemoTenant = () => {
-    setEmail("tenant@community.local");
-    setPassword("Tenant@12345");
+    setEmail("preetham@community.local");
+    setPassword("Tenant1@12345");
     setErrorMessage(null);
   };
 
   const handleFillDemoOwner = () => {
-    setEmail("owner@community.local");
+    setEmail("vikramaditya@community.local");
     setPassword("Owner@12345");
     setErrorMessage(null);
   };
@@ -123,13 +130,14 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           {/* Brand Header */}
           <View style={styles.brandContainer}>
             <View style={styles.logoBadge}>
-              <Text style={styles.logoText}>🏢</Text>
+              <BuildingIcon size={28} color={colors.primary} strokeWidth={2} />
             </View>
-            <Text style={styles.brandTitle}>Apartment Resident</Text>
+            <Text style={styles.brandTag}>RESIDENTIAL PORTAL</Text>
+            <Text style={styles.brandTitle}>Apartment OS</Text>
             <Text style={styles.brandSubtitle}>
               {mode === "LOGIN"
-                ? "Sign in to access your unit, visitors, and society services"
-                : "Register a pending resident account for society approval"}
+                ? "Sign in to manage your unit, gate entries, and society dues"
+                : "Submit onboarding request for Greenfield Heights society verification"}
             </Text>
           </View>
 
@@ -154,7 +162,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               }}
             >
               <Text style={[styles.modeTabText, mode === "REGISTER" && styles.modeTabTextActive]}>
-                New Resident
+                New Resident Onboarding
               </Text>
             </TouchableOpacity>
           </View>
@@ -162,7 +170,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           {/* Success Banner */}
           {successMessage && (
             <View style={styles.successBanner}>
-              <Text style={styles.successIcon}>✅</Text>
+              <CheckCircleIcon size={18} color={colors.primary} />
               <Text style={styles.successText}>{successMessage}</Text>
             </View>
           )}
@@ -170,7 +178,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           {/* Error Banner */}
           {errorMessage && (
             <View style={styles.errorBanner}>
-              <Text style={styles.errorIcon}>⚠️</Text>
+              <AlertCircleIcon size={18} color={colors.danger} />
               <Text style={styles.errorText}>{errorMessage}</Text>
             </View>
           )}
@@ -179,10 +187,10 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             /* Login Form Card */
             <View style={styles.formCard}>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Email Address</Text>
+                <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="e.g. tenant@community.local"
+                  placeholder="e.g. preetham@community.local"
                   placeholderTextColor={colors.textMuted}
                   value={email}
                   onChangeText={(text) => {
@@ -196,7 +204,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Password</Text>
+                <Text style={styles.inputLabel}>PASSWORD</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="Enter your account password"
@@ -238,19 +246,23 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                   onPress={handleFillDemoTenant}
                   disabled={isLoading}
                 >
-                  <Text style={styles.demoButtonText}>
-                    👉 Tenant: tenant@community.local (Flat 402)
-                  </Text>
+                  <View>
+                    <Text style={styles.demoButtonTitle}>Preetham (Tenant • Flat 402)</Text>
+                    <Text style={styles.demoButtonEmail}>preetham@community.local</Text>
+                  </View>
+                  <ChevronRightIcon size={16} color={colors.primary} />
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.demoButton, { marginTop: 6 }]}
+                  style={[styles.demoButton, { marginTop: 8 }]}
                   onPress={handleFillDemoOwner}
                   disabled={isLoading}
                 >
-                  <Text style={styles.demoButtonText}>
-                    👉 Owner: owner@community.local (Flat 205)
-                  </Text>
+                  <View>
+                    <Text style={styles.demoButtonTitle}>Vikramaditya (Owner • Flat 205)</Text>
+                    <Text style={styles.demoButtonEmail}>vikramaditya@community.local</Text>
+                  </View>
+                  <ChevronRightIcon size={16} color={colors.primary} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -258,7 +270,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             /* Registration Form Card */
             <View style={styles.formCard}>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Full Name *</Text>
+                <Text style={styles.inputLabel}>FULL NAME *</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="e.g. Rahul Sharma"
@@ -270,7 +282,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Email Address *</Text>
+                <Text style={styles.inputLabel}>EMAIL ADDRESS *</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="e.g. rahul@example.com"
@@ -284,7 +296,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Password *</Text>
+                <Text style={styles.inputLabel}>PASSWORD *</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="At least 6 characters"
@@ -297,7 +309,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Phone Number</Text>
+                <Text style={styles.inputLabel}>CONTACT NUMBER</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="+91 98765 43210"
@@ -310,22 +322,38 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Resident Role</Text>
-                <View style={{ flexDirection: "row", gap: 10, marginTop: 4 }}>
+                <Text style={styles.inputLabel}>RESIDENCY TYPE</Text>
+                <View style={{ flexDirection: "row", gap: 8, marginTop: 4 }}>
                   <TouchableOpacity
-                    style={[styles.roleSelectBtn, regRole === "RESIDENT_TENANT" && styles.roleSelectBtnActive]}
+                    style={[
+                      styles.roleSelectBtn,
+                      regRole === "RESIDENT_TENANT" && styles.roleSelectBtnActive
+                    ]}
                     onPress={() => setRegRole("RESIDENT_TENANT")}
                   >
-                    <Text style={[styles.roleSelectText, regRole === "RESIDENT_TENANT" && styles.roleSelectTextActive]}>
-                      Tenant
+                    <Text
+                      style={[
+                        styles.roleSelectText,
+                        regRole === "RESIDENT_TENANT" && styles.roleSelectTextActive
+                      ]}
+                    >
+                      Verified Tenant
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.roleSelectBtn, regRole === "RESIDENT_OWNER" && styles.roleSelectBtnActive]}
+                    style={[
+                      styles.roleSelectBtn,
+                      regRole === "RESIDENT_OWNER" && styles.roleSelectBtnActive
+                    ]}
                     onPress={() => setRegRole("RESIDENT_OWNER")}
                   >
-                    <Text style={[styles.roleSelectText, regRole === "RESIDENT_OWNER" && styles.roleSelectTextActive]}>
-                      Owner
+                    <Text
+                      style={[
+                        styles.roleSelectText,
+                        regRole === "RESIDENT_OWNER" && styles.roleSelectTextActive
+                      ]}
+                    >
+                      Property Owner
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -347,8 +375,9 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           )}
 
           <View style={styles.securityNote}>
+            <LockIcon size={14} color={colors.primary} />
             <Text style={styles.securityText}>
-              🔒 Protected by server-side JWT authentication & encrypted storage
+              Encrypted JWT session storage • Super Admin RBAC Protected
             </Text>
           </View>
         </ScrollView>
@@ -368,131 +397,138 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xl
+    paddingHorizontal: 20,
+    paddingVertical: 30
   },
   brandContainer: {
     alignItems: "center",
-    marginBottom: spacing.md
+    marginBottom: 20
   },
   logoBadge: {
     width: 60,
     height: 60,
     borderRadius: 18,
-    backgroundColor: colors.bgSurface,
+    backgroundColor: "#E8F4EF",
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: "rgba(21, 154, 114, 0.2)",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: spacing.xs
+    marginBottom: 10
   },
-  logoText: {
-    fontSize: 28
+  brandTag: {
+    fontSize: 10,
+    fontWeight: typography.weights.bold,
+    color: colors.primary,
+    letterSpacing: 0.8,
+    marginBottom: 2
   },
   brandTitle: {
-    fontSize: typography.sizes.title,
+    fontSize: 26,
     fontWeight: typography.weights.heavy,
     color: colors.textMain,
-    marginBottom: spacing.xs
+    letterSpacing: -0.4,
+    marginBottom: 4
   },
   brandSubtitle: {
-    fontSize: typography.sizes.caption,
+    fontSize: 12,
     color: colors.textMuted,
     textAlign: "center",
-    maxWidth: 290
+    maxWidth: 300,
+    lineHeight: 16
   },
   modeTabs: {
     flexDirection: "row",
-    backgroundColor: colors.bgSurface,
+    backgroundColor: "#E5E8E5",
     borderRadius: 12,
-    padding: 4,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border
+    padding: 3,
+    marginBottom: 16
   },
   modeTab: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 9,
     alignItems: "center",
-    borderRadius: 8
+    borderRadius: 9
   },
   modeTabActive: {
-    backgroundColor: colors.primary
+    backgroundColor: "#FFFFFF",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2
   },
   modeTabText: {
-    fontSize: 13,
-    fontWeight: "600",
+    fontSize: 12,
+    fontWeight: typography.weights.medium,
     color: colors.textMuted
   },
   modeTabTextActive: {
-    color: "#ffffff"
+    color: colors.textMain,
+    fontWeight: typography.weights.bold
   },
   successBanner: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#10b98120",
+    backgroundColor: "#E8F4EF",
     borderWidth: 1,
-    borderColor: "#10b98160",
+    borderColor: "rgba(21, 154, 114, 0.3)",
     borderRadius: 12,
-    padding: spacing.md,
-    marginBottom: spacing.md
-  },
-  successIcon: {
-    fontSize: 18,
-    marginRight: spacing.sm
+    padding: 12,
+    marginBottom: 14,
+    gap: 8
   },
   successText: {
     flex: 1,
-    fontSize: typography.sizes.caption,
-    color: "#059669",
+    fontSize: 12,
+    color: colors.primary,
     fontWeight: typography.weights.medium
   },
   errorBanner: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#ef444420",
+    backgroundColor: "#FEE2E2",
     borderWidth: 1,
-    borderColor: "#ef444460",
+    borderColor: "#FCA5A5",
     borderRadius: 12,
-    padding: spacing.md,
-    marginBottom: spacing.md
-  },
-  errorIcon: {
-    fontSize: 18,
-    marginRight: spacing.sm
+    padding: 12,
+    marginBottom: 14,
+    gap: 8
   },
   errorText: {
     flex: 1,
-    fontSize: typography.sizes.caption,
+    fontSize: 12,
     color: colors.danger,
     fontWeight: typography.weights.medium
   },
   formCard: {
-    backgroundColor: colors.bgSurface,
-    borderRadius: 18,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: spacing.lg,
-    elevation: 3
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8
   },
   inputGroup: {
-    marginBottom: spacing.md
+    marginBottom: 14
   },
   inputLabel: {
-    fontSize: typography.sizes.caption,
-    fontWeight: typography.weights.semibold,
+    fontSize: 10,
+    fontWeight: typography.weights.bold,
     color: colors.textMuted,
-    marginBottom: spacing.xs,
-    textTransform: "uppercase"
+    marginBottom: 4,
+    letterSpacing: 0.5
   },
   input: {
-    backgroundColor: colors.bgPage,
+    backgroundColor: "#F7F8F6",
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 10,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 12,
-    fontSize: typography.sizes.body,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    fontSize: 14,
     color: colors.textMain
   },
   roleSelectBtn: {
@@ -500,44 +536,45 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: "center",
-    backgroundColor: colors.bgPage
+    backgroundColor: "#F7F8F6"
   },
   roleSelectBtnActive: {
     borderColor: colors.primary,
-    backgroundColor: "#3b82f615"
+    backgroundColor: "#E8F4EF"
   },
   roleSelectText: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.textMuted,
     fontWeight: "600"
   },
   roleSelectTextActive: {
-    color: colors.primary
+    color: colors.primary,
+    fontWeight: "700"
   },
   submitButton: {
     backgroundColor: colors.primary,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: "center",
-    marginTop: spacing.sm
+    marginTop: 6
   },
   submitButtonDisabled: {
     opacity: 0.6
   },
   submitButtonText: {
     color: "#ffffff",
-    fontSize: typography.sizes.body,
+    fontSize: 14,
     fontWeight: typography.weights.bold
   },
   demoSection: {
-    marginTop: spacing.lg
+    marginTop: 20
   },
   dividerRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: spacing.sm
+    marginBottom: 12
   },
   dividerLine: {
     flex: 1,
@@ -545,32 +582,42 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border
   },
   dividerText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: typography.weights.bold,
     color: colors.textMuted,
-    marginHorizontal: spacing.sm
+    marginHorizontal: 10,
+    letterSpacing: 0.6
   },
   demoButton: {
-    backgroundColor: colors.bgPage,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#F7F8F6",
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: 12,
     paddingVertical: 10,
-    paddingHorizontal: spacing.md,
-    alignItems: "center"
+    paddingHorizontal: 14
   },
-  demoButtonText: {
-    fontSize: typography.sizes.caption,
-    color: colors.primary,
-    fontWeight: typography.weights.semibold
+  demoButtonTitle: {
+    fontSize: 12,
+    fontWeight: typography.weights.bold,
+    color: colors.textMain
+  },
+  demoButtonEmail: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 1
   },
   securityNote: {
-    marginTop: spacing.lg,
-    alignItems: "center"
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 20,
+    gap: 6
   },
   securityText: {
     fontSize: 11,
-    color: colors.textMuted,
-    textAlign: "center"
+    color: colors.textMuted
   }
 });

@@ -6,6 +6,7 @@ import { StatusPill } from "./StatusPill";
 import { ConfirmationModal } from "./ConfirmationModal";
 import { useToast } from "./Toast";
 import { adminApi } from "../lib/api";
+import { RefreshIcon, AlertTriangleIcon } from "./icons";
 
 export function AmenitiesManager() {
   const [amenities, setAmenities] = useState<Amenity[]>([]);
@@ -80,14 +81,18 @@ export function AmenitiesManager() {
             <h2 className="panel-title">Shared Community Facilities & Amenities</h2>
             <p className="panel-subtitle">Manage recreation slots, capacity rules, and operational timings</p>
           </div>
-          <button className="action-btn btn-outline" onClick={fetchData} disabled={loading}>
-            {loading ? "Loading..." : "🔄 Refresh"}
+          <button className="action-btn btn-outline" onClick={fetchData} disabled={loading} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <RefreshIcon size={14} />
+            <span>{loading ? "Loading..." : "Refresh"}</span>
           </button>
         </div>
 
         {error && (
           <div className="feedback-banner error">
-            <span>⚠️ {error}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+              <AlertTriangleIcon size={14} color="#D95757" />
+              <span>{error}</span>
+            </span>
           </div>
         )}
 
@@ -110,7 +115,7 @@ export function AmenitiesManager() {
                   <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "10px" }}>
                     {a.description}
                   </p>
-                  <div style={{ display: "flex", gap: "14px", fontSize: "12px", background: "#f8fafc", padding: "8px 12px", borderRadius: "6px" }}>
+                  <div style={{ display: "flex", gap: "14px", fontSize: "12px", background: "var(--bg-secondary)", border: "1px solid var(--border)", padding: "8px 12px", borderRadius: "6px" }}>
                     <div><strong>Capacity:</strong> {a.capacity} persons</div>
                     <div><strong>Hours:</strong> {a.openTime.slice(0, 5)} - {a.closeTime.slice(0, 5)}</div>
                   </div>
@@ -158,7 +163,8 @@ export function AmenitiesManager() {
         ) : filteredBookings.length === 0 ? (
           <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>No booking reservations found.</p>
         ) : (
-          <table className="info-table">
+          <div className="table-responsive">
+            <table className="info-table">
             <thead>
               <tr>
                 <th>Facility Name</th>
@@ -213,6 +219,7 @@ export function AmenitiesManager() {
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

@@ -5,6 +5,7 @@ import { Notice } from "@apartment/shared";
 import { StatusPill } from "./StatusPill";
 import { adminApi } from "../lib/api";
 import { useToast } from "./Toast";
+import { RefreshIcon, AlertTriangleIcon, SearchIcon, BellIcon } from "./icons";
 
 export function NoticePublisher() {
   const { success, error: toastError } = useToast();
@@ -73,16 +74,16 @@ export function NoticePublisher() {
     }
   };
 
-  const getPriorityTone = (p: string): "blue" | "green" | "orange" | "red" | "violet" => {
+  const getPriorityTone = (p: string): "teal" | "green" | "orange" | "red" => {
     switch (p) {
       case "URGENT":
         return "red";
       case "NORMAL":
-        return "blue";
+        return "teal";
       case "LOW":
         return "green";
       default:
-        return "blue";
+        return "teal";
     }
   };
 
@@ -105,15 +106,19 @@ export function NoticePublisher() {
           className="action-btn btn-outline"
           onClick={loadNotices}
           disabled={loading}
-          style={{ fontSize: "12px" }}
+          style={{ fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "6px" }}
         >
-          {loading ? "Refreshing..." : "🔄 Refresh Circulars"}
+          <RefreshIcon size={14} />
+          <span>{loading ? "Refreshing..." : "Refresh Circulars"}</span>
         </button>
       </div>
 
       {fetchError && (
         <div className="feedback-banner error">
-          <span>⚠️ {fetchError}</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <AlertTriangleIcon size={14} color="#D95757" />
+            <span>{fetchError}</span>
+          </span>
           <button
             onClick={loadNotices}
             style={{
@@ -135,14 +140,17 @@ export function NoticePublisher() {
       <form onSubmit={handlePublish} className="admin-form-card" style={{ marginBottom: "24px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
           <h3 style={{ fontSize: "14px", fontWeight: 700, margin: 0, color: "var(--text-main)" }}>
-            📢 Compose New Broadcast Circular
+            Compose New Broadcast Circular
           </h3>
           <StatusPill tone="orange">Direct Broadcast to Mobile</StatusPill>
         </div>
 
         {formError && (
           <div className="feedback-banner error" style={{ marginBottom: "14px" }}>
-            <span>⚠️ {formError}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+              <AlertTriangleIcon size={14} color="#D95757" />
+              <span>{formError}</span>
+            </span>
           </div>
         )}
 
@@ -215,7 +223,7 @@ export function NoticePublisher() {
 
         <div className="admin-filter-bar">
           <div className="admin-search-box">
-            <span>🔍</span>
+            <SearchIcon size={15} color="#68716D" />
             <input
               type="text"
               placeholder="Search circulars by headline or content..."

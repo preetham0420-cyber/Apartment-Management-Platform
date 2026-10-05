@@ -6,6 +6,7 @@ import { StatusPill } from "./StatusPill";
 import { adminApi } from "../lib/api";
 import { useToast } from "./Toast";
 import { ConfirmationModal } from "./ConfirmationModal";
+import { RefreshIcon, AlertTriangleIcon, SettingsIcon } from "./icons";
 
 export function PropertiesManager() {
   const { success, error: toastError } = useToast();
@@ -80,14 +81,18 @@ export function PropertiesManager() {
           <h2 className="panel-title">Properties & Community Real Estate</h2>
           <p className="panel-subtitle">Manage registered societies, building blocks, helpline contacts, and society rules</p>
         </div>
-        <button className="action-btn btn-outline" onClick={fetchProperties} disabled={loading}>
-          {loading ? "Loading..." : "🔄 Refresh"}
+        <button className="action-btn btn-outline" onClick={fetchProperties} disabled={loading} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+          <RefreshIcon size={14} />
+          <span>{loading ? "Loading..." : "Refresh"}</span>
         </button>
       </div>
 
       {error && (
         <div className="feedback-banner error">
-          <span>⚠️ {error}</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <AlertTriangleIcon size={14} color="#D95757" />
+            <span>{error}</span>
+          </span>
         </div>
       )}
 
@@ -108,7 +113,7 @@ export function PropertiesManager() {
                   <StatusPill tone="green">Active Estate</StatusPill>
                 </div>
                 <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "10px" }}>
-                  📍 {p.addressLine1}{p.addressLine2 ? `, ${p.addressLine2}` : ""}, {p.city}, {p.state} {p.postalCode}
+                  {p.addressLine1}{p.addressLine2 ? `, ${p.addressLine2}` : ""}, {p.city}, {p.state} {p.postalCode}
                 </p>
 
                 <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "var(--text-main)", background: "#f8fafc", padding: "10px 14px", borderRadius: "6px", marginBottom: "12px" }}>
@@ -138,7 +143,7 @@ export function PropertiesManager() {
                 {/* Society Bylaws / Rules Summary */}
                 {p.rulesSummary && (
                   <div style={{ background: "#fafafa", border: "1px solid #e2e8f0", padding: "10px 12px", borderRadius: "6px", fontSize: "11px", marginBottom: "12px" }}>
-                    <strong style={{ color: "#334155" }}>📜 Society Guidelines & Rules:</strong>
+                    <strong style={{ color: "#334155" }}>Society Guidelines & Rules:</strong>
                     <p style={{ margin: "4px 0 0 0", color: "#64748b", whiteSpace: "pre-line" }}>{p.rulesSummary}</p>
                   </div>
                 )}
@@ -151,9 +156,10 @@ export function PropertiesManager() {
                 <button
                   className="action-btn btn-primary"
                   onClick={() => handleOpenEdit(p)}
-                  style={{ fontSize: "12px", padding: "6px 14px" }}
+                  style={{ fontSize: "12px", padding: "6px 14px", display: "inline-flex", alignItems: "center", gap: "6px" }}
                 >
-                  ⚙️ Configure Settings
+                  <SettingsIcon size={13} />
+                  <span>Configure Settings</span>
                 </button>
               </div>
             </div>
@@ -168,7 +174,7 @@ export function PropertiesManager() {
             <div className="modal-header">
               <div>
                 <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700 }}>
-                  ⚙️ Configure Society / Property Settings
+                  Configure Society / Property Settings
                 </h3>
                 <p style={{ margin: "2px 0 0 0", fontSize: "12px", color: "var(--text-muted)" }}>
                   Property Code: <code>{editingProperty.code}</code>

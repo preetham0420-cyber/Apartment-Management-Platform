@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { AuthUser, LoginResponseData, ApiErrorResponse, ApiSuccessResponse } from "@apartment/shared";
+import { ShieldIcon, AlertTriangleIcon } from "./icons";
 
 interface AdminLoginProps {
   onLoginSuccess: (user: AuthUser, token: string) => void;
@@ -69,8 +70,8 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
   };
 
   const handleFillDemoTenant = () => {
-    setEmail("tenant@community.local");
-    setPassword("Tenant@12345");
+    setEmail("preetham@community.local");
+    setPassword("Tenant1@12345");
     setErrorMessage(null);
   };
 
@@ -79,7 +80,9 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
       <div className="login-card">
         {/* Header */}
         <div className="login-header">
-          <div className="login-shield-badge">🛡️</div>
+          <div className="login-shield-badge">
+            <ShieldIcon size={26} color="#159A72" />
+          </div>
           <h1 className="login-title">Super Admin Console</h1>
           <p className="login-subtitle">
             Apartment Management Platform • Executive Access
@@ -89,7 +92,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
         {/* Error Alert */}
         {errorMessage && (
           <div className="login-error-alert" role="alert">
-            <span className="error-icon">⚠️</span>
+            <span className="error-icon"><AlertTriangleIcon size={16} color="#D95757" /></span>
             <span>{errorMessage}</span>
           </div>
         )}

@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { AuditLog } from "@apartment/shared";
 import { StatusPill } from "./StatusPill";
 import { adminApi } from "../lib/api";
+import { RefreshIcon, AlertTriangleIcon, SearchIcon, AuditIcon } from "./icons";
 
 export function AuditLogViewer() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
@@ -85,12 +86,12 @@ export function AuditLogViewer() {
     return matchesSearch && matchesAction && matchesResource;
   });
 
-  const getActionTone = (action: string): "blue" | "green" | "orange" | "red" | "violet" => {
+  const getActionTone = (action: string): "teal" | "green" | "orange" | "red" => {
     if (action.includes("DELETE") || action.includes("CANCEL") || action.includes("INACTIVE")) return "red";
     if (action.includes("CREATE") || action.includes("ADD") || action.includes("ACTIVE") || action.includes("RESOLVE")) return "green";
     if (action.includes("UPDATE") || action.includes("STATUS") || action.includes("PATCH")) return "orange";
-    if (action.includes("LOGIN") || action.includes("AUTH")) return "violet";
-    return "blue";
+    if (action.includes("LOGIN") || action.includes("AUTH")) return "teal";
+    return "teal";
   };
 
   return (
@@ -102,14 +103,18 @@ export function AuditLogViewer() {
             Immutable, append-only record of all administrative operations, security mutations, and access events
           </p>
         </div>
-        <button className="action-btn btn-outline" onClick={fetchLogs} disabled={loading} style={{ fontSize: "12px" }}>
-          {loading ? "Refreshing..." : "🔄 Refresh Trail"}
+        <button className="action-btn btn-outline" onClick={fetchLogs} disabled={loading} style={{ fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+          <RefreshIcon size={14} />
+          <span>{loading ? "Refreshing..." : "Refresh Trail"}</span>
         </button>
       </div>
 
       {error && (
         <div className="feedback-banner error">
-          <span>⚠️ {error}</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <AlertTriangleIcon size={14} color="#D95757" />
+            <span>{error}</span>
+          </span>
           <button
             onClick={fetchLogs}
             style={{
@@ -130,7 +135,7 @@ export function AuditLogViewer() {
       {/* Filter & Search Bar */}
       <div className="admin-filter-bar">
         <div className="admin-search-box">
-          <span>🔍</span>
+          <SearchIcon size={15} color="#68716D" />
           <input
             type="text"
             placeholder="Search by actor, action, resource, IP, or details..."
@@ -183,7 +188,9 @@ export function AuditLogViewer() {
         </div>
       ) : filteredLogs.length === 0 ? (
         <div className="empty-state-box">
-          <span style={{ fontSize: "32px" }}>📜</span>
+          <div style={{ marginBottom: "8px" }}>
+            <AuditIcon size={36} color="#159A72" />
+          </div>
           <p style={{ margin: "8px 0 0 0", fontWeight: 600 }}>No audit logs found matching criteria.</p>
           <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: "var(--text-muted)" }}>
             Try clearing your search query or adjusting your filters.

@@ -59,5 +59,19 @@ graph TD
 - **Technology:** MySQL with versioned SQL migrations and seed data.
 - **Target:** Staging and production MySQL instances (Hostinger-native baseline).
 
-## 3. Provisional Role Notice
-All user role definitions currently defined in `@apartment/shared` are **provisional design baselines** derived from the reference package and are pending senior developer confirmation. No role-based access control (RBAC) or authorization gates are enforced on Day 1.
+## 3. Role-Based Access Control & Security Architecture
+
+On Day 7, full server-side Role-Based Access Control (RBAC) and resource ownership enforcement are active across all endpoints:
+
+### Supported Roles:
+- **`SUPER_ADMIN`**: Full platform authority across properties, units, resident accounts, finances, maintenance assignments, notices, documents, and audit logs.
+- **`COMMITTEE_MEMBER`**: Society governance, executive reviews, and committee oversight.
+- **`RESIDENT_OWNER`**: Flat owner residing in the community. Has access to personal unit, household, vehicles, gate passes, maintenance, amenities, and owner-only statutory documents (`OWNERS_ONLY`). Strictly denied access to Super Admin APIs (HTTP 403 Forbidden).
+- **`RESIDENT_TENANT`**: Resident tenant with household, vehicle, gate pass, maintenance, and amenity booking privileges. Strictly shielded from `OWNERS_ONLY` and `ADMIN_ONLY` documents, and denied access to Super Admin APIs (HTTP 403 Forbidden).
+- **`SECURITY_GUARD`**: Gate security personnel with visitor registry and gate pass verification rights.
+- **`MAINTENANCE_STAFF`**: Field technicians for servicing assigned maintenance tickets.
+- **`SERVICE_VENDOR`**: External contractors servicing scheduled facility jobs.
+
+### Resource Ownership & IDOR Protection:
+Every authenticated resident request strictly verifies that the accessed resource (household member, vehicle, maintenance ticket, dues ledger, unit details) belongs to the user's actively assigned flat (`unit_id`). Probing another flat's records is rejected with `HTTP 403 FORBIDDEN`.
+

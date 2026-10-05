@@ -14,10 +14,10 @@ SET
   `payment_instructions` = 'Transfer maintenance dues via NEFT/UPI to Greenfield Association: HDFC A/C 50200012345678, IFSC: HDFC0001234 or UPI ID: greenfieldrwa@hdfcbank'
 WHERE `id` = 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d';
 
--- 2. Seed Demo Resident Owner Account: owner@community.local / Owner@12345
+-- 2. Seed Demo Resident Owner Account: vikramaditya@community.local / Owner@12345
 INSERT INTO `users` (`id`, `email`, `password_hash`, `full_name`, `phone_number`, `role_id`, `is_active`) VALUES
-  ('user-resident-owner-000000000003', 'owner@community.local', '$2b$10$48zk05HzR3xQB1sZk4vDtu562zcTm02soWULGva6Cy0Li8y/LITxW', 'Vikramaditya (Resident Owner)', '+91 98888 77777', 3, TRUE)
-ON DUPLICATE KEY UPDATE `full_name` = VALUES(`full_name`);
+  ('user-resident-owner-000000000003', 'vikramaditya@community.local', '$2b$10$48zk05HzR3xQB1sZk4vDtu562zcTm02soWULGva6Cy0Li8y/LITxW', 'Vikramaditya (Resident Owner)', '+91 98888 77777', 3, TRUE)
+ON DUPLICATE KEY UPDATE `full_name` = VALUES(`full_name`), `email` = VALUES(`email`);
 
 -- Assign Owner to Unit 205 (u1111111-2222-3333-4444-555555555553)
 INSERT INTO `user_unit_assignments` (`id`, `user_id`, `unit_id`, `assignment_type`, `is_primary`, `valid_from`, `status`) VALUES

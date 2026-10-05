@@ -80,8 +80,8 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 // Server startup
-app.listen(config.port, () => {
-  console.log(`[API Server] Running in ${config.nodeEnv} mode on http://localhost:${config.port}`);
+app.listen(config.port, "0.0.0.0", () => {
+  console.log(`[API Server] Running in ${config.nodeEnv} mode on http://0.0.0.0:${config.port} (LAN: http://172.20.10.2:${config.port})`);
   console.log(`[API Server] Health endpoint ready at http://localhost:${config.port}/api/health`);
   console.log(`[API Server] Auth endpoint ready at http://localhost:${config.port}/api/auth/login`);
 });

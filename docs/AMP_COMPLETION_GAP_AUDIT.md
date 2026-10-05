@@ -18,7 +18,7 @@ This gap audit document records the verified implementation state of the **Apart
   1. **Community / Property Configuration & Settings**: `[COMPLETE]` — PATCH endpoint, audit logging, Admin Web modal.
   2. **Household Members Management**: `[COMPLETE]` — Self-service mobile CRUD, unit inspection in Admin Web, server-side ownership checks.
   3. **Vehicles & Parking Slot Oversight**: `[COMPLETE]` — Vehicle registration, parking bay allocation/revocation, EV support.
-  4. **Resident Owner Multi-Role Support**: `[COMPLETE]` — Deterministic demo account (`owner@community.local`), mobile authentication, strict admin exclusion.
+  4. **Resident Owner Multi-Role Support**: `[COMPLETE]` — Deterministic demo account (`vikramaditya@community.local`), mobile authentication, strict admin exclusion.
   5. **Documents & Compliance Centre**: `[COMPLETE]` — Statutory categories, role-based visibility (`ALL_RESIDENTS`, `OWNERS_ONLY`, `ADMIN_ONLY`), mobile view, Admin Web manager.
   6. **Maintenance Image Attachments & File Validation**: `[COMPLETE]` — Multipart & Base64 uploads, 5MB limit, strict JPEG/PNG/PDF magic-bytes verification, path traversal prevention.
   7. **Approved-Account Self-Registration & Onboarding Workflow**: `[COMPLETE]` — `POST /api/auth/register`, Admin pending approvals queue, approve/reject workflow, role escalation defense.
@@ -50,7 +50,7 @@ This gap audit document records the verified implementation state of the **Apart
 | **Notifications Inbox** | Mobile / API | `[COMPLETE]` | `user_notifications` table, resident inbox feed, unread badge, mark-as-read actions. |
 | **Maintenance Attachments** | API / UI | `[COMPLETE]` | Secure file upload, defect photo viewing on mobile and web console. |
 | **Attachment Validation** | API Security | `[COMPLETE]` | Strict magic-bytes file signature check (JPEG/PNG/PDF), 5MB cap, path sanitization. |
-| **RESIDENT_OWNER Role** | Shared / API | `[COMPLETE]` | Deterministic seed (`owner@community.local`), mobile access, strict exclusion from Super Admin. |
+| **RESIDENT_OWNER Role** | Shared / API | `[COMPLETE]` | Deterministic seed (`vikramaditya@community.local`), mobile access, strict exclusion from Super Admin. |
 | **Approved-Account Onboarding** | All Tiers | `[COMPLETE]` | Self-service registration, `PENDING_APPROVAL` status, Admin review & approval/rejection. |
 | **Secure Mobile Token Storage** | Mobile App | `[COMPLETE]` | Implemented using `expo-secure-store` with hardware keystore/keychain encryption. |
 | **Rate Limiting** | Backend API | `[COMPLETE]` | In-memory sliding window rate limiting on authentication routes (HTTP 429). |
@@ -84,7 +84,7 @@ This gap audit document records the verified implementation state of the **Apart
 - **Admin Web UI**: Interactive parking slot allocation and revocation in `UnitsManager.tsx`.
 
 ### Phase 4 — Resident Owner Role
-- **Database Seed**: Seeded deterministic demo account `owner@community.local` (`Owner@12345`), role `RESIDENT_OWNER` (ID 3), allocated to Flat 205 (Tower B).
+- **Database Seed**: Seeded deterministic demo account `vikramaditya@community.local` (`Owner@12345`), role `RESIDENT_OWNER` (ID 3), allocated to Flat 205 (Tower B).
 - **Access Control**: Mobile client permits authentication for both `RESIDENT_TENANT` and `RESIDENT_OWNER`.
 - **Isolation**: Resident Owner is strictly prohibited from accessing Super Admin endpoints (verified HTTP 403 response).
 - **Scope**: Access to owner-appropriate documents (`OWNERS_ONLY`), unit records, household, vehicles, dues, amenities, and notifications.

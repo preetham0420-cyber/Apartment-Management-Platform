@@ -7,6 +7,7 @@ import { MetricCard } from "./MetricCard";
 import { ConfirmationModal } from "./ConfirmationModal";
 import { useToast } from "./Toast";
 import { adminApi } from "../lib/api";
+import { RefreshIcon, AlertTriangleIcon, SearchIcon } from "./icons";
 
 export function DuesManager() {
   const [dues, setDues] = useState<Due[]>([]);
@@ -91,29 +92,33 @@ export function DuesManager() {
           <h2 className="panel-title">Accounts & Maintenance Dues Ledger</h2>
           <p className="panel-subtitle">Track billing cycles, offline payment recordings, and collection efficiency</p>
         </div>
-        <button className="action-btn btn-outline" onClick={fetchDues} disabled={loading}>
-          {loading ? "Loading..." : "🔄 Refresh Ledger"}
+        <button className="action-btn btn-outline" onClick={fetchDues} disabled={loading} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+          <RefreshIcon size={14} />
+          <span>{loading ? "Loading..." : "Refresh Ledger"}</span>
         </button>
       </div>
 
       {error && (
         <div className="feedback-banner error">
-          <span>⚠️ {error}</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <AlertTriangleIcon size={14} color="#D95757" />
+            <span>{error}</span>
+          </span>
         </div>
       )}
 
       {/* Collection Metrics */}
       <section className="grid-cards" style={{ marginBottom: "20px" }}>
-        <MetricCard label="Total Billed" value={`₹${totalBilled.toLocaleString()}`} note="Cumulative society charges" tone="blue" />
+        <MetricCard label="Total Billed" value={`₹${totalBilled.toLocaleString()}`} note="Cumulative society charges" tone="teal" />
         <MetricCard label="Total Collected" value={`₹${totalCollected.toLocaleString()}`} note="Reconciled payments" tone="green" />
         <MetricCard label="Outstanding Dues" value={`₹${totalPending.toLocaleString()}`} note={`${pendingDues.length} pending invoices`} tone="red" />
-        <MetricCard label="Collection Rate" value={efficiency} note="Efficiency percentage" tone="violet" />
+        <MetricCard label="Collection Rate" value={efficiency} note="Efficiency percentage" tone="teal" />
       </section>
 
       {/* Filter and Search Bar */}
       <div className="admin-filter-bar">
         <div className="admin-search-box">
-          <span>🔍</span>
+          <SearchIcon size={15} color="#68716D" />
           <input
             type="text"
             placeholder="Search by invoice title, unit number, ID..."
@@ -152,7 +157,8 @@ export function DuesManager() {
       ) : filteredDues.length === 0 ? (
         <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>No dues records found matching filter.</p>
       ) : (
-        <table className="info-table">
+        <div className="table-responsive">
+          <table className="info-table">
           <thead>
             <tr>
               <th>Invoice Description</th>
@@ -210,6 +216,7 @@ export function DuesManager() {
             ))}
           </tbody>
         </table>
+        </div>
       )}
 
       {/* Record Offline Payment Modal */}

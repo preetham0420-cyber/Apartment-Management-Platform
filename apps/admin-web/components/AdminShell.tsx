@@ -43,6 +43,8 @@ export function AdminShell({
         onSelectTab={setActiveTab}
         open={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
+        adminUser={adminUser}
+        onLogout={onLogout}
       />
 
       <div className="admin-body">

@@ -3,21 +3,48 @@ import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
+import {
+  HomeIcon,
+  WrenchIcon,
+  MessageIcon,
+  ShieldIcon,
+  MenuIcon
+} from "./MobileIcons";
 
 export type TabKey = "home" | "services" | "chat" | "visitors" | "more";
 
 interface TabItem {
   key: TabKey;
   label: string;
-  icon: string;
+  renderIcon: (color: string) => React.ReactNode;
 }
 
 const tabs: TabItem[] = [
-  { key: "home", label: "Home", icon: "🏠" },
-  { key: "services", label: "Services", icon: "🔧" },
-  { key: "chat", label: "Chat", icon: "💬" },
-  { key: "visitors", label: "Visitors", icon: "🛡️" },
-  { key: "more", label: "More", icon: "☰" }
+  {
+    key: "home",
+    label: "Home",
+    renderIcon: (color) => <HomeIcon size={20} color={color} strokeWidth={2.1} />
+  },
+  {
+    key: "services",
+    label: "Services",
+    renderIcon: (color) => <WrenchIcon size={20} color={color} strokeWidth={2.1} />
+  },
+  {
+    key: "chat",
+    label: "Chat",
+    renderIcon: (color) => <MessageIcon size={20} color={color} strokeWidth={2.1} />
+  },
+  {
+    key: "visitors",
+    label: "Visitors",
+    renderIcon: (color) => <ShieldIcon size={20} color={color} strokeWidth={2.1} />
+  },
+  {
+    key: "more",
+    label: "More",
+    renderIcon: (color) => <MenuIcon size={20} color={color} strokeWidth={2.1} />
+  }
 ];
 
 interface BottomTabBarProps {
@@ -30,6 +57,8 @@ export function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
     <View style={styles.tabBar}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.key;
+        const iconColor = isActive ? colors.primary : colors.textMuted;
+
         return (
           <TouchableOpacity
             key={tab.key}
@@ -39,13 +68,13 @@ export function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
             accessibilityRole="tab"
             accessibilityState={{ selected: isActive }}
           >
-            <Text style={[styles.tabIcon, isActive && styles.activeIcon]}>
-              {tab.icon}
-            </Text>
+            {isActive && <View style={styles.activePill} />}
+            <View style={[styles.iconWrapper, isActive && styles.iconWrapperActive]}>
+              {tab.renderIcon(iconColor)}
+            </View>
             <Text style={[styles.tabLabel, isActive && styles.activeLabel]}>
               {tab.label}
             </Text>
-            {isActive && <View style={styles.activeIndicator} />}
           </TouchableOpacity>
         );
       })}
@@ -59,40 +88,48 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgSurface,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    paddingVertical: spacing.xs,
-    paddingBottom: spacing.sm,
-    justifyContent: "space-around"
+    paddingTop: 8,
+    paddingBottom: 14,
+    justifyContent: "space-around",
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8
   },
   tabButton: {
     alignItems: "center",
     justifyContent: "center",
     flex: 1,
-    paddingVertical: 4,
+    minHeight: 46,
     position: "relative"
   },
-  tabIcon: {
-    fontSize: 18,
-    marginBottom: 2,
-    opacity: 0.7
+  activePill: {
+    position: "absolute",
+    top: -8,
+    width: 24,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: colors.primary
   },
-  activeIcon: {
-    opacity: 1
+  iconWrapper: {
+    width: 32,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 2
+  },
+  iconWrapperActive: {
+    transform: [{ scale: 1.05 }]
   },
   tabLabel: {
-    fontSize: typography.sizes.tiny,
+    fontSize: 11,
     fontWeight: typography.weights.medium,
-    color: colors.textMuted
+    color: colors.textMuted,
+    letterSpacing: 0.2
   },
   activeLabel: {
     color: colors.primary,
     fontWeight: typography.weights.bold
-  },
-  activeIndicator: {
-    position: "absolute",
-    bottom: -4,
-    width: 16,
-    height: 3,
-    borderRadius: 2,
-    backgroundColor: colors.primary
   }
 });

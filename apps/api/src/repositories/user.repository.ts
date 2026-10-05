@@ -30,7 +30,7 @@ const DEV_SEED_USERS: UserRecord[] = [
   },
   {
     id: "user-resident-tenant-00000002",
-    email: "tenant1@community.local",
+    email: "preetham@community.local",
     passwordHash: "$2b$10$sguHc80I8Hhccz/Go0l6fuZU65qaZyRuXrfKJQMhibCuLk5b4Y9Z2", // Tenant1@12345
     fullName: "Preetham (Resident Tenant)",
     phoneNumber: "+91 91234 56789",
@@ -40,7 +40,7 @@ const DEV_SEED_USERS: UserRecord[] = [
   },
   {
     id: "user-resident-owner-000000000003",
-    email: "owner@community.local",
+    email: "vikramaditya@community.local",
     passwordHash: "$2b$10$48zk05HzR3xQB1sZk4vDtu562zcTm02soWULGva6Cy0Li8y/LITxW", // Owner@12345
     fullName: "Vikramaditya (Resident Owner)",
     phoneNumber: "+91 98888 77777",
@@ -50,7 +50,7 @@ const DEV_SEED_USERS: UserRecord[] = [
   },
   {
     id: "user-resident-tenant-00000004",
-    email: "tenant2@community.local",
+    email: "ananya.sharma@community.local",
     passwordHash: "$2b$10$N.Pe9osfp5l3omeeSmrnlujfcKyY7e4EhOSA13pjXHLBLRgksbTBq", // Tenant2@12345
     fullName: "Ananya Sharma (Resident Tenant)",
     phoneNumber: "+91 98222 33445",
@@ -60,7 +60,7 @@ const DEV_SEED_USERS: UserRecord[] = [
   },
   {
     id: "user-resident-tenant-00000005",
-    email: "tenant3@community.local",
+    email: "rahul.verma@community.local",
     passwordHash: "$2b$10$7wthTd2WhKlVZEcHINvVaeKfYbXR8ZDooy8pcZG3XaJY62RfzybPq", // Tenant3@12345
     fullName: "Rahul Verma (Resident Tenant)",
     phoneNumber: "+91 97333 44556",
@@ -130,10 +130,7 @@ export class UserRepository {
    * Find user by email using parameterized SQL against MySQL 8.0+.
    */
   public async findByEmail(email: string): Promise<UserRecord | null> {
-    let normalizedEmail = email.toLowerCase().trim();
-    if (normalizedEmail === "tenant@community.local") normalizedEmail = "tenant1@community.local";
-    if (normalizedEmail === "ananya.tenant@community.local") normalizedEmail = "tenant2@community.local";
-    if (normalizedEmail === "rahul.tenant@community.local") normalizedEmail = "tenant3@community.local";
+    const normalizedEmail = email.toLowerCase().trim();
 
     try {
       const sql = `

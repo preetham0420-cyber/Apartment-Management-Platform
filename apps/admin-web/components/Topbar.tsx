@@ -1,5 +1,8 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from "react";
 import { AuthUser } from "@apartment/shared";
+import { SearchIcon, BellIcon } from "./icons";
 
 interface TopbarProps {
   onToggleMenu: () => void;
@@ -24,7 +27,7 @@ const initialNotifications: NotificationItem[] = [
     body: "Unit 402 reported 'Kitchen Sink Water Leakage'. Assigned to Plumbing Team.",
     time: "10m ago",
     unread: true,
-    color: "#f59e45"
+    color: "#D99A22"
   },
   {
     id: "n-2",
@@ -32,7 +35,7 @@ const initialNotifications: NotificationItem[] = [
     body: "Amazon Delivery Agent pre-approved by resident for Tower A Unit 402.",
     time: "24m ago",
     unread: true,
-    color: "#5b6cf9"
+    color: "#3A8F83"
   },
   {
     id: "n-3",
@@ -40,7 +43,7 @@ const initialNotifications: NotificationItem[] = [
     body: "22 homes have pending maintenance dues awaiting collection reconciliation.",
     time: "1h ago",
     unread: true,
-    color: "#e95b64"
+    color: "#D95757"
   },
   {
     id: "n-4",
@@ -48,7 +51,7 @@ const initialNotifications: NotificationItem[] = [
     body: "Official notice 'Scheduled Power Backup Drill' broadcasted to all residents.",
     time: "3h ago",
     unread: false,
-    color: "#18a775"
+    color: "#159A72"
   }
 ];
 
@@ -85,57 +88,69 @@ export function Topbar({ onToggleMenu, title, adminUser, onLogout }: TopbarProps
 
   return (
     <header className="topbar">
+      {/* Contextual Title & Breadcrumbs */}
       <div className="topbar-left">
         <button
           className="mobile-hamburger"
           onClick={onToggleMenu}
           aria-label="Open navigation menu"
         >
-          ☰
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
         </button>
-        <h1 className="topbar-title">{title}</h1>
+        <div className="topbar-context">
+          <span className="topbar-breadcrumb">Greenfield Heights</span>
+          <span className="topbar-breadcrumb-separator">/</span>
+          <h1 className="topbar-title">{title}</h1>
+        </div>
       </div>
 
+      {/* Global Search */}
       <div className="topbar-center">
-        <div className="search-box">
-          <span className="search-icon">🔍</span>
+        <div className="global-search-container">
+          <span className="search-icon-wrapper">
+            <SearchIcon size={15} color="var(--text-muted)" />
+          </span>
           <input
             type="search"
-            placeholder="Search units, residents, tickets..."
+            placeholder="Search units, residents, tickets, passes..."
             aria-label="Search console"
-            className="search-input"
+            className="global-search-input"
           />
+          <kbd className="search-shortcut">⌘K</kbd>
         </div>
       </div>
 
+      {/* Actions & Profile */}
       <div className="topbar-right">
-        <div className="status-indicator">
-          <span className="live-dot" />
-          <span>Console Online</span>
+        {/* System Status */}
+        <div className="system-status-chip">
+          <span className="status-pulse-dot" />
+          <span className="status-text">Operations Live</span>
         </div>
 
+        {/* Notifications Dropdown */}
         <div className="notifications-wrapper" ref={dropdownRef}>
           <button
-            className="topbar-icon-button"
+            className={`topbar-icon-button ${notificationsOpen ? "active" : ""}`}
             aria-label="Notifications"
             title="View Community Notifications"
             onClick={() => setNotificationsOpen((prev) => !prev)}
-            style={{
-              background: notificationsOpen ? "var(--primary-light)" : undefined,
-              borderColor: notificationsOpen ? "var(--primary)" : undefined
-            }}
           >
-            🔔
-            {unreadCount > 0 && <span className="notification-count">{unreadCount}</span>}
+            <BellIcon size={18} color="var(--text-main)" />
+            {unreadCount > 0 && <span className="notification-badge-dot" />}
           </button>
 
           {notificationsOpen && (
             <div className="notifications-dropdown">
               <div className="notifications-header">
-                <h4>Notifications ({notifications.length})</h4>
+                <span className="notifications-title">Notifications ({notifications.length})</span>
                 {unreadCount > 0 && (
                   <button className="notifications-clear-btn" onClick={handleMarkAllRead}>
-                    Mark all as read
+                    Mark all read
                   </button>
                 )}
               </div>
@@ -148,16 +163,16 @@ export function Topbar({ onToggleMenu, title, adminUser, onLogout }: TopbarProps
                     onClick={() => handleToggleItem(n.id)}
                   >
                     <span
-                      className="notification-dot"
+                      className="notification-indicator-dot"
                       style={{
                         backgroundColor: n.color,
-                        opacity: n.unread ? 1 : 0.4
+                        opacity: n.unread ? 1 : 0.35
                       }}
                     />
-                    <div style={{ flex: 1 }}>
-                      <div className="notification-title">{n.title}</div>
-                      <div className="notification-body">{n.body}</div>
-                      <div className="notification-time">{n.time}</div>
+                    <div className="notification-content">
+                      <div className="notification-item-title">{n.title}</div>
+                      <div className="notification-item-body">{n.body}</div>
+                      <div className="notification-item-time">{n.time}</div>
                     </div>
                   </div>
                 ))}
@@ -166,26 +181,18 @@ export function Topbar({ onToggleMenu, title, adminUser, onLogout }: TopbarProps
           )}
         </div>
 
-        <div className="profile-chip">
-          <span className="profile-avatar">
-            {adminUser ? adminUser.fullName.charAt(0).toUpperCase() : "SA"}
-          </span>
-          <div className="profile-info">
-            <strong>{adminUser ? adminUser.fullName : "Administrator"}</strong>
-            <small>{adminUser ? adminUser.role : "Super Admin Authority"}</small>
+        {/* Admin Profile Chip */}
+        <div className="topbar-profile-chip">
+          <div className="topbar-avatar">
+            {adminUser?.fullName
+              ? adminUser.fullName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+              : "SA"}
+          </div>
+          <div className="topbar-profile-text">
+            <span className="topbar-user-name">{adminUser?.fullName || "Super Admin"}</span>
+            <span className="topbar-user-role">Super Admin</span>
           </div>
         </div>
-
-        {onLogout && (
-          <button
-            className="logout-button"
-            onClick={onLogout}
-            title="Sign out of Super Admin Console"
-            aria-label="Sign out"
-          >
-            Sign Out
-          </button>
-        )}
       </div>
     </header>
   );

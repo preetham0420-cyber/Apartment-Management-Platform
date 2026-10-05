@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from "react-nati
 import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
+import { LockIcon, MessageIcon } from "../components/MobileIcons";
 
 interface ChatContact {
   id: string;
@@ -26,12 +27,12 @@ const channels: ChatContact[] = [
   },
   {
     id: "community",
-    name: "Community Portal Broadcast",
+    name: "Community Broadcast",
     subtext: "Water supply update scheduled at 8:00 PM",
-    initials: "CP",
+    initials: "CB",
     unread: 1,
     time: "5:40 PM",
-    color: colors.violet
+    color: colors.secondary
   },
   {
     id: "security",
@@ -40,7 +41,7 @@ const channels: ChatContact[] = [
     initials: "SC",
     unread: 0,
     time: "4:15 PM",
-    color: colors.danger
+    color: colors.darkStructural
   },
   {
     id: "maintenance",
@@ -58,7 +59,7 @@ const channels: ChatContact[] = [
     initials: "NR",
     unread: 0,
     time: "Yesterday",
-    color: colors.success
+    color: colors.primary
   }
 ];
 
@@ -66,16 +67,24 @@ export function ChatScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
-        <Text style={styles.pageHeading}>Community Messages</Text>
-        <Text style={styles.pageSubheading}>Official helpdesks and masked resident chat</Text>
+        <Text style={styles.headerSubtitle}>COMMUNICATIONS & MESSAGING</Text>
+        <Text style={styles.pageHeading}>Community Channels</Text>
+        <Text style={styles.pageSubheading}>
+          Official society desks, facilities, and masked resident channels
+        </Text>
       </View>
 
       {/* Privacy Notice Card */}
       <View style={styles.privacyCard}>
-        <Text style={styles.privacyTitle}>🔒 Masked Privacy Directory</Text>
-        <Text style={styles.privacyBody}>
-          Phone numbers remain private. Messages between residents and staff are routed securely.
-        </Text>
+        <View style={styles.lockBadge}>
+          <LockIcon size={14} color={colors.primary} />
+        </View>
+        <View style={styles.privacyContent}>
+          <Text style={styles.privacyTitle}>Masked Privacy Protection Active</Text>
+          <Text style={styles.privacyBody}>
+            Phone numbers and direct identities remain masked. Messages between residents and staff are routed securely through society servers.
+          </Text>
+        </View>
       </View>
 
       {/* Channels List */}
@@ -118,43 +127,70 @@ export function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: spacing.lg,
-    paddingBottom: spacing.xxl
+    paddingBottom: 40,
+    backgroundColor: colors.bgPage
   },
   header: {
-    marginBottom: spacing.md
+    marginBottom: 16
+  },
+  headerSubtitle: {
+    fontSize: 10,
+    fontWeight: typography.weights.bold,
+    color: colors.primary,
+    letterSpacing: 0.8,
+    marginBottom: 3
   },
   pageHeading: {
-    fontSize: typography.sizes.title,
+    fontSize: 24,
     fontWeight: typography.weights.heavy,
-    color: colors.textMain
+    color: colors.textMain,
+    letterSpacing: -0.4
   },
   pageSubheading: {
-    fontSize: typography.sizes.caption,
+    fontSize: 13,
     color: colors.textMuted,
     marginTop: 2
   },
   privacyCard: {
-    backgroundColor: colors.bgSurface,
-    borderRadius: spacing.radius.md,
+    flexDirection: "row",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: spacing.md,
-    marginBottom: spacing.lg
+    padding: 14,
+    marginBottom: 20,
+    alignItems: "flex-start",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3
+  },
+  lockBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: "#E8F4EF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10
+  },
+  privacyContent: {
+    flex: 1
   },
   privacyTitle: {
-    fontSize: typography.sizes.caption,
+    fontSize: 12,
     fontWeight: typography.weights.bold,
     color: colors.textMain,
     marginBottom: 2
   },
   privacyBody: {
-    fontSize: typography.sizes.caption,
+    fontSize: 11,
     color: colors.textMuted,
-    lineHeight: typography.lineHeights.caption
+    lineHeight: 15
   },
   channelList: {
-    backgroundColor: colors.bgSurface,
-    borderRadius: spacing.radius.md,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.border,
     overflow: "hidden"
@@ -162,26 +198,26 @@ const styles = StyleSheet.create({
   channelRow: {
     flexDirection: "row",
     alignItems: "center",
-    padding: spacing.md,
+    padding: 14,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border
+    borderBottomColor: "#F7F8F6"
   },
   avatar: {
     width: 44,
     height: 44,
-    borderRadius: spacing.radius.round,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center"
   },
   avatarText: {
     color: "#ffffff",
     fontWeight: typography.weights.bold,
-    fontSize: typography.sizes.body
+    fontSize: 14
   },
   channelInfo: {
     flex: 1,
-    marginLeft: spacing.md,
-    marginRight: spacing.sm
+    marginLeft: 12,
+    marginRight: 8
   },
   channelTop: {
     flexDirection: "row",
@@ -190,21 +226,21 @@ const styles = StyleSheet.create({
     marginBottom: 2
   },
   channelName: {
-    fontSize: typography.sizes.body,
+    fontSize: 14,
     fontWeight: typography.weights.bold,
     color: colors.textMain
   },
   channelTime: {
-    fontSize: typography.sizes.tiny,
+    fontSize: 10,
     color: colors.textMuted
   },
   channelSubtext: {
-    fontSize: typography.sizes.caption,
+    fontSize: 12,
     color: colors.textMuted
   },
   unreadBadge: {
     backgroundColor: colors.primary,
-    borderRadius: spacing.radius.round,
+    borderRadius: 10,
     paddingHorizontal: 7,
     paddingVertical: 2,
     minWidth: 20,

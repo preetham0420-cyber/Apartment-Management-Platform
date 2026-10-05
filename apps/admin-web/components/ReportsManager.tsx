@@ -113,35 +113,37 @@ export function ReportsManager() {
 
             {reportsData.financial.recentPayments.length > 0 && (
               <div>
-                <h3 style={{ fontSize: "0.95rem", fontWeight: 600, color: "#475569", marginBottom: "0.5rem" }}>
+                <h3 style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--text-main)", marginBottom: "0.5rem" }}>
                   Recently Settled Receipts
                 </h3>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Title</th>
-                      <th>Resident / Unit</th>
-                      <th>Amount</th>
-                      <th>Status</th>
-                      <th>Settlement Ref</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {reportsData.financial.recentPayments.map((p) => (
-                      <tr key={p.id}>
-                        <td>{p.title}</td>
-                        <td>{p.residentName || "Flat 402"}</td>
-                        <td style={{ fontWeight: 600 }}>₹{p.amount.toLocaleString("en-IN")}</td>
-                        <td>
-                          <span className="badge badge-success">PAID</span>
-                        </td>
-                        <td style={{ fontFamily: "monospace", fontSize: "0.85rem" }}>
-                          {p.paymentReference || "UPI-DEMO-REF-992"}
-                        </td>
+                <div className="table-responsive">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Title</th>
+                        <th>Resident / Unit</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Settlement Ref</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {reportsData.financial.recentPayments.map((p) => (
+                        <tr key={p.id}>
+                          <td>{p.title}</td>
+                          <td>{p.residentName || "Flat 402"}</td>
+                          <td style={{ fontWeight: 600 }}>₹{p.amount.toLocaleString("en-IN")}</td>
+                          <td>
+                            <span className="badge badge-success">PAID</span>
+                          </td>
+                          <td style={{ fontFamily: "monospace", fontSize: "0.85rem" }}>
+                            {p.paymentReference || "UPI-DEMO-REF-992"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>
@@ -199,22 +201,22 @@ export function ReportsManager() {
           </div>
 
           {/* 3. Visitor Traffic & 4. Occupancy Distribution side by side */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem" }}>
             {/* 3. Visitor Traffic */}
             <div className="card" style={{ padding: "1.5rem" }}>
-              <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#0f172a", marginBottom: "1rem" }}>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "1rem" }}>
                 3. Visitor Traffic Activity
               </h2>
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", padding: "0.75rem", background: "#f8fafc", borderRadius: "6px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "0.75rem", background: "var(--bg-secondary)", borderRadius: "6px" }}>
                   <span>Total Logged Entries:</span>
                   <strong>{reportsData.visitors.totalVisitors}</strong>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", padding: "0.75rem", background: "#f8fafc", borderRadius: "6px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "0.75rem", background: "var(--bg-secondary)", borderRadius: "6px" }}>
                   <span>Currently On Premises (At Gate / In):</span>
-                  <strong style={{ color: "#2563eb" }}>{reportsData.visitors.checkedInCount}</strong>
+                  <strong style={{ color: "var(--primary)" }}>{reportsData.visitors.checkedInCount}</strong>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", padding: "0.75rem", background: "#f8fafc", borderRadius: "6px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "0.75rem", background: "var(--bg-secondary)", borderRadius: "6px" }}>
                   <span>Checked Out / Departed:</span>
                   <strong>{reportsData.visitors.checkedOutCount}</strong>
                 </div>

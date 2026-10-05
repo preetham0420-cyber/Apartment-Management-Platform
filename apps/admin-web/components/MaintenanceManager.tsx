@@ -6,6 +6,7 @@ import { StatusPill } from "./StatusPill";
 import { ConfirmationModal } from "./ConfirmationModal";
 import { useToast } from "./Toast";
 import { adminApi } from "../lib/api";
+import { RefreshIcon, AlertTriangleIcon, SearchIcon } from "./icons";
 
 export function MaintenanceManager() {
   const [tickets, setTickets] = useState<MaintenanceRequest[]>([]);
@@ -117,33 +118,33 @@ export function MaintenanceManager() {
     return matchesSearch;
   });
 
-  const getPriorityTone = (priority: string): "blue" | "green" | "orange" | "red" | "violet" => {
+  const getPriorityTone = (priority: string): "teal" | "green" | "orange" | "red" => {
     switch (priority) {
       case "EMERGENCY":
         return "red";
       case "HIGH":
         return "orange";
       case "MEDIUM":
-        return "blue";
+        return "teal";
       default:
         return "green";
     }
   };
 
-  const getStatusTone = (status: string): "blue" | "green" | "orange" | "red" | "violet" => {
+  const getStatusTone = (status: string): "teal" | "green" | "orange" | "red" => {
     switch (status) {
       case "RESOLVED":
       case "CLOSED":
         return "green";
       case "IN_PROGRESS":
-        return "blue";
+        return "teal";
       case "REPORTED":
       case "ASSIGNED":
         return "orange";
       case "CANCELLED":
         return "red";
       default:
-        return "violet";
+        return "teal";
     }
   };
 
@@ -154,21 +155,25 @@ export function MaintenanceManager() {
           <h2 className="panel-title">Facility & Maintenance Ticket Desk</h2>
           <p className="panel-subtitle">Review, assign, inspect, and update community maintenance requests</p>
         </div>
-        <button className="action-btn btn-outline" onClick={fetchTickets} disabled={loading}>
-          {loading ? "Loading..." : "🔄 Refresh Tickets"}
+        <button className="action-btn btn-outline" onClick={fetchTickets} disabled={loading} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+          <RefreshIcon size={14} />
+          <span>{loading ? "Loading..." : "Refresh Tickets"}</span>
         </button>
       </div>
 
       {error && (
         <div className="feedback-banner error">
-          <span>⚠️ {error}</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <AlertTriangleIcon size={14} color="#D95757" />
+            <span>{error}</span>
+          </span>
         </div>
       )}
 
       {/* Filter and Search Bar */}
       <div className="admin-filter-bar">
         <div className="admin-search-box">
-          <span>🔍</span>
+          <SearchIcon size={15} color="#68716D" />
           <input
             type="text"
             placeholder="Search tickets by title, resident, unit..."
@@ -227,7 +232,8 @@ export function MaintenanceManager() {
       ) : filteredTickets.length === 0 ? (
         <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>No tickets match the selected filters.</p>
       ) : (
-        <table className="info-table">
+        <div className="table-responsive">
+          <table className="info-table">
           <thead>
             <tr>
               <th>Ticket Summary</th>
@@ -337,6 +343,7 @@ export function MaintenanceManager() {
             })}
           </tbody>
         </table>
+        </div>
       )}
 
       {/* Ticket Details & Comments Modal */}

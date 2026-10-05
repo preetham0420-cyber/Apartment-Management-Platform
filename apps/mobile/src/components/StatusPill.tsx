@@ -18,7 +18,7 @@ export function StatusPill({ label, tone }: StatusPillProps) {
       ? "red"
       : /pending|warning|due|attention|renewal/i.test(label)
       ? "orange"
-      : "blue");
+      : "teal");
 
   const { main, light } = getToneColor(inferredTone);
 

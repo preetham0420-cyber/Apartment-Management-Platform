@@ -6,6 +6,7 @@ import { StatusPill } from "./StatusPill";
 import { ConfirmationModal } from "./ConfirmationModal";
 import { useToast } from "./Toast";
 import { adminApi } from "../lib/api";
+import { RefreshIcon, AlertTriangleIcon, SearchIcon } from "./icons";
 
 export function ResidentsManager() {
   const [residents, setResidents] = useState<UserSummary[]>([]);
@@ -155,22 +156,26 @@ export function ResidentsManager() {
               </span>
             )}
           </button>
-          <button className="action-btn btn-outline" onClick={fetchResidents} disabled={loading}>
-            {loading ? "Loading..." : "🔄 Refresh Directory"}
+          <button className="action-btn btn-outline" onClick={fetchResidents} disabled={loading} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <RefreshIcon size={14} />
+            <span>{loading ? "Loading..." : "Refresh Directory"}</span>
           </button>
         </div>
       </div>
 
       {error && (
         <div className="feedback-banner error">
-          <span>⚠️ {error}</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <AlertTriangleIcon size={14} color="#D95757" />
+            <span>{error}</span>
+          </span>
         </div>
       )}
 
       {/* Multi-criteria Filter Bar */}
       <div className="admin-filter-bar">
         <div className="admin-search-box">
-          <span>🔍</span>
+          <SearchIcon size={15} color="#68716D" />
           <input
             type="text"
             placeholder="Search residents by name, email, or unit..."
@@ -225,6 +230,7 @@ export function ResidentsManager() {
       ) : filteredResidents.length === 0 ? (
         <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>No residents match the current search filter.</p>
       ) : (
+        <div className="table-responsive">
         <table className="info-table">
           <thead>
             <tr>
@@ -262,8 +268,8 @@ export function ResidentsManager() {
                         fontWeight: 700,
                         padding: "3px 8px",
                         borderRadius: "4px",
-                        background: r.role === "RESIDENT_TENANT" ? "rgba(91, 108, 249, 0.1)" : "rgba(139, 92, 246, 0.1)",
-                        color: r.role === "RESIDENT_TENANT" ? "#5b6cf9" : "#8b5cf6"
+                        background: r.role === "RESIDENT_TENANT" ? "var(--primary-light)" : "var(--secondary-light)",
+                        color: r.role === "RESIDENT_TENANT" ? "var(--primary)" : "var(--secondary)"
                       }}
                     >
                       {r.role}
@@ -307,6 +313,7 @@ export function ResidentsManager() {
             })}
           </tbody>
         </table>
+        </div>
       )}
 
       {/* Resident Details Modal */}
@@ -333,7 +340,7 @@ export function ResidentsManager() {
                 </div>
                 <div>
                   <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-muted)" }}>SYSTEM ROLE</label>
-                  <p><StatusPill tone="blue">{selectedResident.role}</StatusPill></p>
+                  <p><StatusPill tone="teal">{selectedResident.role}</StatusPill></p>
                 </div>
                 <div>
                   <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-muted)" }}>ACCOUNT STATUS</label>
@@ -364,11 +371,12 @@ export function ResidentsManager() {
             </div>
             <div className="modal-body">
               {pendingOnboardings.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "2rem", color: "#64748b" }}>
+                <div style={{ textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
                   <p>No pending resident registrations awaiting review.</p>
                 </div>
               ) : (
-                <table className="data-table">
+                <div className="table-responsive">
+                  <table className="data-table">
                   <thead>
                     <tr>
                       <th>Resident</th>
@@ -383,14 +391,14 @@ export function ResidentsManager() {
                       <tr key={p.assignmentId}>
                         <td>
                           <strong>{p.fullName}</strong>
-                          <div style={{ fontSize: "12px", color: "#64748b" }}>{p.email}</div>
-                          {p.phoneNumber && <div style={{ fontSize: "11px", color: "#94a3b8" }}>{p.phoneNumber}</div>}
+                          <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>{p.email}</div>
+                          {p.phoneNumber && <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{p.phoneNumber}</div>}
                         </td>
                         <td>
                           <strong>{p.block} - Flat {p.unitNumber}</strong>
                         </td>
                         <td>
-                          <StatusPill tone="blue">{p.role}</StatusPill>
+                          <StatusPill tone="teal">{p.role}</StatusPill>
                         </td>
                         <td>{new Date(p.requestedAt).toLocaleDateString()}</td>
                         <td>
@@ -421,6 +429,7 @@ export function ResidentsManager() {
                     ))}
                   </tbody>
                 </table>
+                </div>
               )}
             </div>
             <div className="modal-footer">

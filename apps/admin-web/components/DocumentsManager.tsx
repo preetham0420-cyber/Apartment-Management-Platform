@@ -211,9 +211,9 @@ export function DocumentsManager() {
               {filteredDocuments.map((doc) => (
                 <tr key={doc.id}>
                   <td>
-                    <div style={{ fontWeight: 600, color: "#1e293b" }}>{doc.title}</div>
+                    <div style={{ fontWeight: 600, color: "var(--text-main)" }}>{doc.title}</div>
                     {doc.description && (
-                      <div style={{ fontSize: "0.85rem", color: "#64748b", marginTop: "2px" }}>
+                      <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "2px" }}>
                         {doc.description}
                       </div>
                     )}

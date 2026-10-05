@@ -1,6 +1,16 @@
 import React from "react";
 
-export type Tone = "blue" | "green" | "orange" | "red" | "violet" | "yellow";
+export type Tone =
+  | "emerald"
+  | "teal"
+  | "green"
+  | "blue" // Maps to teal styling in CSS
+  | "orange"
+  | "yellow"
+  | "red"
+  | "violet"
+  | "charcoal"
+  | "neutral";
 
 interface StatusPillProps {
   children: React.ReactNode;
@@ -10,13 +20,13 @@ interface StatusPillProps {
 export function StatusPill({ children, tone }: StatusPillProps) {
   const inferred: Tone =
     tone ??
-    (/paid|verified|online|current|available|inside/i.test(String(children))
-      ? "green"
-      : /overdue|critical|offline|urgent/i.test(String(children))
+    (/paid|verified|online|current|available|inside|approved|active|resolved/i.test(String(children))
+      ? "emerald"
+      : /overdue|critical|offline|urgent|rejected|cancelled|failed|error/i.test(String(children))
       ? "red"
-      : /pending|warning|due|attention|renewal/i.test(String(children))
+      : /pending|warning|due|attention|renewal|upcoming|maintenance/i.test(String(children))
       ? "orange"
-      : "blue");
+      : "teal");
 
   return (
     <span className={`status-pill tone-${inferred}`}>

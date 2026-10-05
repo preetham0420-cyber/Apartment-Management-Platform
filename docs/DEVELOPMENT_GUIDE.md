@@ -49,9 +49,8 @@ npm run dev:mobile
 
 ---
 
-## 3. Android Studio / Emulator Requirements
-
-- Android Studio is **NOT required** for Day 1 development because the application runs seamlessly via Expo Go.
+- Android Studio is **NOT required** because the application runs seamlessly via Expo Go on physical devices, or via **Expo Web** directly in your desktop browser.
+- **Desktop Web Testing**: Start `npm run dev:mobile` and press `w` in your terminal, or open `http://localhost:8081` in Chrome/Edge/Firefox.
 - If you prefer running inside an Android Studio Virtual Device (AVD):
   1. Launch Android Studio -> Virtual Device Manager -> Start an AVD.
   2. In your terminal, run:
@@ -59,3 +58,16 @@ npm run dev:mobile
      npm run dev:mobile
      ```
   3. Press `a` in the terminal to automatically connect and launch on the running Android emulator.
+
+---
+
+## 4. Demo Login Accounts
+
+| Role | Email | Password | Assigned Unit |
+| :--- | :--- | :--- | :--- |
+| **Super Admin** | `admin@community.local` | `Admin@12345` | Platform-wide |
+| **Preetham (Resident Tenant)** | `preetham@community.local` | `Tenant1@12345` | Flat 402 (Tower A) |
+| **Ananya Sharma (Resident Tenant)** | `ananya.sharma@community.local` | `Tenant2@12345` | Flat 101 (Tower A) |
+| **Rahul Verma (Resident Tenant)** | `rahul.verma@community.local` | `Tenant3@12345` | Flat 304 (Tower B) |
+| **Vikramaditya (Resident Owner)** | `vikramaditya@community.local` | `Owner@12345` | Flat 205 (Tower B) |
+
