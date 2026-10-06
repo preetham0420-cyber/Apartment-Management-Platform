@@ -35,6 +35,12 @@ export function errorHandler(
       message: e.message,
       code: e.code
     }));
+  } else if ((err as any).name === "MulterError" || (err as any).code === "LIMIT_FILE_SIZE") {
+    statusCode = 400;
+    errorCode = "FILE_TOO_LARGE";
+    message = (err as any).code === "LIMIT_FILE_SIZE"
+      ? "Attachment exceeds the maximum allowed size of 5 MB."
+      : err.message || "File upload validation error";
   } else if (config.nodeEnv !== "production") {
     message = err.message;
   }
