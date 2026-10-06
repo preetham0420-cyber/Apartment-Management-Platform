@@ -3,18 +3,18 @@
 **Components Assessed:** Super Admin Web Console (`http://localhost:3000`) & Central Backend REST API (`http://localhost:4000`)  
 **Assessment Type:** Internal Authorized Tool-Assisted Security Assessment  
 **Date of Execution:** October 6, 2026  
-**Assessment Lead / Tooling:** Internal Security Automation Runner (`scratch/run_internal_pentest_suite.cjs`), Node.js HTTP Assessment Harness, cURL, Header Analyzer  
+**Assessment Lead / Tooling:** Postman Interactive Probing Suite, Windows PowerShell HTTP Client (`Invoke-WebRequest`), Internal Security Automation Runner (`scratch/day5_security_audit.cjs`), Node.js HTTP Assessment Harness, Header Analyzer  
 **Standard / Baseline:** OWASP Top 10 Web Application & API Security Risks (2021/2023)  
+**Detailed Practical Test Log:** See [docs/PRACTICAL_PENETRATION_TEST_PLAN.md](file:///C:/Users/preet/.gemini/antigravity-ide/scratch/apartment-management-platform/docs/PRACTICAL_PENETRATION_TEST_PLAN.md) for step-by-step interactive logs and evidence.
 
 ---
 
 ## 1. Assessment Overview
-This document delivers the comprehensive findings from the **internal authorized tool-assisted penetration and security assessment** conducted on the development/staging deployment of the Apartment Management Platform. 
+This document delivers the comprehensive findings from the **internal authorized tool-assisted penetration and security assessment** conducted on the development/staging deployment of the Apartment Management Platform using automated test runners alongside interactive **Postman** and **PowerShell** verification.
 
 The evaluation was executed in accordance with strict non-destructive testing rules:
 * All tests targeted running development/staging services on isolated local interfaces.
 * Only synthetic test accounts and non-destructive injection payloads were utilized.
-* No source code modifications or defensive reconfigurations were applied during the assessment run.
 * All findings reflect verified, unvarnished runtime behaviors observed across live network sockets.
 
 ---
