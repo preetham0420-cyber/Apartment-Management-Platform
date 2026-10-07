@@ -30,8 +30,8 @@ export function securityHeaders(_req: Request, res: Response, next: NextFunction
     "default-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self';"
   );
 
-  // Cross-Origin Resource Policy
-  res.setHeader("Cross-Origin-Resource-Policy", "same-site");
+  // Cross-Origin Resource Policy (allows CORS-authorized clients across ports)
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
 
   // HSTS when in production
   if (config.nodeEnv === "production") {
