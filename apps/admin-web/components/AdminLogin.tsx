@@ -26,7 +26,12 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:4000/api/auth/login", {
+      const apiHost = typeof window !== "undefined" && window.location.hostname ? window.location.hostname : "localhost";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL 
+        ? `${process.env.NEXT_PUBLIC_API_URL}/auth/login`
+        : `http://${apiHost}:4000/api/auth/login`;
+
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

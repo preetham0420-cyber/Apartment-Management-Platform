@@ -64,7 +64,12 @@ export default function SuperAdminHomePage() {
     try {
       const token = localStorage.getItem(TOKEN_SESSION_KEY);
       if (token) {
-        fetch("http://localhost:4000/api/auth/logout", {
+        const apiHost = typeof window !== "undefined" && window.location.hostname ? window.location.hostname : "localhost";
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL 
+          ? `${process.env.NEXT_PUBLIC_API_URL}/auth/logout`
+          : `http://${apiHost}:4000/api/auth/logout`;
+
+        fetch(apiUrl, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`

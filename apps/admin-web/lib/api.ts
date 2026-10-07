@@ -23,7 +23,14 @@ import {
   ApiErrorResponse
 } from "@apartment/shared";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+function getApiBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window !== "undefined" && window.location.hostname) {
+    return `http://${window.location.hostname}:4000/api`;
+  }
+  return "http://localhost:4000/api";
+}
+
 const TOKEN_SESSION_KEY = "apartment_admin_session_token";
 
 function getAuthHeader(): Record<string, string> {
@@ -33,7 +40,7 @@ function getAuthHeader(): Record<string, string> {
 }
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
+  const url = `${getApiBaseUrl()}${endpoint}`;
   const headers = {
     "Content-Type": "application/json",
     ...getAuthHeader(),
