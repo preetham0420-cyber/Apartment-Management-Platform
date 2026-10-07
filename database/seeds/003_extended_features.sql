@@ -41,7 +41,7 @@ ON DUPLICATE KEY UPDATE `vehicle_number` = VALUES(`vehicle_number`);
 
 -- 5. Seed Household Members
 INSERT INTO `household_members` (`id`, `unit_id`, `resident_user_id`, `full_name`, `relationship`, `phone_number`, `is_emergency_contact`) VALUES
-  ('hh-00000000-0000-0000-0000-000000000001', 'u1111111-2222-3333-4444-555555555551', 'user-resident-tenant-00000002', 'Ananya Sharma', 'Spouse', '+91 91234 56788', TRUE),
+  ('hh-00000000-0000-0000-0000-000000000001', 'u1111111-2222-3333-4444-555555555551', 'user-resident-tenant-00000002', 'Priya Sharma', 'Spouse', '+91 91234 56788', TRUE),
   ('hh-00000000-0000-0000-0000-000000000002', 'u1111111-2222-3333-4444-555555555551', 'user-resident-tenant-00000002', 'Aarav Sharma', 'Son', '+91 91234 56787', FALSE),
   ('hh-00000000-0000-0000-0000-000000000003', 'u1111111-2222-3333-4444-555555555553', 'user-resident-owner-000000000003', 'Meera Rao', 'Spouse', '+91 98888 77776', TRUE)
 ON DUPLICATE KEY UPDATE `full_name` = VALUES(`full_name`);

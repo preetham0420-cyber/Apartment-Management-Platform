@@ -8,7 +8,7 @@ const DEV_SEED_HOUSEHOLD: HouseholdMember[] = [
     id: "hh-00000000-0000-0000-0000-000000000001",
     unitId: "u1111111-2222-3333-4444-555555555551",
     residentUserId: "user-resident-tenant-00000002",
-    fullName: "Ananya Sharma",
+    fullName: "Priya Sharma",
     relationship: "Spouse",
     phoneNumber: "+91 91234 56788",
     isEmergencyContact: true,

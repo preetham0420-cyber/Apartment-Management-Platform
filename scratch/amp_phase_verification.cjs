@@ -177,7 +177,7 @@ async function runAllPhaseTests() {
     endpoint: "/api/resident/household",
     headers: { Authorization: `Bearer ${tenantToken}` },
     body: {
-      fullName: "Ananya Sharma",
+      fullName: "Priya Sharma",
       relationship: "SPOUSE",
       phoneNumber: "+91 98765 43210",
       isEmergencyContact: true
