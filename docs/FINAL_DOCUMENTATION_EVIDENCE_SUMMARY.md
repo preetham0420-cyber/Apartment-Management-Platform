@@ -101,16 +101,16 @@ All features were verified directly by inspecting source code under `apps/api/sr
 
 ## 3. USER ROLES & TEST ACCOUNTS
 
-All accounts were inspected in `apps/api/src/database/in-memory-db.ts`, `database/seeds/001_seed_initial_data.sql`, and verified live through `verify_all_4_accounts.cjs`.
+All accounts were inspected in `apps/api/src/repositories/user.repository.ts`, `database/seeds/001_initial_users_and_properties.sql`, and verified live through `verify_all_4_accounts.cjs`.
 
 ### Seeded Account Inventory
 | Resident / User Name | Email Address | Assigned Role | Allocated Unit | Account Status | Dev Password |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Super Administrator** | `admin@community.local` | `SUPER_ADMIN` | Platform Management | `ACTIVE` | `Password123!` |
-| **Preetham** | `preetham@community.local` | `RESIDENT_TENANT` | Flat 402, Tower A, Floor 4 | `ACTIVE` | `Password123!` |
-| **Ananya Sharma** | `ananya.sharma@community.local` | `RESIDENT_TENANT` | Flat 101, Tower A, Floor 1 | `ACTIVE` | `Password123!` |
-| **Rahul Verma** | `rahul.verma@community.local` | `RESIDENT_TENANT` | Flat 304, Tower B, Floor 3 | `ACTIVE` | `Password123!` |
-| **Vikramaditya** | `vikramaditya@community.local` | `RESIDENT_OWNER` | Flat 205, Tower B, Floor 2 | `ACTIVE` | `Password123!` |
+| **Super Administrator** | `admin@community.local` | `SUPER_ADMIN` | Platform Management | `ACTIVE` | `Admin@12345` |
+| **Preetham** | `preetham@community.local` | `RESIDENT_TENANT` | Flat 402, Tower A, Floor 4 | `ACTIVE` | `Tenant1@12345` |
+| **Ananya Sharma** | `ananya.sharma@community.local` | `RESIDENT_TENANT` | Flat 101, Tower A, Floor 1 | `ACTIVE` | `Tenant2@12345` |
+| **Rahul Verma** | `rahul.verma@community.local` | `RESIDENT_TENANT` | Flat 304, Tower B, Floor 3 | `ACTIVE` | `Tenant3@12345` |
+| **Vikramaditya** | `vikramaditya@community.local` | `RESIDENT_OWNER` | Flat 205, Tower B, Floor 2 | `ACTIVE` | `Owner@12345` |
 
 ### Account Hygiene & RBAC Verification
 1. **No Duplicate Accounts:** Verified across both SQL seeds and in-memory store. Unique constraint on `users.email` is strictly enforced.

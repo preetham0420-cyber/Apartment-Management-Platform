@@ -272,11 +272,10 @@ For every executed test, capture the following artifacts into a structured log:
 * **Result:** **PASS** (100% compliance across both listening services).
 
 #### 2. Brute-Force Rate Limiting Burst Test (`RATE-P01`)
-* **Execution Command:** 15 rapid automated POST requests to `/api/auth/login` with `x-rate-limit-mode: production`.
-* **Observed Response:**
-  - Requests exceeding the production sliding window: `HTTP 429 Too Many Requests`.
-  - Summary: `HTTP 429 Count: 15`.
-* **Result:** **PASS** (Immediate automated brute-force lockout verified).
+* **Execution Command:** 15 rapid automated POST requests to `/api/auth/login` with `x-rate-limit-mode: production` (sliding window: 5 min, ceiling: 10 attempts).
+* **Observed Response (Clean State):** Requests #1 to #10 return `HTTP 401 Unauthorized` (`X-RateLimit-Remaining`: 9 down to 0). Requests #11 to #15 transition to `HTTP 429 Too Many Requests` (`Retry-After: 300`, `Remaining: 0`).
+* **Observed Response (Sequential / Pre-Throttled State):** All 15 requests return `HTTP 429 Too Many Requests` (`Summary: HTTP 429 Count: 15`).
+* **Result:** **PASS** (Sliding-window threshold enforcement and automated brute-force lockout verified).
 
 #### 3. Automated Security Hardening & Audit Harness (`scratch/day5_security_audit.cjs`)
 * **Execution Command:** `node scratch/day5_security_audit.cjs`

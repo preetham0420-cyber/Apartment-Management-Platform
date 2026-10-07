@@ -9,7 +9,7 @@ A full-stack, enterprise-grade apartment and residential community management pl
 The Apartment Management Platform (AMP) provides comprehensive automation for modern residential communities, managing property configurations, resident onboarding, flat occupancy, maintenance ticketing, visitor pass security, recurring dues and billing, shared amenity bookings, community documents, and compliance audit logs.
 
 ### Key Highlights
-- **Strict Role-Based Access Control (RBAC):** Server-side authorization separating Super Admins, Resident Owners, Resident Tenants, Security Guards, and Maintenance Staff.
+- **Strict Role-Based Access Control (RBAC):** Server-side authorization actively enforced across Super Admins, Resident Owners, and Resident Tenants (with Security Guards, Maintenance Staff, and Committee Members defined in the database schema for future operational milestones).
 - **Defensive Security & IDOR Guard:** Resource ownership enforcement ensuring residents cannot access, inspect, or modify another unit's dues, vehicles, household members, or maintenance tickets.
 - **Multi-Tenant Resident Support:** Multiple deterministic resident accounts (Preetham, Ananya Sharma, Rahul Verma) and resident owners (Vikramaditya) mapped to distinct flats.
 - **Zero-Trust Input Validation:** Runtime Zod boundary schemas with strict property enforcement across all API endpoints.
@@ -196,6 +196,9 @@ All demo accounts are pre-configured with secure bcrypt-hashed passwords and det
 | **Ananya Sharma** | `RESIDENT_TENANT` | Tower A — Flat 101 (Floor 1, 2BHK) | **Mobile App** (`http://localhost:8081`) | `ananya.sharma@community.local` | `Tenant2@12345` | Secondary tenant account: multi-tenant isolation verification, flat 101 lease agreement, independent dues. |
 | **Rahul Verma** | `RESIDENT_TENANT` | Tower B — Flat 304 (Floor 3, 2BHK) | **Mobile App** (`http://localhost:8081`) | `rahul.verma@community.local` | `Tenant3@12345` | Tertiary tenant account: Tower B isolation, multi-block society directory verification. |
 | **Vikramaditya** | `RESIDENT_OWNER` | Tower B — Flat 205 (Floor 2, 3BHK) | **Mobile App** (`http://localhost:8081`) | `vikramaditya@community.local` | `Owner@12345` | Resident owner account: flat freehold deed, exclusive access to confidential `OWNERS_ONLY` compliance records (AGM Minutes, Financial Audits). |
+
+> [!WARNING]
+> **Synthetic development credentials only. Never reuse in production. Rotate or remove before any deployment.**
 
 > [!NOTE]
 > All accounts enforce strict server-side authentication and role-based access control. Legacy placeholder accounts (`tenant@community.local`, `owner@community.local`) have been intentionally migrated and return `401 Unauthorized`. Only the 5 verified accounts above are active.

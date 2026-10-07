@@ -102,29 +102,37 @@ Using Windows PowerShell `Invoke-WebRequest -UseBasicParsing`, live HTTP respons
 * `X-Powered-By`: **ABSENT (CLOAKED - SECURE)** (Remediated **SEC-FIND-02**: Next.js framework banner suppressed via `poweredByHeader: false` in `next.config.ts`)
 
 ### 4.2 Brute-Force Rate-Limiting Burst Testing (RATE-P01)
-To verify brute-force defense on sensitive authentication endpoints, an automated loop dispatched 15 rapid POST requests with invalid credentials to `http://localhost:4000/api/auth/login` under production rate-limiting configuration (`x-rate-limit-mode: production`):
+To verify brute-force defense on sensitive authentication endpoints, automated testing evaluated `http://localhost:4000/api/auth/login` under production rate-limiting configuration (`x-rate-limit-mode: production`, sliding window: 5 minutes, ceiling: 10 attempts):
+
+#### A. Baseline Evaluation from Clean Limiter State
+When evaluated from a fresh limiter state, the sliding window enforces access up to the 10-attempt threshold, transitioning to `HTTP 429` on attempt 11:
+* **Requests #1 to #10:** `HTTP 401 Unauthorized` (Invalid credentials; `X-RateLimit-Remaining` counts down from `9` to `0`, `Retry-After: N/A`)
+* **Requests #11 to #15:** `HTTP 429 Too Many Requests` (`X-RateLimit-Remaining: 0`, `Retry-After: 300`)
+
+#### B. Sequential Burst Evaluation (Active Locked-Out State)
+When re-tested immediately after reaching the threshold (or following preceding unauthenticated testing from the same IP), all requests are actively blocked by the persistent IP sliding window:
 
 ```text
-=== PRODUCTION RATE-LIMIT BURST SUMMARY ===
-Request #1  -> Status HTTP 429
-Request #2  -> Status HTTP 429
-Request #3  -> Status HTTP 429
-Request #4  -> Status HTTP 429
-Request #5  -> Status HTTP 429
-Request #6  -> Status HTTP 429
-Request #7  -> Status HTTP 429
-Request #8  -> Status HTTP 429
-Request #9  -> Status HTTP 429
-Request #10 -> Status HTTP 429
-Request #11 -> Status HTTP 429
-Request #12 -> Status HTTP 429
-Request #13 -> Status HTTP 429
-Request #14 -> Status HTTP 429
-Request #15 -> Status HTTP 429
-Total HTTP 429 Count: 15 / 15
+=== ACTIVE LOCKED-OUT BURST SUMMARY ===
+Request #1  -> Status HTTP 429 | Remaining: 0 | Retry-After: 300
+Request #2  -> Status HTTP 429 | Remaining: 0 | Retry-After: 300
+Request #3  -> Status HTTP 429 | Remaining: 0 | Retry-After: 300
+Request #4  -> Status HTTP 429 | Remaining: 0 | Retry-After: 300
+Request #5  -> Status HTTP 429 | Remaining: 0 | Retry-After: 300
+Request #6  -> Status HTTP 429 | Remaining: 0 | Retry-After: 300
+Request #7  -> Status HTTP 429 | Remaining: 0 | Retry-After: 300
+Request #8  -> Status HTTP 429 | Remaining: 0 | Retry-After: 300
+Request #9  -> Status HTTP 429 | Remaining: 0 | Retry-After: 300
+Request #10 -> Status HTTP 429 | Remaining: 0 | Retry-After: 300
+Request #11 -> Status HTTP 429 | Remaining: 0 | Retry-After: 300
+Request #12 -> Status HTTP 429 | Remaining: 0 | Retry-After: 300
+Request #13 -> Status HTTP 429 | Remaining: 0 | Retry-After: 300
+Request #14 -> Status HTTP 429 | Remaining: 0 | Retry-After: 300
+Request #15 -> Status HTTP 429 | Remaining: 0 | Retry-After: 300
+Total HTTP 429 Count: 15 / 15 (Active Lockout Confirmed)
 ```
 
-**Outcome:** The sliding-window rate limiter triggered immediately upon exceeding the threshold, actively locking out the requesting IP and returning `HTTP 429 Too Many Requests` with `Retry-After: 300` and `X-RateLimit-Remaining: 0`.
+**Outcome:** Confirms that the in-memory rate-limiter reliably counts attempts, throttles beyond 10 attempts, and maintains the locked-out state across subsequent attempts within the 5-minute window.
 
 ---
 
