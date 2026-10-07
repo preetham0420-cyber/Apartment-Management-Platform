@@ -187,15 +187,18 @@ npm run dev:mobile
 
 ## 9. Seed & Demo Accounts
 
-All demo accounts are pre-configured with secure bcrypt-hashed passwords:
+All demo accounts are pre-configured with secure bcrypt-hashed passwords and deterministic roles:
 
-| Persona | Role | Flat / Scope | Email Address | Password |
-| :--- | :--- | :--- | :--- | :--- |
-| **Super Admin** | `SUPER_ADMIN` | Society Management | `admin@community.local` | `Admin@12345` |
-| **Preetham** | `RESIDENT_TENANT` | Flat 402 (Tower A, Fl 4) | `preetham@community.local` | `Tenant1@12345` |
-| **Ananya Sharma** | `RESIDENT_TENANT` | Flat 101 (Tower A, Fl 1) | `ananya.sharma@community.local` | `Tenant2@12345` |
-| **Rahul Verma** | `RESIDENT_TENANT` | Flat 304 (Tower B, Fl 3) | `rahul.verma@community.local` | `Tenant3@12345` |
-| **Vikramaditya** | `RESIDENT_OWNER` | Flat 205 (Tower B, Fl 2) | `vikramaditya@community.local` | `Owner@12345` |
+| Persona | Role | Flat / Scope | Target Portal / Client | Email Address | Password | Key Permissions & Features |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Super Admin** | `SUPER_ADMIN` | Platform & Society Governance | **Admin Web** (`http://localhost:3000`) | `admin@community.local` | `Admin@12345` | Full administrative control, all 12 modules, financial ledger, resident onboarding, audit logs. |
+| **Preetham** | `RESIDENT_TENANT` | Tower A — Flat 402 (Floor 4, 3BHK) | **Mobile App** (`http://localhost:8081`) | `preetham@community.local` | `Tenant1@12345` | Primary tenant account: visitor gate passes, dues ledger (₹4,850), maintenance tickets, amenity reservations. |
+| **Ananya Sharma** | `RESIDENT_TENANT` | Tower A — Flat 101 (Floor 1, 2BHK) | **Mobile App** (`http://localhost:8081`) | `ananya.sharma@community.local` | `Tenant2@12345` | Secondary tenant account: multi-tenant isolation verification, flat 101 lease agreement, independent dues. |
+| **Rahul Verma** | `RESIDENT_TENANT` | Tower B — Flat 304 (Floor 3, 2BHK) | **Mobile App** (`http://localhost:8081`) | `rahul.verma@community.local` | `Tenant3@12345` | Tertiary tenant account: Tower B isolation, multi-block society directory verification. |
+| **Vikramaditya** | `RESIDENT_OWNER` | Tower B — Flat 205 (Floor 2, 3BHK) | **Mobile App** (`http://localhost:8081`) | `vikramaditya@community.local` | `Owner@12345` | Resident owner account: flat freehold deed, exclusive access to confidential `OWNERS_ONLY` compliance records (AGM Minutes, Financial Audits). |
+
+> [!NOTE]
+> All accounts enforce strict server-side authentication and role-based access control. Legacy placeholder accounts (`tenant@community.local`, `owner@community.local`) have been intentionally migrated and return `401 Unauthorized`. Only the 5 verified accounts above are active.
 
 ---
 
@@ -282,6 +285,9 @@ npm run build --workspace=@apartment/admin-web
 - [API Documentation & Envelopes](docs/API_DOCUMENTATION.md)
 - [Database Schema & Migrations](docs/DATABASE.md)
 - [Security Architecture & Hardening](docs/SECURITY.md)
+- [Penetration Testing & Security Assessment Record (AMP-DEV-001-PTR)](docs/PENETRATION_TESTING_SECURITY_ASSESSMENT_RECORD.md)
+- [Internal Penetration Test Report](docs/PENETRATION_TEST_REPORT.md)
+- [Practical Penetration Test Plan & Evidence](docs/PRACTICAL_PENETRATION_TEST_PLAN.md)
 - [Testing & Verification Guide](docs/TESTING.md)
 - [Day-by-Day Development Log](docs/DAY_WISE_LOG.md)
 - [Final Project Report (AMP-DEV-001)](docs/FINAL_PROJECT_REPORT.md)
