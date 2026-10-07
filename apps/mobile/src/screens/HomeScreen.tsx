@@ -66,6 +66,22 @@ export function HomeScreen({ currentUnit, onNavigateTab }: HomeScreenProps) {
   const openRequests = homeData?.metrics?.openRequestsCount ?? 1;
   const expectedGuests = homeData?.metrics?.expectedGuestsCount ?? 2;
 
+  const nextPendingDue = homeData?.dues?.find((d: any) => d.status === "PENDING" || d.status === "OVERDUE") || homeData?.dues?.[0];
+  const formattedDueDate = (() => {
+    if (!nextPendingDue?.dueDate) {
+      return homeData?.metrics?.currentDue === 0 ? "All Cleared" : "Due Soon";
+    }
+    try {
+      const d = new Date(nextPendingDue.dueDate);
+      if (isNaN(d.getTime())) return `Due by ${nextPendingDue.dueDate}`;
+      const day = d.getDate();
+      const month = d.toLocaleDateString("en-IN", { month: "short" });
+      return `Due by ${day} ${month}`;
+    } catch {
+      return `Due by ${nextPendingDue.dueDate}`;
+    }
+  })();
+
   return (
     <ScrollView
       contentContainerStyle={styles.container}
@@ -155,7 +171,7 @@ export function HomeScreen({ currentUnit, onNavigateTab }: HomeScreenProps) {
           <View style={styles.metricItem}>
             <Text style={styles.metricLabel}>MAINTENANCE DUE</Text>
             <Text style={styles.metricValue}>{currentDueFormatted}</Text>
-            <Text style={styles.metricSub}>Due by 15th</Text>
+            <Text style={styles.metricSub}>{formattedDueDate}</Text>
           </View>
           <View style={styles.metricDivider} />
           <View style={styles.metricItem}>

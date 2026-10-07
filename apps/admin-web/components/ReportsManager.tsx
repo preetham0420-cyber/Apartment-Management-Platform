@@ -155,7 +155,7 @@ export function ReportsManager() {
                 2. Maintenance SLA Report
               </h2>
               <span className="badge badge-secondary" style={{ fontSize: "0.9rem" }}>
-                Avg Resolution Time: {reportsData.maintenance.avgResolutionHours} hrs
+                Avg Resolution Time: {reportsData.maintenance.avgResolutionHours > 0 ? `${reportsData.maintenance.avgResolutionHours} hrs` : "0.0 hrs (No resolved tickets)"}
               </span>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>

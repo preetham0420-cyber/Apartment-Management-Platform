@@ -47,8 +47,36 @@ export class AdminService {
         : "98.2%";
 
     const occupiedUnits = units.filter((u) => u.status === "OCCUPIED").length;
+    const vacantUnits = units.filter((u) => u.status === "VACANT").length;
+    const underMaintenanceUnits = units.filter((u) => u.status === "UNDER_MAINTENANCE").length;
     const occupancyRate =
-      units.length > 0 ? `${Math.round((occupiedUnits / units.length) * 100)}%` : "81.6%";
+      units.length > 0 ? `${Math.round((occupiedUnits / units.length) * 100)}%` : "80%";
+
+    const towerBreakdown = units.reduce((acc, u) => {
+      const block = u.block || "General";
+      if (!acc[block]) acc[block] = { total: 0, occupied: 0, vacant: 0, underMaintenance: 0 };
+      acc[block].total++;
+      if (u.status === "OCCUPIED") acc[block].occupied++;
+      else if (u.status === "VACANT") acc[block].vacant++;
+      else if (u.status === "UNDER_MAINTENANCE") acc[block].underMaintenance++;
+      return acc;
+    }, {} as Record<string, { total: number; occupied: number; vacant: number; underMaintenance: number }>);
+
+    const reportedMaintenance = maintenance.filter((m) => m.status === "REPORTED").length;
+    const assignedMaintenance = maintenance.filter((m) => m.status === "ASSIGNED").length;
+    const inProgressMaintenance = maintenance.filter((m) => m.status === "IN_PROGRESS").length;
+    const resolvedMaintenance = maintenance.filter((m) => m.status === "RESOLVED" || m.status === "CLOSED").length;
+
+    let totalResolutionHours = 0;
+    for (const m of maintenance) {
+      if (m.status === "RESOLVED" || m.status === "CLOSED") {
+        const created = new Date(m.createdAt).getTime();
+        const updated = new Date(m.updatedAt).getTime();
+        const hours = Math.max(1, (updated - created) / 3600000);
+        totalResolutionHours += hours;
+      }
+    }
+    const avgResolutionHours = resolvedMaintenance > 0 ? Number((totalResolutionHours / resolvedMaintenance).toFixed(1)) : 0;
 
     return {
       stats: {
@@ -65,12 +93,30 @@ export class AdminService {
         totalProperties: properties.length,
         totalUnits: units.length,
         occupiedUnits,
+        vacantUnits,
+        underMaintenanceUnits,
         occupancyRate,
         collectionEfficiency,
         totalResidentsCount: residents.length,
         openMaintenanceCount: openMaintenance.length,
         activeVisitorsCount: activeVisitors.length,
         activeSecurityIncidents: 0
+      },
+      occupancy: {
+        totalUnits: units.length,
+        occupiedUnits,
+        vacantUnits,
+        underMaintenanceUnits,
+        occupancyRate: units.length > 0 ? `${((occupiedUnits / units.length) * 100).toFixed(1)}%` : "80.0%",
+        towerBreakdown
+      },
+      maintenanceStats: {
+        total: maintenance.length,
+        reported: reportedMaintenance,
+        assigned: assignedMaintenance,
+        inProgress: inProgressMaintenance,
+        resolved: resolvedMaintenance,
+        avgResolutionHours
       },
       recentAuditLogs: auditLogs,
       recentActivity: auditLogs,
@@ -431,7 +477,7 @@ export class AdminService {
       }
     }
 
-    const averageResolutionHours = resolvedCount > 0 ? Number((totalResolutionHours / resolvedCount).toFixed(1)) : 14.5;
+    const averageResolutionHours = resolvedCount > 0 ? Number((totalResolutionHours / resolvedCount).toFixed(1)) : 0;
     const totalOpen = (statusCounts["REPORTED"] || 0) + (statusCounts["ASSIGNED"] || 0) + (statusCounts["IN_PROGRESS"] || 0);
 
     // 3. Visitor Traffic Report

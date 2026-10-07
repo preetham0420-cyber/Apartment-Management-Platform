@@ -51,8 +51,19 @@ export function LiveDashboard({ adminUser, onNavigateTab }: LiveDashboardProps) 
   }, []);
 
   const totalResidents = data?.stats?.totalResidents ?? 0;
-  const totalUnits = data?.stats?.totalUnits ?? data?.systemMetrics?.totalUnits ?? 5;
-  const occupancyRate = data?.stats?.occupancyRate ?? data?.systemMetrics?.occupancyRate ?? "60%";
+  const totalUnits = data?.occupancy?.totalUnits ?? data?.stats?.totalUnits ?? data?.systemMetrics?.totalUnits ?? 5;
+  const occupiedUnits = data?.occupancy?.occupiedUnits ?? data?.systemMetrics?.occupiedUnits ?? 4;
+  const underMaintenanceUnits = data?.occupancy?.underMaintenanceUnits ?? (data?.systemMetrics as any)?.underMaintenanceUnits ?? 1;
+  const vacantUnits = data?.occupancy?.vacantUnits ?? (data?.systemMetrics as any)?.vacantUnits ?? 0;
+  const occupancyRate = data?.occupancy?.occupancyRate ?? data?.stats?.occupancyRate ?? data?.systemMetrics?.occupancyRate ?? "80%";
+  const towerBreakdown = data?.occupancy?.towerBreakdown;
+
+  const reportedTickets = data?.maintenanceStats?.reported ?? (data?.openTickets?.filter((t) => t.status === "REPORTED").length ?? 1);
+  const assignedTickets = data?.maintenanceStats?.assigned ?? (data?.openTickets?.filter((t) => t.status === "ASSIGNED").length ?? 1);
+  const inProgressTickets = data?.maintenanceStats?.inProgress ?? (data?.openTickets?.filter((t) => t.status === "IN_PROGRESS").length ?? 0);
+  const resolvedTickets = data?.maintenanceStats?.resolved ?? 0;
+  const avgResHours = data?.maintenanceStats?.avgResolutionHours ?? 0;
+
   const pendingMaintenance = data?.stats?.pendingMaintenance ?? 0;
   const pendingDues = data?.stats?.pendingDuesCount ?? 0;
   const activeVisitors = data?.stats?.activeVisitors ?? 0;
@@ -60,9 +71,7 @@ export function LiveDashboard({ adminUser, onNavigateTab }: LiveDashboardProps) 
   const amenityBookings = data?.stats?.amenityBookingsCount ?? 0;
 
   // Numeric occupancy calculations for progress bar
-  const occupancyNum = parseInt(occupancyRate.replace("%", "")) || 60;
-  const occupiedUnits = Math.round((totalUnits * occupancyNum) / 100) || 3;
-  const vacantUnits = Math.max(0, totalUnits - occupiedUnits);
+  const occupancyNum = Math.round((occupiedUnits / Math.max(1, totalUnits)) * 100);
 
   return (
     <div className="dashboard-container">
@@ -149,7 +158,7 @@ export function LiveDashboard({ adminUser, onNavigateTab }: LiveDashboardProps) 
             <span className="kpi-value">{loading ? "—" : totalUnits}</span>
             <span className="kpi-badge tone-teal">Flats Registered</span>
           </div>
-          <p className="kpi-subtitle">{occupiedUnits} Occupied • {vacantUnits} Vacant</p>
+          <p className="kpi-subtitle">{occupiedUnits} Occupied • {underMaintenanceUnits > 0 ? `${underMaintenanceUnits} Maint • ` : ""}{vacantUnits} Vacant</p>
         </div>
 
         {/* Card 3: Occupancy Rate */}
@@ -227,6 +236,11 @@ export function LiveDashboard({ adminUser, onNavigateTab }: LiveDashboardProps) 
             </div>
             <div className="occupancy-stat-divider" />
             <div className="occupancy-stat-block">
+              <span className="occupancy-stat-label">Under Maint.</span>
+              <span className="occupancy-stat-num text-warning">{underMaintenanceUnits}</span>
+            </div>
+            <div className="occupancy-stat-divider" />
+            <div className="occupancy-stat-block">
               <span className="occupancy-stat-label">Vacant</span>
               <span className="occupancy-stat-num text-muted">{vacantUnits}</span>
             </div>
@@ -250,15 +264,15 @@ export function LiveDashboard({ adminUser, onNavigateTab }: LiveDashboardProps) 
           <div className="estate-highlights">
             <div className="highlight-pill">
               <span className="pill-dot emerald" />
-              <span>Tower A: 3 Occupied</span>
+              <span>Tower A: {towerBreakdown?.["Tower A"]?.occupied ?? 2} Occupied</span>
             </div>
             <div className="highlight-pill">
               <span className="pill-dot teal" />
-              <span>Tower B: 1 Active Lease</span>
+              <span>Tower B: {towerBreakdown?.["Tower B"]?.occupied ?? 2} Occupied</span>
             </div>
             <div className="highlight-pill">
               <span className="pill-dot neutral" />
-              <span>1 Unit In Turnover</span>
+              <span>Tower C: {towerBreakdown?.["Tower C"]?.underMaintenance ?? 1} Under Maintenance</span>
             </div>
           </div>
         </div>
@@ -281,27 +295,27 @@ export function LiveDashboard({ adminUser, onNavigateTab }: LiveDashboardProps) 
 
           <div className="workflow-status-grid">
             <div className="workflow-card">
-              <span className="workflow-num text-warning">{pendingMaintenance}</span>
+              <span className="workflow-num text-warning">{reportedTickets}</span>
               <span className="workflow-label">Reported / Open</span>
               <span className="workflow-tag">Awaiting Tech</span>
             </div>
             <div className="workflow-card">
               <span className="workflow-num text-teal">
-                {data?.openTickets?.filter((t) => t.status === "ASSIGNED").length || 1}
+                {assignedTickets}
               </span>
               <span className="workflow-label">Assigned</span>
               <span className="workflow-tag">Scheduled</span>
             </div>
             <div className="workflow-card">
               <span className="workflow-num text-teal">
-                {data?.openTickets?.filter((t) => t.status === "IN_PROGRESS").length || 0}
+                {inProgressTickets}
               </span>
               <span className="workflow-label">In Progress</span>
               <span className="workflow-tag">On Premises</span>
             </div>
             <div className="workflow-card">
               <span className="workflow-num text-emerald">
-                {Math.max(1, 12 - pendingMaintenance)}
+                {resolvedTickets}
               </span>
               <span className="workflow-label">Resolved (30d)</span>
               <span className="workflow-tag">SLA Met</span>
@@ -310,7 +324,13 @@ export function LiveDashboard({ adminUser, onNavigateTab }: LiveDashboardProps) 
 
           <div className="service-sla-notice">
             <CheckCircleIcon size={16} color="var(--primary)" />
-            <span>Average maintenance response SLA across society is under <strong>4.2 hours</strong>.</span>
+            <span>
+              {avgResHours > 0 ? (
+                <>Average maintenance response SLA across society is <strong>{avgResHours} hours</strong>.</>
+              ) : (
+                <>Average maintenance SLA response target is under <strong>24 hours</strong> ({pendingMaintenance} active tickets in service desk).</>
+              )}
+            </span>
           </div>
         </div>
       </section>

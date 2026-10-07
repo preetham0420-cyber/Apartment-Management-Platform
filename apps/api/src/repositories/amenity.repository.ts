@@ -50,6 +50,8 @@ const DEV_SEED_BOOKINGS: AmenityBooking[] = [
     residentId: "user-resident-tenant-00000002",
     residentName: "Preetham (Resident Tenant)",
     unitId: "u1111111-2222-3333-4444-555555555551",
+    unitNumber: "402",
+    block: "Tower A",
     startTime: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
     endTime: new Date(Date.now() - 44 * 3600 * 1000).toISOString(),
     status: "CONFIRMED",
@@ -68,6 +70,8 @@ export class AmenityRepository {
           b.resident_id AS residentId,
           u.full_name AS residentName,
           b.unit_id AS unitId,
+          un.unit_number AS unitNumber,
+          un.block AS block,
           b.start_time AS startTime,
           b.end_time AS endTime,
           b.status,
@@ -75,6 +79,7 @@ export class AmenityRepository {
         FROM amenity_bookings b
         INNER JOIN amenities a ON b.amenity_id = a.id
         INNER JOIN users u ON b.resident_id = u.id
+        LEFT JOIN units un ON b.unit_id = un.id
         ORDER BY b.start_time DESC
       `;
       const [rows] = await pool.execute<RowDataPacket[]>(sql);

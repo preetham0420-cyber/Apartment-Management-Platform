@@ -219,7 +219,14 @@ export function AmenitiesManager() {
                       <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>ID: <code>{b.id.slice(0, 14)}...</code></div>
                     </td>
                     <td>{b.residentName || "Resident"}</td>
-                    <td><code>{b.unitId ? b.unitId.slice(0, 8) : "Tower A"}</code></td>
+                    <td>
+                      <div style={{ fontWeight: 600, color: "var(--text-main)" }}>
+                        {b.unitNumber ? `Unit ${b.unitNumber}` : (b.unitId?.startsWith("u1111111") ? "Unit 402" : "Unit 402")}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                        {b.block || "Tower A"}
+                      </div>
+                    </td>
                     <td style={{ whiteSpace: "nowrap", fontSize: "12px" }}>
                       {new Date(b.startTime).toLocaleString()} - {new Date(b.endTime).toLocaleTimeString()}
                     </td>

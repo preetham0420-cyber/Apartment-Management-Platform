@@ -209,6 +209,8 @@ export interface AmenityBooking {
   residentId: string;
   residentName?: string;
   unitId: string;
+  unitNumber?: string;
+  block?: string;
   startTime: string;
   endTime: string;
   status: "CONFIRMED" | "CANCELLED";
@@ -380,12 +382,30 @@ export interface AdminDashboardData {
     totalProperties: number;
     totalUnits: number;
     occupiedUnits: number;
+    vacantUnits?: number;
+    underMaintenanceUnits?: number;
     occupancyRate: string;
     collectionEfficiency: string;
     totalResidentsCount: number;
     openMaintenanceCount: number;
     activeVisitorsCount: number;
     activeSecurityIncidents: number;
+  };
+  occupancy?: {
+    totalUnits: number;
+    occupiedUnits: number;
+    vacantUnits: number;
+    underMaintenanceUnits: number;
+    occupancyRate: string;
+    towerBreakdown: Record<string, { total: number; occupied: number; vacant: number; underMaintenance: number }>;
+  };
+  maintenanceStats?: {
+    total: number;
+    reported: number;
+    assigned: number;
+    inProgress: number;
+    resolved: number;
+    avgResolutionHours: number;
   };
   recentAuditLogs: AuditLog[];
   recentActivity?: AuditLog[];

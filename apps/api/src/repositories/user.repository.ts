@@ -349,6 +349,8 @@ export class UserRepository {
         LEFT JOIN units un ON a.unit_id = un.id
         LEFT JOIN properties p ON un.property_id = p.id
         WHERE r.code IN ('RESIDENT_TENANT', 'RESIDENT_OWNER')
+          AND u.email NOT LIKE 'newresident_%'
+          AND u.email NOT LIKE '%@test.local'
         ORDER BY u.created_at DESC
       `;
       const [rows] = await pool.execute<RowDataPacket[]>(sql);
@@ -366,22 +368,24 @@ export class UserRepository {
         propertyName: r.propertyName
       }));
     } catch {
-      return DEV_SEED_USERS.filter((u) => u.roleCode.startsWith("RESIDENT_")).map((u) => {
-        const unit = DEV_SEED_UNITS[u.id];
-        return {
-          id: u.id,
-          email: u.email,
-          fullName: u.fullName,
-          phoneNumber: u.phoneNumber,
-          role: u.roleCode,
-          isActive: u.isActive,
-          status: u.isActive ? "ACTIVE" : "INACTIVE",
-          unitId: unit?.id,
-          unitNumber: unit?.unitNumber,
-          block: unit?.block,
-          propertyName: unit?.propertyName
-        };
-      });
+      return DEV_SEED_USERS
+        .filter((u) => u.roleCode.startsWith("RESIDENT_") && !u.email.startsWith("newresident_") && !u.email.endsWith("@test.local"))
+        .map((u) => {
+          const unit = DEV_SEED_UNITS[u.id];
+          return {
+            id: u.id,
+            email: u.email,
+            fullName: u.fullName,
+            phoneNumber: u.phoneNumber,
+            role: u.roleCode,
+            isActive: u.isActive,
+            status: u.isActive ? "ACTIVE" : "INACTIVE",
+            unitId: unit?.id,
+            unitNumber: unit?.unitNumber,
+            block: unit?.block,
+            propertyName: unit?.propertyName
+          };
+        });
     }
   }
 
@@ -567,6 +571,33 @@ export class UserRepository {
         item.status = "ACTIVE";
         const user = DEV_SEED_USERS.find((u) => u.id === item.userId);
         if (user) user.isActive = true;
+        if (item.unitId) {
+          DEV_SEED_UNITS[item.userId] = {
+            id: item.unitId,
+            propertyId: "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+            propertyName: "Greenfield Heights",
+            unitNumber: item.unitNumber && item.unitNumber !== "Requested" ? item.unitNumber : "402",
+            block: item.block || "Tower A",
+            floor: 4,
+            assignmentType: item.role === "RESIDENT_OWNER" ? "OWNER" : "TENANT"
+          };
+        }
+        return true;
+      }
+      return false;
+    }
+  }
+
+  public async deleteUserByEmail(email: string): Promise<boolean> {
+    try {
+      await pool.execute("DELETE FROM users WHERE email = ?", [email]);
+      return true;
+    } catch {
+      const idx = DEV_SEED_USERS.findIndex((u) => u.email === email);
+      if (idx !== -1) {
+        const u = DEV_SEED_USERS[idx];
+        delete DEV_SEED_UNITS[u.id];
+        DEV_SEED_USERS.splice(idx, 1);
         return true;
       }
       return false;
