@@ -13,8 +13,28 @@ import {
 } from "@apartment/shared";
 import { authStorage } from "./auth-storage";
 
+let customRuntimeBaseUrl: string | null = null;
+
+export const setApiBaseUrl = async (url: string): Promise<void> => {
+  const sanitized = url.trim().replace(/\/+$/, "");
+  customRuntimeBaseUrl = sanitized;
+  await authStorage.saveApiUrl(sanitized);
+};
+
+export const initApiBaseUrl = async (): Promise<string> => {
+  const saved = await authStorage.getApiUrl();
+  if (saved) {
+    customRuntimeBaseUrl = saved;
+    return saved;
+  }
+  return getBaseUrl();
+};
+
 // Determine API Base URL dynamically
 export const getBaseUrl = (): string => {
+  if (customRuntimeBaseUrl) {
+    return customRuntimeBaseUrl;
+  }
   if (process.env.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL;
   }
@@ -34,7 +54,7 @@ export const getBaseUrl = (): string => {
     } catch {
       // Fall through to active LAN IP
     }
-    return "http://172.20.10.2:4000/api";
+    return "http://10.190.221.208:4000/api";
   }
   return "http://localhost:4000/api";
 };

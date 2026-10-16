@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,12 +9,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  SafeAreaView
+  SafeAreaView,
+  Modal
 } from "react-native";
 import { colors } from "../theme/colors";
 import { typography } from "../theme/typography";
 import { spacing } from "../theme/spacing";
-import { mobileApiClient } from "../services/api-client";
+import { mobileApiClient, getBaseUrl, setApiBaseUrl, initApiBaseUrl } from "../services/api-client";
 import { AuthUser, UnitSummary } from "@apartment/shared";
 import {
   BuildingIcon,
@@ -45,6 +46,47 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const [regPhone, setRegPhone] = useState("");
   const [regRole, setRegRole] = useState<"RESIDENT_TENANT" | "RESIDENT_OWNER">("RESIDENT_TENANT");
   const [regUnitId, setRegUnitId] = useState("u1111111-2222-3333-4444-555555555551");
+
+  // Server Config State
+  const [showServerModal, setShowServerModal] = useState(false);
+  const [serverUrlInput, setServerUrlInput] = useState(getBaseUrl());
+  const [activeUrl, setActiveUrl] = useState(getBaseUrl());
+  const [testResult, setTestResult] = useState<string | null>(null);
+  const [isTesting, setIsTesting] = useState(false);
+
+  useEffect(() => {
+    initApiBaseUrl().then((url) => {
+      setActiveUrl(url);
+      setServerUrlInput(url);
+    });
+  }, []);
+
+  const handleTestConnection = async (testUrl: string) => {
+    setIsTesting(true);
+    setTestResult(null);
+    try {
+      const target = testUrl.trim().replace(/\/+$/, "");
+      const res = await fetch(`${target}/health`, { method: "GET" });
+      const json = await res.json();
+      if (json && json.success) {
+        setTestResult("✅ Connected successfully! API is healthy.");
+      } else {
+        setTestResult("⚠️ Server responded but status was not healthy.");
+      }
+    } catch (err: any) {
+      setTestResult(`❌ Connection failed: ${err.message || "Network error"}`);
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
+  const handleSaveServerUrl = async () => {
+    const url = serverUrlInput.trim().replace(/\/+$/, "");
+    await setApiBaseUrl(url);
+    setActiveUrl(url);
+    setShowServerModal(false);
+    setErrorMessage(null);
+  };
 
   const handleLogin = async () => {
     if (!email.trim() || !password) {
@@ -179,7 +221,17 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           {errorMessage && (
             <View style={styles.errorBanner}>
               <AlertCircleIcon size={18} color={colors.danger} />
-              <Text style={styles.errorText}>{errorMessage}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.errorText}>{errorMessage}</Text>
+                <TouchableOpacity
+                  style={{ marginTop: 6, alignSelf: "flex-start" }}
+                  onPress={() => setShowServerModal(true)}
+                >
+                  <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primary }}>
+                    ⚙️ Change Server Address / Test Connection
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
 
@@ -380,8 +432,106 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               Encrypted JWT session storage • Super Admin RBAC Protected
             </Text>
           </View>
+
+          <TouchableOpacity
+            style={styles.serverConfigTrigger}
+            onPress={() => setShowServerModal(true)}
+          >
+            <Text style={styles.serverConfigTriggerText}>
+              🌐 Server: {activeUrl.length > 34 ? activeUrl.substring(0, 31) + "..." : activeUrl} (Change)
+            </Text>
+          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Server Configuration Modal */}
+      <Modal
+        visible={showServerModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowServerModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>⚙️ Server Settings</Text>
+            <Text style={styles.modalSubtitle}>
+              Tap a preset below or enter a custom backend API address:
+            </Text>
+
+            <View style={styles.presetContainer}>
+              <TouchableOpacity
+                style={styles.presetButton}
+                onPress={() => {
+                  const localUrl = "http://10.190.221.208:4000/api";
+                  setServerUrlInput(localUrl);
+                  handleTestConnection(localUrl);
+                }}
+              >
+                <Text style={styles.presetButtonTitle}>📶 Local Hotspot / Wi-Fi</Text>
+                <Text style={styles.presetButtonSub}>http://10.190.221.208:4000/api</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.presetButton, { marginTop: 8 }]}
+                onPress={() => {
+                  const tunnelUrl = "https://ons-fleece-pop-spring.trycloudflare.com/api";
+                  setServerUrlInput(tunnelUrl);
+                  handleTestConnection(tunnelUrl);
+                }}
+              >
+                <Text style={styles.presetButtonTitle}>🌍 Remote Tunnel (For Manager)</Text>
+                <Text style={styles.presetButtonSub}>https://ons-fleece-pop-spring.trycloudflare.com/api</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>SERVER API BASE URL</Text>
+              <TextInput
+                style={styles.input}
+                value={serverUrlInput}
+                onChangeText={setServerUrlInput}
+                autoCapitalize="none"
+                autoCorrect={false}
+                placeholder="e.g. http://10.190.221.208:4000/api"
+              />
+            </View>
+
+            {testResult && (
+              <View style={styles.testResultBox}>
+                <Text style={styles.testResultText}>{testResult}</Text>
+              </View>
+            )}
+
+            <View style={styles.modalActionRow}>
+              <TouchableOpacity
+                style={styles.testButton}
+                onPress={() => handleTestConnection(serverUrlInput)}
+                disabled={isTesting}
+              >
+                {isTesting ? (
+                  <ActivityIndicator size="small" color={colors.primary} />
+                ) : (
+                  <Text style={styles.testButtonText}>Test Connection</Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={handleSaveServerUrl}
+              >
+                <Text style={styles.saveButtonText}>Save & Apply</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={styles.closeModalBtn}
+              onPress={() => setShowServerModal(false)}
+            >
+              <Text style={styles.closeModalText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -619,5 +769,118 @@ const styles = StyleSheet.create({
   securityText: {
     fontSize: 11,
     color: colors.textMuted
+  },
+  serverConfigTrigger: {
+    marginTop: 12,
+    alignItems: "center",
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    backgroundColor: "#F0F4F2",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(21, 154, 114, 0.2)"
+  },
+  serverConfigTriggerText: {
+    fontSize: 11,
+    color: colors.primary,
+    fontWeight: typography.weights.bold
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    paddingHorizontal: 20
+  },
+  modalContent: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: typography.weights.bold,
+    color: colors.textMain,
+    marginBottom: 4
+  },
+  modalSubtitle: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginBottom: 16
+  },
+  presetContainer: {
+    marginBottom: 16
+  },
+  presetButton: {
+    backgroundColor: "#F7F9F8",
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+  presetButtonTitle: {
+    fontSize: 12,
+    fontWeight: typography.weights.bold,
+    color: colors.primary
+  },
+  presetButtonSub: {
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 2
+  },
+  testResultBox: {
+    padding: 8,
+    borderRadius: 6,
+    backgroundColor: "#F0F9F5",
+    marginBottom: 12
+  },
+  testResultText: {
+    fontSize: 12,
+    color: colors.textMain
+  },
+  modalActionRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 6
+  },
+  testButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  testButtonText: {
+    color: colors.primary,
+    fontSize: 13,
+    fontWeight: typography.weights.bold
+  },
+  saveButton: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  saveButtonText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: typography.weights.bold
+  },
+  closeModalBtn: {
+    marginTop: 12,
+    alignItems: "center",
+    paddingVertical: 6
+  },
+  closeModalText: {
+    color: colors.textMuted,
+    fontSize: 13
   }
 });

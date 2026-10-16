@@ -79,6 +79,33 @@ export const authStorage = {
     }
   },
 
+  async saveApiUrl(url: string): Promise<void> {
+    try {
+      if (Platform.OS !== "web") {
+        await SecureStore.setItemAsync("apartment_custom_api_url", url);
+      } else if (typeof localStorage !== "undefined") {
+        localStorage.setItem("apartment_custom_api_url", url);
+      } else {
+        memoryStore["apartment_custom_api_url"] = url;
+      }
+    } catch {
+      memoryStore["apartment_custom_api_url"] = url;
+    }
+  },
+
+  async getApiUrl(): Promise<string | null> {
+    try {
+      if (Platform.OS !== "web") {
+        return await SecureStore.getItemAsync("apartment_custom_api_url");
+      } else if (typeof localStorage !== "undefined") {
+        return localStorage.getItem("apartment_custom_api_url");
+      }
+      return memoryStore["apartment_custom_api_url"] || null;
+    } catch {
+      return memoryStore["apartment_custom_api_url"] || null;
+    }
+  },
+
   async clearAll(): Promise<void> {
     await this.removeToken();
     try {

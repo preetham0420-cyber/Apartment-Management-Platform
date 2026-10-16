@@ -50,3 +50,7 @@ references/apk-package/*.apk
 apps/api/uploads/*
 !apps/api/uploads/.gitkeep
 apps/api/uploads/
+
+# Local virtual environment and presentations
+.venv/
+*.pptx
