@@ -24,9 +24,16 @@ import {
 } from "@apartment/shared";
 
 function getApiBaseUrl(): string {
-  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
-  if (typeof window !== "undefined" && window.location.hostname) {
-    return `http://${window.location.hostname}:4000/api`;
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, "");
+  }
+  if (typeof window !== "undefined") {
+    const custom = localStorage.getItem("apartment_admin_custom_api_url");
+    if (custom) return custom.trim().replace(/\/+$/, "");
+    if (window.location.hostname) {
+      const protocol = window.location.protocol === "https:" ? "https:" : "http:";
+      return `${protocol}//${window.location.hostname}:4000/api`;
+    }
   }
   return "http://localhost:4000/api";
 }

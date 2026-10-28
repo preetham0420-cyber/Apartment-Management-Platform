@@ -26,10 +26,18 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
     setIsLoading(true);
 
     try {
-      const apiHost = typeof window !== "undefined" && window.location.hostname ? window.location.hostname : "localhost";
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL 
-        ? `${process.env.NEXT_PUBLIC_API_URL}/auth/login`
-        : `http://${apiHost}:4000/api/auth/login`;
+      let apiUrl = "http://localhost:4000/api/auth/login";
+      if (process.env.NEXT_PUBLIC_API_URL) {
+        apiUrl = `${process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, "")}/auth/login`;
+      } else if (typeof window !== "undefined") {
+        const custom = localStorage.getItem("apartment_admin_custom_api_url");
+        if (custom) {
+          apiUrl = `${custom.trim().replace(/\/+$/, "")}/auth/login`;
+        } else if (window.location.hostname) {
+          const protocol = window.location.protocol === "https:" ? "https:" : "http:";
+          apiUrl = `${protocol}//${window.location.hostname}:4000/api/auth/login`;
+        }
+      }
 
       const response = await fetch(apiUrl, {
         method: "POST",

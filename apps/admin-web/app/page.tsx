@@ -64,10 +64,18 @@ export default function SuperAdminHomePage() {
     try {
       const token = localStorage.getItem(TOKEN_SESSION_KEY);
       if (token) {
-        const apiHost = typeof window !== "undefined" && window.location.hostname ? window.location.hostname : "localhost";
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL 
-          ? `${process.env.NEXT_PUBLIC_API_URL}/auth/logout`
-          : `http://${apiHost}:4000/api/auth/logout`;
+        let apiUrl = "http://localhost:4000/api/auth/logout";
+        if (process.env.NEXT_PUBLIC_API_URL) {
+          apiUrl = `${process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, "")}/auth/logout`;
+        } else if (typeof window !== "undefined") {
+          const custom = localStorage.getItem("apartment_admin_custom_api_url");
+          if (custom) {
+            apiUrl = `${custom.trim().replace(/\/+$/, "")}/auth/logout`;
+          } else if (window.location.hostname) {
+            const protocol = window.location.protocol === "https:" ? "https:" : "http:";
+            apiUrl = `${protocol}//${window.location.hostname}:4000/api/auth/logout`;
+          }
+        }
 
         fetch(apiUrl, {
           method: "POST",

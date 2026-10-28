@@ -273,61 +273,97 @@ export function HomeScreen({ currentUnit, onNavigateTab }: HomeScreenProps) {
 
       <View style={styles.activityFeed}>
         <View style={styles.activityItem}>
-          <IconBox symbol="water" tone="orange" size={40} />
-          <View style={styles.activityDetails}>
-            <View style={styles.activityTop}>
+          <View style={styles.activityIconWrapper}>
+            <IconBox symbol="water" tone="orange" size={40} />
+          </View>
+          <View style={styles.activityContent}>
+            <View style={styles.activityHeaderRow}>
               <Text style={styles.activityTitle}>Water Leak Reported</Text>
-              <Text style={styles.activityTime}>10 min ago</Text>
+              <View style={styles.activityBadgeSlot}>
+                <StatusPill label="Assigned" tone="orange" />
+              </View>
             </View>
             <Text style={styles.activityContext}>B-804 • Plumbing</Text>
-            <Text style={styles.activitySub}>Assigned to Ravi Plumbing</Text>
+            <Text style={styles.activitySub} numberOfLines={2}>
+              Assigned to Ravi Plumbing
+            </Text>
+            <View style={styles.activityMetaRow}>
+              <ClockIcon size={11} color={colors.textMuted} />
+              <Text style={styles.activityTime}>10 min ago</Text>
+            </View>
           </View>
-          <StatusPill label="Assigned" tone="orange" />
         </View>
 
         <View style={styles.activityDivider} />
 
         <View style={styles.activityItem}>
-          <IconBox symbol="package" tone="teal" size={40} />
-          <View style={styles.activityDetails}>
-            <View style={styles.activityTop}>
+          <View style={styles.activityIconWrapper}>
+            <IconBox symbol="package" tone="teal" size={40} />
+          </View>
+          <View style={styles.activityContent}>
+            <View style={styles.activityHeaderRow}>
               <Text style={styles.activityTitle}>Visitor Entry Approved</Text>
-              <Text style={styles.activityTime}>25 min ago</Text>
+              <View style={styles.activityBadgeSlot}>
+                <StatusPill label="At Gate" tone="teal" />
+              </View>
             </View>
             <Text style={styles.activityContext}>Tower A • Unit 302</Text>
-            <Text style={styles.activitySub}>Amazon Delivery Agent verified at Gate 1</Text>
+            <Text style={styles.activitySub} numberOfLines={2}>
+              Amazon Delivery Agent verified at Gate 1
+            </Text>
+            <View style={styles.activityMetaRow}>
+              <ClockIcon size={11} color={colors.textMuted} />
+              <Text style={styles.activityTime}>25 min ago</Text>
+            </View>
           </View>
-          <StatusPill label="At Gate" tone="teal" />
         </View>
 
         <View style={styles.activityDivider} />
 
         <View style={styles.activityItem}>
-          <IconBox symbol="card" tone="green" size={40} />
-          <View style={styles.activityDetails}>
-            <View style={styles.activityTop}>
+          <View style={styles.activityIconWrapper}>
+            <IconBox symbol="card" tone="green" size={40} />
+          </View>
+          <View style={styles.activityContent}>
+            <View style={styles.activityHeaderRow}>
               <Text style={styles.activityTitle}>Maintenance Receipt</Text>
-              <Text style={styles.activityTime}>2h ago</Text>
+              <View style={styles.activityBadgeSlot}>
+                <StatusPill label="Paid" tone="green" />
+              </View>
             </View>
             <Text style={styles.activityContext}>C-1102 • Society Maintenance</Text>
-            <Text style={styles.activitySub}>₹5,400 received via UPI</Text>
+            <Text style={styles.activitySub} numberOfLines={2}>
+              ₹5,400 received via UPI
+            </Text>
+            <View style={styles.activityMetaRow}>
+              <ClockIcon size={11} color={colors.textMuted} />
+              <Text style={styles.activityTime}>2h ago</Text>
+            </View>
           </View>
-          <StatusPill label="Paid" tone="green" />
         </View>
 
         <View style={styles.activityDivider} />
 
         <View style={styles.activityItem}>
-          <IconBox symbol="shield" tone="red" size={40} />
-          <View style={styles.activityDetails}>
-            <View style={styles.activityTop}>
+          <View style={styles.activityIconWrapper}>
+            <IconBox symbol="shield" tone="red" size={40} />
+          </View>
+          <View style={styles.activityContent}>
+            <View style={styles.activityHeaderRow}>
               <Text style={styles.activityTitle}>Security Inspection</Text>
-              <Text style={styles.activityTime}>Today</Text>
+              <View style={styles.activityBadgeSlot}>
+                <StatusPill label="Attention" tone="red" />
+              </View>
             </View>
             <Text style={styles.activityContext}>Basement B2 • Parking Lot</Text>
-            <Text style={styles.activitySub}>CCTV surveillance maintenance complete</Text>
+            <Text style={styles.activitySub} numberOfLines={2}>
+              CCTV surveillance maintenance complete
+            </Text>
+            <View style={styles.activityMetaRow}>
+              <ClockIcon size={11} color={colors.textMuted} />
+              <Text style={styles.activityTime}>Today</Text>
+            </View>
           </View>
-          <StatusPill label="Attention" tone="red" />
         </View>
       </View>
     </ScrollView>
@@ -601,41 +637,61 @@ const styles = StyleSheet.create({
   },
   activityItem: {
     flexDirection: "row",
-    alignItems: "center",
-    padding: 14
+    alignItems: "flex-start",
+    paddingHorizontal: 14,
+    paddingVertical: 14
   },
   activityDivider: {
     height: 1,
     backgroundColor: "#F7F8F6",
     marginHorizontal: 14
   },
-  activityDetails: {
-    flex: 1,
-    marginLeft: 12,
-    marginRight: 8
+  activityIconWrapper: {
+    marginRight: 12,
+    marginTop: 2
   },
-  activityTop: {
+  activityContent: {
+    flex: 1,
+    minWidth: 0
+  },
+  activityHeaderRow: {
     flexDirection: "row",
+    alignItems: "flex-start",
     justifyContent: "space-between",
-    alignItems: "center"
+    marginBottom: 4
   },
   activityTitle: {
+    flex: 1,
     fontSize: 13,
     fontWeight: typography.weights.bold,
-    color: colors.textMain
+    color: colors.textMain,
+    marginRight: 8,
+    lineHeight: 18
   },
-  activityTime: {
-    fontSize: 10,
-    color: colors.textMuted
+  activityBadgeSlot: {
+    flexShrink: 0,
+    alignSelf: "flex-start"
   },
   activityContext: {
     fontSize: 11,
-    color: colors.textMuted,
-    marginTop: 1
+    fontWeight: typography.weights.medium,
+    color: colors.primary,
+    marginBottom: 3
   },
   activitySub: {
-    fontSize: 10,
+    fontSize: 11,
     color: colors.textMuted,
-    marginTop: 1
+    lineHeight: 16,
+    marginBottom: 6
+  },
+  activityMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5
+  },
+  activityTime: {
+    fontSize: 11,
+    color: colors.textMuted,
+    fontWeight: typography.weights.medium
   }
 });

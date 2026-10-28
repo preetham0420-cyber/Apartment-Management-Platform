@@ -9,7 +9,9 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
-  RefreshControl
+  RefreshControl,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
@@ -310,82 +312,97 @@ export function VisitorsScreen() {
       </ScrollView>
 
       {/* Add Visitor Modal Form */}
-      <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={styles.modalOverlay}
+        >
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Issue Visitor Pass</Text>
-            <Text style={styles.modalSubtitle}>
-              Pre-authorizes digital clearance at society security gates
-            </Text>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+              contentContainerStyle={{ paddingBottom: 10 }}
+            >
+              <Text style={styles.modalTitle}>Issue Visitor Pass</Text>
+              <Text style={styles.modalSubtitle}>
+                Pre-authorizes digital clearance at society security gates
+              </Text>
 
-            {formError && (
-              <View style={styles.errorBox}>
-                <Text style={styles.errorText}>{formError}</Text>
-              </View>
-            )}
+              {formError && (
+                <View style={styles.errorBox}>
+                  <Text style={styles.errorText}>{formError}</Text>
+                </View>
+              )}
 
-            <Text style={styles.inputLabel}>VISITOR FULL NAME</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="e.g. Ramesh Kumar / Flipkart Agent"
-              placeholderTextColor={colors.textMuted}
-              value={visitorName}
-              onChangeText={setVisitorName}
-            />
+              <Text style={styles.inputLabel}>VISITOR FULL NAME</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="e.g. Ramesh Kumar / Flipkart Agent"
+                placeholderTextColor={colors.textMuted}
+                value={visitorName}
+                onChangeText={setVisitorName}
+              />
 
-            <Text style={styles.inputLabel}>PHONE NUMBER</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="+91 98765 43210"
-              placeholderTextColor={colors.textMuted}
-              keyboardType="phone-pad"
-              value={visitorPhone}
-              onChangeText={setVisitorPhone}
-            />
+              <Text style={styles.inputLabel}>PHONE NUMBER</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="+91 98765 43210"
+                placeholderTextColor={colors.textMuted}
+                keyboardType="phone-pad"
+                value={visitorPhone}
+                onChangeText={setVisitorPhone}
+              />
 
-            <Text style={styles.inputLabel}>PURPOSE OF VISIT</Text>
-            <View style={styles.purposeRow}>
-              {["GUEST", "DELIVERY", "CAB", "SERVICE"].map((p) => (
-                <TouchableOpacity
-                  key={p}
-                  style={[styles.purposeBtn, purpose === p && styles.purposeBtnActive]}
-                  onPress={() => setPurpose(p)}
-                >
-                  <Text
-                    style={[
-                      styles.purposeBtnText,
-                      purpose === p && styles.purposeBtnTextActive
-                    ]}
+              <Text style={styles.inputLabel}>PURPOSE OF VISIT</Text>
+              <View style={styles.purposeRow}>
+                {["GUEST", "DELIVERY", "CAB", "SERVICE"].map((p) => (
+                  <TouchableOpacity
+                    key={p}
+                    style={[styles.purposeBtn, purpose === p && styles.purposeBtnActive]}
+                    onPress={() => setPurpose(p)}
                   >
-                    {p}
-                  </Text>
+                    <Text
+                      style={[
+                        styles.purposeBtnText,
+                        purpose === p && styles.purposeBtnTextActive
+                      ]}
+                    >
+                      {p}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  style={styles.cancelBtn}
+                  onPress={() => setModalVisible(false)}
+                  disabled={submitting}
+                >
+                  <Text style={styles.cancelBtnText}>Cancel</Text>
                 </TouchableOpacity>
-              ))}
-            </View>
 
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={styles.cancelBtn}
-                onPress={() => setModalVisible(false)}
-                disabled={submitting}
-              >
-                <Text style={styles.cancelBtnText}>Cancel</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.submitBtn}
-                onPress={handleCreateVisitor}
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.submitBtnText}>Generate Pass</Text>
-                )}
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity
+                  style={styles.submitBtn}
+                  onPress={handleCreateVisitor}
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={styles.submitBtnText}>Generate Pass</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );

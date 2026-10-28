@@ -8,7 +8,9 @@ import {
   Modal,
   TextInput,
   ActivityIndicator,
-  Alert
+  Alert,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import { colors, ThemeTone } from "../theme/colors";
 import { spacing } from "../theme/spacing";
@@ -631,49 +633,64 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
       </ScrollView>
 
       {/* Edit Profile Modal */}
-      <Modal visible={profileModalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
+      <Modal
+        visible={profileModalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setProfileModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={styles.modalOverlay}
+        >
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit Resident Profile</Text>
-            <Text style={styles.modalSubtitle}>Update your verified contact information</Text>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+              contentContainerStyle={{ paddingBottom: 10 }}
+            >
+              <Text style={styles.modalTitle}>Edit Resident Profile</Text>
+              <Text style={styles.modalSubtitle}>Update your verified contact information</Text>
 
-            <Text style={styles.inputLabel}>Full Name</Text>
-            <TextInput
-              style={styles.textInput}
-              value={editName}
-              onChangeText={setEditName}
-            />
+              <Text style={styles.inputLabel}>Full Name</Text>
+              <TextInput
+                style={styles.textInput}
+                value={editName}
+                onChangeText={setEditName}
+              />
 
-            <Text style={styles.inputLabel}>Phone Number</Text>
-            <TextInput
-              style={styles.textInput}
-              value={editPhone}
-              onChangeText={setEditPhone}
-              keyboardType="phone-pad"
-            />
+              <Text style={styles.inputLabel}>Phone Number</Text>
+              <TextInput
+                style={styles.textInput}
+                value={editPhone}
+                onChangeText={setEditPhone}
+                keyboardType="phone-pad"
+              />
 
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={styles.cancelBtn}
-                onPress={() => setProfileModalVisible(false)}
-                disabled={savingProfile}
-              >
-                <Text style={styles.cancelBtnText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.submitBtn}
-                onPress={handleSaveProfile}
-                disabled={savingProfile}
-              >
-                {savingProfile ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.submitBtnText}>Save Changes</Text>
-                )}
-              </TouchableOpacity>
-            </View>
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  style={styles.cancelBtn}
+                  onPress={() => setProfileModalVisible(false)}
+                  disabled={savingProfile}
+                >
+                  <Text style={styles.cancelBtnText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.submitBtn}
+                  onPress={handleSaveProfile}
+                  disabled={savingProfile}
+                >
+                  {savingProfile ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={styles.submitBtnText}>Save Changes</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Amenities Modal */}
@@ -1331,8 +1348,16 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
       </Modal>
 
       {/* Household Members Modal */}
-      <Modal visible={householdModalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
+      <Modal
+        visible={householdModalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setHouseholdModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={styles.modalOverlay}
+        >
           <View style={[styles.modalContent, { maxHeight: "88%" }]}>
             <Text style={styles.modalTitle}>Household Members</Text>
             <Text style={styles.modalSubtitle}>Family members & co-occupants registered to your unit</Text>
@@ -1384,7 +1409,11 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                 No additional household members registered.
               </Text>
             ) : (
-              <ScrollView style={{ maxHeight: 220, marginTop: 8 }}>
+              <ScrollView
+                style={{ maxHeight: 220, marginTop: 8 }}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
+              >
                 {householdMembers.map((m) => (
                   <View key={m.id} style={styles.recordCard}>
                     <View style={{ flex: 1 }}>
@@ -1413,12 +1442,20 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Vehicles & Parking Modal */}
-      <Modal visible={vehiclesModalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
+      <Modal
+        visible={vehiclesModalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setVehiclesModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={styles.modalOverlay}
+        >
           <View style={[styles.modalContent, { maxHeight: "88%" }]}>
             <Text style={styles.modalTitle}>Vehicles & Parking</Text>
             <Text style={styles.modalSubtitle}>Registered vehicles and allocated parking bay</Text>
@@ -1493,7 +1530,11 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                 No vehicles registered. Add your vehicle above.
               </Text>
             ) : (
-              <ScrollView style={{ maxHeight: 180, marginTop: 8 }}>
+              <ScrollView
+                style={{ maxHeight: 180, marginTop: 8 }}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
+              >
                 {vehicles.map((v) => (
                   <View key={v.id} style={styles.recordCard}>
                     <View style={{ flex: 1 }}>
@@ -1524,7 +1565,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Documents & Bylaws Modal */}

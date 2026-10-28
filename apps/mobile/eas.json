@@ -13,9 +13,9 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://10.190.221.208:4000/api",
-        "EXPO_PUBLIC_API_BASE_URL": "http://10.190.221.208:4000/api",
-        "EXPO_PUBLIC_APP_ENV": "development"
+        "EXPO_PUBLIC_API_URL": "https://repeated-costs-mediterranean-camp.trycloudflare.com/api",
+        "EXPO_PUBLIC_API_BASE_URL": "https://repeated-costs-mediterranean-camp.trycloudflare.com/api",
+        "EXPO_PUBLIC_APP_ENV": "preview"
       }
     },
     "production": {

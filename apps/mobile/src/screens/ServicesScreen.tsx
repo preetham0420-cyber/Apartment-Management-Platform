@@ -9,7 +9,9 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
-  RefreshControl
+  RefreshControl,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
@@ -25,8 +27,10 @@ import {
   AlertCircleIcon,
   FileTextIcon,
   CheckCircleIcon,
-  SearchIcon
+  SearchIcon,
+  ClockIcon
 } from "../components/MobileIcons";
+import { formatTicketDateTime, formatRelativeTime } from "../utils/date-format";
 
 interface ServicesScreenProps {
   onNavigateTab?: (tab: "home" | "services" | "chat" | "visitors" | "more") => void;
@@ -607,6 +611,13 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
                       {ticket.description}
                     </Text>
 
+                    <View style={styles.ticketTimeRow}>
+                      <ClockIcon size={12} color={colors.textMuted} />
+                      <Text style={styles.ticketTimeText}>
+                        Reported {formatTicketDateTime(ticket.createdAt)}
+                      </Text>
+                    </View>
+
                     <View style={styles.ticketFooter}>
                       <Text style={styles.ticketActionLink}>
                         View updates & comments ({ticket.comments?.length || 0}) &rarr;
@@ -628,179 +639,221 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
       {/* =========================================================================
           RAISE NEW MAINTENANCE REQUEST MODAL
           ========================================================================= */}
-      <Modal visible={createModalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
+      {/* =========================================================================
+          RAISE NEW MAINTENANCE REQUEST MODAL
+          ========================================================================= */}
+      <Modal
+        visible={createModalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setCreateModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={styles.modalOverlay}
+        >
           <View style={styles.modalContent}>
-            <Text style={styles.modalHeading}>Raise Service Request</Text>
-            <Text style={styles.modalSubheading}>
-              Facility Management • Unit Inspection
-            </Text>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+              contentContainerStyle={{ paddingBottom: 16 }}
+            >
+              <Text style={styles.modalHeading}>Raise Service Request</Text>
+              <Text style={styles.modalSubheading}>
+                Facility Management • Unit Inspection
+              </Text>
 
-            {formError && (
-              <View style={styles.formErrorBox}>
-                <Text style={styles.formErrorText}>{formError}</Text>
+              {formError && (
+                <View style={styles.formErrorBox}>
+                  <Text style={styles.formErrorText}>{formError}</Text>
+                </View>
+              )}
+
+              <Text style={styles.fieldLabel}>CATEGORY</Text>
+              <View style={styles.categoryGrid}>
+                {(["PLUMBING", "ELECTRICAL", "CARPENTRY", "APPLIANCE"] as MaintenanceCategory[]).map(
+                  (cat) => (
+                    <TouchableOpacity
+                      key={cat}
+                      style={[
+                        styles.categoryOption,
+                        category === cat && styles.categoryOptionActive
+                      ]}
+                      onPress={() => setCategory(cat)}
+                    >
+                      <Text
+                        style={[
+                          styles.categoryOptionText,
+                          category === cat && styles.categoryOptionTextActive
+                        ]}
+                      >
+                        {cat}
+                      </Text>
+                    </TouchableOpacity>
+                  )
+                )}
               </View>
-            )}
 
-            <Text style={styles.fieldLabel}>CATEGORY</Text>
-            <View style={styles.categoryGrid}>
-              {(["PLUMBING", "ELECTRICAL", "CARPENTRY", "APPLIANCE"] as MaintenanceCategory[]).map(
-                (cat) => (
+              <Text style={styles.fieldLabel}>ISSUE SUMMARY</Text>
+              <TextInput
+                style={styles.inputField}
+                placeholder="e.g. Water leak under kitchen sink"
+                placeholderTextColor={colors.textMuted}
+                value={title}
+                onChangeText={setTitle}
+              />
+
+              <Text style={styles.fieldLabel}>DETAILED DESCRIPTION</Text>
+              <TextInput
+                style={[styles.inputField, { height: 72, textAlignVertical: "top" }]}
+                placeholder="Provide exact location and convenient inspection timing..."
+                placeholderTextColor={colors.textMuted}
+                multiline
+                value={description}
+                onChangeText={setDescription}
+              />
+
+              <Text style={styles.fieldLabel}>PRIORITY</Text>
+              <View style={styles.categoryGrid}>
+                {(["LOW", "MEDIUM", "HIGH", "EMERGENCY"] as MaintenancePriority[]).map((p) => (
                   <TouchableOpacity
-                    key={cat}
+                    key={p}
                     style={[
                       styles.categoryOption,
-                      category === cat && styles.categoryOptionActive
+                      priority === p && styles.categoryOptionActive
                     ]}
-                    onPress={() => setCategory(cat)}
+                    onPress={() => setPriority(p)}
                   >
                     <Text
                       style={[
                         styles.categoryOptionText,
-                        category === cat && styles.categoryOptionTextActive
+                        priority === p && styles.categoryOptionTextActive
                       ]}
                     >
-                      {cat}
+                      {p}
                     </Text>
                   </TouchableOpacity>
-                )
-              )}
-            </View>
-
-            <Text style={styles.fieldLabel}>ISSUE SUMMARY</Text>
-            <TextInput
-              style={styles.inputField}
-              placeholder="e.g. Water leak under kitchen sink"
-              placeholderTextColor={colors.textMuted}
-              value={title}
-              onChangeText={setTitle}
-            />
-
-            <Text style={styles.fieldLabel}>DETAILED DESCRIPTION</Text>
-            <TextInput
-              style={[styles.inputField, { height: 72, textAlignVertical: "top" }]}
-              placeholder="Provide exact location and convenient inspection timing..."
-              placeholderTextColor={colors.textMuted}
-              multiline
-              value={description}
-              onChangeText={setDescription}
-            />
-
-            <Text style={styles.fieldLabel}>PRIORITY</Text>
-            <View style={styles.categoryGrid}>
-              {(["LOW", "MEDIUM", "HIGH", "EMERGENCY"] as MaintenancePriority[]).map((p) => (
-                <TouchableOpacity
-                  key={p}
-                  style={[
-                    styles.categoryOption,
-                    priority === p && styles.categoryOptionActive
-                  ]}
-                  onPress={() => setPriority(p)}
-                >
-                  <Text
-                    style={[
-                      styles.categoryOptionText,
-                      priority === p && styles.categoryOptionTextActive
-                    ]}
-                  >
-                    {p}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <TouchableOpacity
-              style={[
-                styles.attachmentOption,
-                attachDefectPhoto && styles.attachmentOptionActive
-              ]}
-              onPress={() => setAttachDefectPhoto(!attachDefectPhoto)}
-              activeOpacity={0.8}
-            >
-              <FileTextIcon size={18} color={attachDefectPhoto ? colors.primary : colors.textMuted} />
-              <View style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={styles.attachmentTitle}>
-                  {attachDefectPhoto
-                    ? "Defect Photo Attached (1 file)"
-                    : "Attach Photo / Bill Evidence"}
-                </Text>
-                <Text style={styles.attachmentSub}>PNG, JPG under 5MB</Text>
+                ))}
               </View>
-              {attachDefectPhoto && <CheckCircleIcon size={18} color={colors.primary} />}
-            </TouchableOpacity>
-
-            <View style={styles.modalButtonsRow}>
-              <TouchableOpacity
-                style={styles.modalCancelBtn}
-                onPress={() => setCreateModalVisible(false)}
-                disabled={submitting}
-              >
-                <Text style={styles.modalCancelText}>Cancel</Text>
-              </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.modalSubmitBtn}
-                onPress={handleCreateRequest}
-                disabled={submitting}
+                style={[
+                  styles.attachmentOption,
+                  attachDefectPhoto && styles.attachmentOptionActive
+                ]}
+                onPress={() => setAttachDefectPhoto(!attachDefectPhoto)}
+                activeOpacity={0.8}
               >
-                {submitting ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
-                ) : (
-                  <Text style={styles.modalSubmitText}>Submit Request</Text>
-                )}
+                <FileTextIcon size={18} color={attachDefectPhoto ? colors.primary : colors.textMuted} />
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={styles.attachmentTitle}>
+                    {attachDefectPhoto
+                      ? "Defect Photo Attached (1 file)"
+                      : "Attach Photo / Bill Evidence"}
+                  </Text>
+                  <Text style={styles.attachmentSub}>PNG, JPG under 5MB</Text>
+                </View>
+                {attachDefectPhoto && <CheckCircleIcon size={18} color={colors.primary} />}
               </TouchableOpacity>
-            </View>
+
+              <View style={styles.modalButtonsRow}>
+                <TouchableOpacity
+                  style={styles.modalCancelBtn}
+                  onPress={() => setCreateModalVisible(false)}
+                  disabled={submitting}
+                >
+                  <Text style={styles.modalCancelText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.modalSubmitBtn}
+                  onPress={handleCreateRequest}
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <Text style={styles.modalSubmitText}>Submit Request</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* =========================================================================
           TICKET DETAILS & COMMENTS MODAL
           ========================================================================= */}
-      <Modal visible={Boolean(selectedTicket)} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxHeight: "88%" }]}>
+      <Modal
+        visible={Boolean(selectedTicket)}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setSelectedTicket(null)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 16 : 0}
+          style={styles.modalOverlay}
+        >
+          <View style={[styles.modalContent, { maxHeight: "90%", display: "flex", flexDirection: "column" }]}>
             {selectedTicket && (
               <>
-                <View style={styles.ticketDetailTop}>
-                  <View style={{ flex: 1, marginRight: 8 }}>
-                    <Text style={styles.ticketDetailCategory}>
-                      {selectedTicket.category} • PRIORITY {selectedTicket.priority}
-                    </Text>
-                    <Text style={styles.modalHeading}>{selectedTicket.title}</Text>
-                  </View>
-                  <StatusPill
-                    label={selectedTicket.status.replace("_", " ")}
-                    tone={getStatusTone(selectedTicket.status)}
-                  />
-                </View>
-
-                <View style={styles.ticketDetailDescBox}>
-                  <Text style={styles.ticketDetailDescText}>{selectedTicket.description}</Text>
-                </View>
-
-                {/* Attachments Section */}
-                <Text style={styles.fieldLabel}>ATTACHMENTS ({selectedTicket.attachments?.length || 0})</Text>
-                {!selectedTicket.attachments || selectedTicket.attachments.length === 0 ? (
-                  <Text style={styles.emptyMiniText}>No defect attachments uploaded.</Text>
-                ) : (
-                  <View style={styles.attachmentChipRow}>
-                    {selectedTicket.attachments.map((att) => (
-                      <View key={att.id} style={styles.attachmentChip}>
-                        <FileTextIcon size={14} color={colors.primary} />
-                        <Text style={styles.attachmentChipText} numberOfLines={1}>
-                          {att.fileName}
+                <ScrollView
+                  style={{ flexShrink: 1, maxHeight: 380 }}
+                  contentContainerStyle={{ paddingBottom: 8 }}
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                  keyboardDismissMode="on-drag"
+                >
+                  <View style={styles.ticketDetailTop}>
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                      <Text style={styles.ticketDetailCategory}>
+                        {selectedTicket.category} • PRIORITY {selectedTicket.priority}
+                      </Text>
+                      <Text style={styles.modalHeading}>{selectedTicket.title}</Text>
+                      <View style={styles.ticketDetailTimeRow}>
+                        <ClockIcon size={12} color={colors.textMuted} />
+                        <Text style={styles.ticketDetailTimeText}>
+                          Reported: {formatTicketDateTime(selectedTicket.createdAt)}
+                          {selectedTicket.updatedAt && selectedTicket.updatedAt !== selectedTicket.createdAt
+                            ? ` • Updated ${formatRelativeTime(selectedTicket.updatedAt)}`
+                            : ""}
                         </Text>
                       </View>
-                    ))}
+                    </View>
+                    <StatusPill
+                      label={selectedTicket.status.replace("_", " ")}
+                      tone={getStatusTone(selectedTicket.status)}
+                    />
                   </View>
-                )}
 
-                {/* Comments Section */}
-                <Text style={[styles.fieldLabel, { marginTop: 12 }]}>
-                  COMMENTS & TIMELINE ({selectedTicket.comments?.length || 0})
-                </Text>
-                <ScrollView style={{ maxHeight: 160 }} showsVerticalScrollIndicator={false}>
+                  <View style={styles.ticketDetailDescBox}>
+                    <Text style={styles.ticketDetailDescText}>{selectedTicket.description}</Text>
+                  </View>
+
+                  {/* Attachments Section */}
+                  <Text style={styles.fieldLabel}>ATTACHMENTS ({selectedTicket.attachments?.length || 0})</Text>
+                  {!selectedTicket.attachments || selectedTicket.attachments.length === 0 ? (
+                    <Text style={styles.emptyMiniText}>No defect attachments uploaded.</Text>
+                  ) : (
+                    <View style={styles.attachmentChipRow}>
+                      {selectedTicket.attachments.map((att) => (
+                        <View key={att.id} style={styles.attachmentChip}>
+                          <FileTextIcon size={14} color={colors.primary} />
+                          <Text style={styles.attachmentChipText} numberOfLines={1}>
+                            {att.fileName}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+
+                  {/* Comments Section */}
+                  <Text style={[styles.fieldLabel, { marginTop: 12 }]}>
+                    COMMENTS & TIMELINE ({selectedTicket.comments?.length || 0})
+                  </Text>
                   {!selectedTicket.comments || selectedTicket.comments.length === 0 ? (
                     <Text style={styles.emptyMiniText}>
                       No comments yet. Facility updates will appear here.
@@ -808,9 +861,16 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
                   ) : (
                     selectedTicket.comments.map((c) => (
                       <View key={c.id} style={styles.commentItem}>
-                        <Text style={styles.commentAuthor}>
-                          {c.authorName} ({c.authorRole})
-                        </Text>
+                        <View style={styles.commentHeaderRow}>
+                          <Text style={styles.commentAuthor}>
+                            {c.authorName} ({c.authorRole})
+                          </Text>
+                          {c.createdAt ? (
+                            <Text style={styles.commentTime}>
+                              {formatTicketDateTime(c.createdAt)}
+                            </Text>
+                          ) : null}
+                        </View>
                         <Text style={styles.commentBody}>{c.comment}</Text>
                       </View>
                     ))
@@ -825,11 +885,13 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
                       placeholderTextColor={colors.textMuted}
                       value={commentText}
                       onChangeText={setCommentText}
+                      returnKeyType="send"
+                      onSubmitEditing={handleAddComment}
                     />
                     <TouchableOpacity
                       style={styles.commentPostBtn}
                       onPress={handleAddComment}
-                      disabled={submittingComment}
+                      disabled={submittingComment || !commentText.trim()}
                     >
                       {submittingComment ? (
                         <ActivityIndicator size="small" color="#ffffff" />
@@ -859,7 +921,7 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
               </>
             )}
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -1080,7 +1142,17 @@ const styles = StyleSheet.create({
   ticketDesc: {
     fontSize: 12,
     color: colors.textMuted,
+    marginBottom: 6
+  },
+  ticketTimeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
     marginBottom: 8
+  },
+  ticketTimeText: {
+    fontSize: 11,
+    color: colors.textMuted
   },
   ticketFooter: {
     flexDirection: "row",
@@ -1241,6 +1313,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginBottom: 2
   },
+  ticketDetailTimeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 4
+  },
+  ticketDetailTimeText: {
+    fontSize: 11,
+    color: colors.textMuted
+  },
   ticketDetailDescBox: {
     backgroundColor: "#F7F8F6",
     borderRadius: 10,
@@ -1284,11 +1366,20 @@ const styles = StyleSheet.create({
     padding: 8,
     marginBottom: 6
   },
+  commentHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 2
+  },
   commentAuthor: {
     fontSize: 10,
     fontWeight: "700",
-    color: colors.primary,
-    marginBottom: 2
+    color: colors.primary
+  },
+  commentTime: {
+    fontSize: 9,
+    color: colors.textMuted
   },
   commentBody: {
     fontSize: 12,

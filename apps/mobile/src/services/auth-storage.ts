@@ -106,6 +106,60 @@ export const authStorage = {
     }
   },
 
+  async saveChatChannels(channelsJson: string): Promise<void> {
+    try {
+      if (Platform.OS !== "web") {
+        await SecureStore.setItemAsync("apartment_chat_channels_state", channelsJson);
+      } else if (typeof localStorage !== "undefined") {
+        localStorage.setItem("apartment_chat_channels_state", channelsJson);
+      } else {
+        memoryStore["apartment_chat_channels_state"] = channelsJson;
+      }
+    } catch {
+      memoryStore["apartment_chat_channels_state"] = channelsJson;
+    }
+  },
+
+  async getChatChannels(): Promise<string | null> {
+    try {
+      if (Platform.OS !== "web") {
+        return await SecureStore.getItemAsync("apartment_chat_channels_state");
+      } else if (typeof localStorage !== "undefined") {
+        return localStorage.getItem("apartment_chat_channels_state");
+      }
+      return memoryStore["apartment_chat_channels_state"] || null;
+    } catch {
+      return memoryStore["apartment_chat_channels_state"] || null;
+    }
+  },
+
+  async saveChatMessages(messagesJson: string): Promise<void> {
+    try {
+      if (Platform.OS !== "web") {
+        await SecureStore.setItemAsync("apartment_chat_messages_state", messagesJson);
+      } else if (typeof localStorage !== "undefined") {
+        localStorage.setItem("apartment_chat_messages_state", messagesJson);
+      } else {
+        memoryStore["apartment_chat_messages_state"] = messagesJson;
+      }
+    } catch {
+      memoryStore["apartment_chat_messages_state"] = messagesJson;
+    }
+  },
+
+  async getChatMessages(): Promise<string | null> {
+    try {
+      if (Platform.OS !== "web") {
+        return await SecureStore.getItemAsync("apartment_chat_messages_state");
+      } else if (typeof localStorage !== "undefined") {
+        return localStorage.getItem("apartment_chat_messages_state");
+      }
+      return memoryStore["apartment_chat_messages_state"] || null;
+    } catch {
+      return memoryStore["apartment_chat_messages_state"] || null;
+    }
+  },
+
   async clearAll(): Promise<void> {
     await this.removeToken();
     try {

@@ -162,12 +162,13 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.keyboardView}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: 60 }]}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
         >
           {/* Brand Header */}
           <View style={styles.brandContainer}>
@@ -451,86 +452,96 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         animationType="slide"
         onRequestClose={() => setShowServerModal(false)}
       >
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={styles.modalOverlay}
+        >
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>⚙️ Server Settings</Text>
-            <Text style={styles.modalSubtitle}>
-              Tap a preset below or enter a custom backend API address:
-            </Text>
-
-            <View style={styles.presetContainer}>
-              <TouchableOpacity
-                style={styles.presetButton}
-                onPress={() => {
-                  const localUrl = "http://10.190.221.208:4000/api";
-                  setServerUrlInput(localUrl);
-                  handleTestConnection(localUrl);
-                }}
-              >
-                <Text style={styles.presetButtonTitle}>📶 Local Hotspot / Wi-Fi</Text>
-                <Text style={styles.presetButtonSub}>http://10.190.221.208:4000/api</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.presetButton, { marginTop: 8 }]}
-                onPress={() => {
-                  const tunnelUrl = "https://ons-fleece-pop-spring.trycloudflare.com/api";
-                  setServerUrlInput(tunnelUrl);
-                  handleTestConnection(tunnelUrl);
-                }}
-              >
-                <Text style={styles.presetButtonTitle}>🌍 Remote Tunnel (For Manager)</Text>
-                <Text style={styles.presetButtonSub}>https://ons-fleece-pop-spring.trycloudflare.com/api</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>SERVER API BASE URL</Text>
-              <TextInput
-                style={styles.input}
-                value={serverUrlInput}
-                onChangeText={setServerUrlInput}
-                autoCapitalize="none"
-                autoCorrect={false}
-                placeholder="e.g. http://10.190.221.208:4000/api"
-              />
-            </View>
-
-            {testResult && (
-              <View style={styles.testResultBox}>
-                <Text style={styles.testResultText}>{testResult}</Text>
-              </View>
-            )}
-
-            <View style={styles.modalActionRow}>
-              <TouchableOpacity
-                style={styles.testButton}
-                onPress={() => handleTestConnection(serverUrlInput)}
-                disabled={isTesting}
-              >
-                {isTesting ? (
-                  <ActivityIndicator size="small" color={colors.primary} />
-                ) : (
-                  <Text style={styles.testButtonText}>Test Connection</Text>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.saveButton}
-                onPress={handleSaveServerUrl}
-              >
-                <Text style={styles.saveButtonText}>Save & Apply</Text>
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity
-              style={styles.closeModalBtn}
-              onPress={() => setShowServerModal(false)}
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+              contentContainerStyle={{ paddingBottom: 10 }}
             >
-              <Text style={styles.closeModalText}>Cancel</Text>
-            </TouchableOpacity>
+              <Text style={styles.modalTitle}>⚙️ Server Settings</Text>
+              <Text style={styles.modalSubtitle}>
+                Tap a preset below or enter a custom backend API address:
+              </Text>
+
+              <View style={styles.presetContainer}>
+                <TouchableOpacity
+                  style={styles.presetButton}
+                  onPress={() => {
+                    const localUrl = "http://10.190.221.208:4000/api";
+                    setServerUrlInput(localUrl);
+                    handleTestConnection(localUrl);
+                  }}
+                >
+                  <Text style={styles.presetButtonTitle}>📶 Local Hotspot / Wi-Fi</Text>
+                  <Text style={styles.presetButtonSub}>http://10.190.221.208:4000/api</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.presetButton, { marginTop: 8 }]}
+                  onPress={() => {
+                    const tunnelUrl = "https://figures-born-kidney-cgi.trycloudflare.com/api";
+                    setServerUrlInput(tunnelUrl);
+                    handleTestConnection(tunnelUrl);
+                  }}
+                >
+                  <Text style={styles.presetButtonTitle}>🌍 Remote Tunnel (For Manager)</Text>
+                  <Text style={styles.presetButtonSub}>https://figures-born-kidney-cgi.trycloudflare.com/api</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>SERVER API BASE URL</Text>
+                <TextInput
+                  style={styles.input}
+                  value={serverUrlInput}
+                  onChangeText={setServerUrlInput}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  placeholder="e.g. https://api.yourdomain.com/api"
+                />
+              </View>
+
+              {testResult && (
+                <View style={styles.testResultBox}>
+                  <Text style={styles.testResultText}>{testResult}</Text>
+                </View>
+              )}
+
+              <View style={styles.modalActionRow}>
+                <TouchableOpacity
+                  style={styles.testButton}
+                  onPress={() => handleTestConnection(serverUrlInput)}
+                  disabled={isTesting}
+                >
+                  {isTesting ? (
+                    <ActivityIndicator size="small" color={colors.primary} />
+                  ) : (
+                    <Text style={styles.testButtonText}>Test Connection</Text>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={handleSaveServerUrl}
+                >
+                  <Text style={styles.saveButtonText}>Save & Apply</Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity
+                style={styles.closeModalBtn}
+                onPress={() => setShowServerModal(false)}
+              >
+                <Text style={styles.closeModalText}>Cancel</Text>
+              </TouchableOpacity>
+            </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );
