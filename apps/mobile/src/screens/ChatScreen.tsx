@@ -9,7 +9,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
-  ActivityIndicator
+  ActivityIndicator,
+  Dimensions,
+  StatusBar
 } from "react-native";
 import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
@@ -176,6 +178,36 @@ export function ChatScreen({ onActiveChannelChange }: ChatScreenProps = {}) {
     };
   }, [activeChannelId]);
 
+  // Track Android software keyboard height for standalone APK / edge-to-edge navigation
+  const [androidKeyboardHeight, setAndroidKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+
+    const onAndroidKeyboardShow = (e: any) => {
+      const height = e?.endCoordinates?.height || 0;
+      setAndroidKeyboardHeight(height);
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 60);
+    };
+
+    const onAndroidKeyboardHide = () => {
+      setAndroidKeyboardHeight(0);
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: false });
+      }, 50);
+    };
+
+    const showSub = Keyboard.addListener("keyboardDidShow", onAndroidKeyboardShow);
+    const hideSub = Keyboard.addListener("keyboardDidHide", onAndroidKeyboardHide);
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   useEffect(() => {
     return () => {
       onActiveChannelChange?.(false);
@@ -251,6 +283,10 @@ export function ChatScreen({ onActiveChannelChange }: ChatScreenProps = {}) {
   // If a channel is selected, render the conversation view with message composer
   if (activeChannel) {
     const channelMessages = messages[activeChannel.id] || [];
+    const screenHeight = Dimensions.get("screen").height;
+    const windowHeight = Dimensions.get("window").height;
+    const rawNavDiff = screenHeight - windowHeight - (StatusBar.currentHeight || 0);
+    const androidNavPadding = Math.max(rawNavDiff > 10 ? rawNavDiff : 48, 48);
 
     return (
       <KeyboardAvoidingView
@@ -327,7 +363,15 @@ export function ChatScreen({ onActiveChannelChange }: ChatScreenProps = {}) {
         </ScrollView>
 
         {/* Interactive Message Composer (Pinned Above Keyboard) */}
-        <View style={styles.composerContainer}>
+        <View
+          style={[
+            styles.composerContainer,
+            Platform.OS === "android" && {
+              marginBottom: androidKeyboardHeight > 0 ? androidKeyboardHeight : 0,
+              paddingBottom: androidKeyboardHeight > 0 ? 12 : androidNavPadding
+            }
+          ]}
+        >
           <TextInput
             style={styles.composerInput}
             placeholder={`Message ${activeChannel.name}...`}

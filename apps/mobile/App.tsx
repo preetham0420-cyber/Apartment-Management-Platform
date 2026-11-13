@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, SafeAreaView, View, ActivityIndicator, Text, Modal, TouchableOpacity, ScrollView } from "react-native";
+import {
+  StyleSheet,
+  SafeAreaView,
+  View,
+  ActivityIndicator,
+  Text,
+  Modal,
+  TouchableOpacity,
+  ScrollView,
+  Platform,
+  StatusBar as RNStatusBar
+} from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { colors } from "./src/theme/colors";
 import { AppHeader } from "./src/components/AppHeader";
@@ -304,7 +315,8 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.bgPage
+    backgroundColor: colors.bgPage,
+    paddingTop: Platform.OS === "android" ? (RNStatusBar.currentHeight || 0) : 0
   },
   contentContainer: {
     flex: 1
