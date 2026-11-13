@@ -13,8 +13,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://incentives-solar-mount-forty.trycloudflare.com/api",
-        "EXPO_PUBLIC_API_BASE_URL": "https://incentives-solar-mount-forty.trycloudflare.com/api",
+        "EXPO_PUBLIC_API_URL": "https://istanbul-planner-houston-jade.trycloudflare.com/api",
+        "EXPO_PUBLIC_API_BASE_URL": "https://istanbul-planner-houston-jade.trycloudflare.com/api",
         "EXPO_PUBLIC_APP_ENV": "preview"
       }
     },

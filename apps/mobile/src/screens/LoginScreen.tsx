@@ -476,13 +476,13 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                 <TouchableOpacity
                   style={styles.presetButton}
                   onPress={() => {
-                    const tunnelUrl = "https://incentives-solar-mount-forty.trycloudflare.com/api";
+                    const tunnelUrl = "https://istanbul-planner-houston-jade.trycloudflare.com/api";
                     setServerUrlInput(tunnelUrl);
                     handleTestConnection(tunnelUrl);
                   }}
                 >
                   <Text style={styles.presetButtonTitle}>🌍 Cloudflare Secure Tunnel (Recommended)</Text>
-                  <Text style={styles.presetButtonSub}>https://incentives-solar-mount-forty.trycloudflare.com/api</Text>
+                  <Text style={styles.presetButtonSub}>https://istanbul-planner-houston-jade.trycloudflare.com/api</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity

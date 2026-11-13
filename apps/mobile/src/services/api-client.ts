@@ -54,7 +54,7 @@ export const getBaseUrl = (): string => {
     } catch {
       // Fall through to active LAN IP
     }
-    return "https://incentives-solar-mount-forty.trycloudflare.com/api";
+    return "https://istanbul-planner-houston-jade.trycloudflare.com/api";
   }
   return "http://localhost:4000/api";
 };
