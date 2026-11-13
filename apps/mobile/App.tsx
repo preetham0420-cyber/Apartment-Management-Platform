@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
-  SafeAreaView,
   View,
   ActivityIndicator,
   Text,
   Modal,
   TouchableOpacity,
   ScrollView,
-  Platform,
-  StatusBar as RNStatusBar
+  Platform
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "./src/theme/colors";
 import { AppHeader } from "./src/components/AppHeader";
 import { BottomTabBar, TabKey } from "./src/components/BottomTabBar";
@@ -69,7 +68,8 @@ const initialMobileNotifications: MobileNotification[] = [
   }
 ];
 
-export default function App() {
+function AppContent() {
+  const insets = useSafeAreaInsets();
   const [isInitializing, setIsInitializing] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
@@ -168,21 +168,21 @@ export default function App() {
   // Initial authentication check spinner
   if (isInitializing) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
+      <View style={[styles.centerContainer, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <StatusBar style="dark" />
         <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>Verifying secure session...</Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
   // Unauthenticated State: Show Native Login Screen
   if (!isAuthenticated) {
     return (
-      <>
+      <View style={[styles.safeArea, { paddingTop: insets.top }]}>
         <StatusBar style="dark" />
         <LoginScreen onLoginSuccess={handleLoginSuccess} />
-      </>
+      </View>
     );
   }
 
@@ -234,7 +234,7 @@ export default function App() {
     : "Tower A - 402";
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={[styles.safeArea, { paddingTop: insets.top }]}>
       <StatusBar style="dark" />
       <AppHeader
         title={screenTitles[activeTab]}
@@ -308,15 +308,22 @@ export default function App() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
+  );
+}
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <AppContent />
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.bgPage,
-    paddingTop: Platform.OS === "android" ? (RNStatusBar.currentHeight || 0) : 0
+    backgroundColor: colors.bgPage
   },
   contentContainer: {
     flex: 1

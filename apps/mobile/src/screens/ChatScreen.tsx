@@ -10,9 +10,9 @@ import {
   Platform,
   Keyboard,
   ActivityIndicator,
-  Dimensions,
-  StatusBar
+  Dimensions
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
@@ -117,11 +117,14 @@ interface ChatScreenProps {
 }
 
 export function ChatScreen({ onActiveChannelChange }: ChatScreenProps = {}) {
+  const insets = useSafeAreaInsets();
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [channelsList, setChannelsList] = useState<ChatContact[]>(defaultChannels);
   const [messages, setMessages] = useState<Record<string, ChatMessage[]>>(defaultMessages);
   const [inputText, setInputText] = useState("");
   const scrollViewRef = useRef<any>(null);
+  const [androidKeyboardHeight, setAndroidKeyboardHeight] = useState(0);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   // Load persisted channels and messages on component mount
   useEffect(() => {
@@ -161,46 +164,34 @@ export function ChatScreen({ onActiveChannelChange }: ChatScreenProps = {}) {
     }
   }, [activeChannelId]);
 
-  // Keep latest messages visible above the software keyboard when typing
+  // Track keyboard state and maintain visibility of latest messages
   useEffect(() => {
-    if (!activeChannelId) return;
-
     const keyboardShowEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-    const onKeyboardShow = () => {
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 60);
-    };
+    const keyboardHideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
 
-    const sub = Keyboard.addListener(keyboardShowEvent, onKeyboardShow);
-    return () => {
-      sub.remove();
-    };
-  }, [activeChannelId]);
-
-  // Track Android software keyboard height for standalone APK / edge-to-edge navigation
-  const [androidKeyboardHeight, setAndroidKeyboardHeight] = useState(0);
-
-  useEffect(() => {
-    if (Platform.OS !== "android") return;
-
-    const onAndroidKeyboardShow = (e: any) => {
+    const onShow = (e: any) => {
+      setIsKeyboardOpen(true);
       const height = e?.endCoordinates?.height || 0;
-      setAndroidKeyboardHeight(height);
+      if (Platform.OS === "android") {
+        setAndroidKeyboardHeight(height);
+      }
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 60);
     };
 
-    const onAndroidKeyboardHide = () => {
-      setAndroidKeyboardHeight(0);
+    const onHide = () => {
+      setIsKeyboardOpen(false);
+      if (Platform.OS === "android") {
+        setAndroidKeyboardHeight(0);
+      }
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: false });
       }, 50);
     };
 
-    const showSub = Keyboard.addListener("keyboardDidShow", onAndroidKeyboardShow);
-    const hideSub = Keyboard.addListener("keyboardDidHide", onAndroidKeyboardHide);
+    const showSub = Keyboard.addListener(keyboardShowEvent, onShow);
+    const hideSub = Keyboard.addListener(keyboardHideEvent, onHide);
 
     return () => {
       showSub.remove();
@@ -285,14 +276,21 @@ export function ChatScreen({ onActiveChannelChange }: ChatScreenProps = {}) {
     const channelMessages = messages[activeChannel.id] || [];
     const screenHeight = Dimensions.get("screen").height;
     const windowHeight = Dimensions.get("window").height;
-    const rawNavDiff = screenHeight - windowHeight - (StatusBar.currentHeight || 0);
-    const androidNavPadding = Math.max(rawNavDiff > 10 ? rawNavDiff : 48, 48);
+    // Detect whether Android OS already resized the window (Expo Go) or edge-to-edge kept it fixed (standalone APK)
+    const windowDidShrink = (screenHeight - windowHeight) >= (androidKeyboardHeight - 20);
+    const androidKeyboardOffset = (androidKeyboardHeight > 0 && !windowDidShrink)
+      ? androidKeyboardHeight
+      : 0;
+
+    const composerBottomPadding = isKeyboardOpen
+      ? 12
+      : Math.max(insets.bottom, 12);
 
     return (
       <KeyboardAvoidingView
         style={styles.chatContainer}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 150 : 0}
+        keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 70 : 0}
       >
         {/* Active Chat Header */}
         <View style={styles.activeChatHeader}>
@@ -362,13 +360,13 @@ export function ChatScreen({ onActiveChannelChange }: ChatScreenProps = {}) {
           ))}
         </ScrollView>
 
-        {/* Interactive Message Composer (Pinned Above Keyboard) */}
+        {/* Interactive Message Composer (Pinned Above Keyboard & Above System Nav) */}
         <View
           style={[
             styles.composerContainer,
-            Platform.OS === "android" && {
-              marginBottom: androidKeyboardHeight > 0 ? androidKeyboardHeight : 0,
-              paddingBottom: androidKeyboardHeight > 0 ? 12 : androidNavPadding
+            {
+              paddingBottom: composerBottomPadding,
+              marginBottom: Platform.OS === "android" ? androidKeyboardOffset : 0
             }
           ]}
         >

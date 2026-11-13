@@ -1,5 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
@@ -53,8 +54,11 @@ interface BottomTabBarProps {
 }
 
 export function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, 12);
+
   return (
-    <View style={styles.tabBar}>
+    <View style={[styles.tabBar, { paddingBottom: bottomInset }]}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.key;
         const iconColor = isActive ? colors.primary : colors.textMuted;
@@ -89,7 +93,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
     paddingTop: 8,
-    paddingBottom: 16,
     justifyContent: "space-around",
     elevation: 12,
     shadowColor: "#0F172A",

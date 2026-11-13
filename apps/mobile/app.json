@@ -17,11 +17,6 @@
       "usesCleartextTraffic": true,
       "softwareKeyboardLayoutMode": "resize"
     },
-    "androidNavigationBar": {
-      "visible": "always",
-      "barStyle": "dark-content",
-      "backgroundColor": "#ffffff"
-    },
     "web": {
       "bundler": "metro"
     },
