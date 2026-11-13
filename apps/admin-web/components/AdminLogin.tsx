@@ -94,7 +94,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
         {/* Header */}
         <div className="login-header">
           <div className="login-shield-badge">
-            <ShieldIcon size={26} color="#159A72" />
+            <ShieldIcon size={26} color="var(--primary)" />
           </div>
           <h1 className="login-title">Super Admin Console</h1>
           <p className="login-subtitle">
@@ -105,7 +105,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
         {/* Error Alert */}
         {errorMessage && (
           <div className="login-error-alert" role="alert">
-            <span className="error-icon"><AlertTriangleIcon size={16} color="#D95757" /></span>
+            <span className="error-icon"><AlertTriangleIcon size={16} color="var(--danger)" /></span>
             <span>{errorMessage}</span>
           </div>
         )}

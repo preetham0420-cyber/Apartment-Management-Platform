@@ -23,7 +23,7 @@ export function StatusPill({ label, tone }: StatusPillProps) {
   const { main, light } = getToneColor(inferredTone);
 
   return (
-    <View style={[styles.pill, { backgroundColor: light }]}>
+    <View style={[styles.pill, { backgroundColor: light, borderColor: main + "30" }]}>
       <View style={[styles.dot, { backgroundColor: main }]} />
       <Text style={[styles.text, { color: main }]}>{label}</Text>
     </View>
@@ -34,19 +34,21 @@ const styles = StyleSheet.create({
   pill: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 9,
+    paddingVertical: 3.5,
     borderRadius: spacing.radius.round,
-    alignSelf: "flex-start"
+    alignSelf: "flex-start",
+    borderWidth: 1
   },
   dot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    marginRight: 5
+    marginRight: 6
   },
   text: {
-    fontSize: typography.sizes.caption,
-    fontWeight: typography.weights.semibold
+    fontSize: typography.sizes.tiny,
+    fontWeight: typography.weights.bold,
+    letterSpacing: 0.2
   }
 });

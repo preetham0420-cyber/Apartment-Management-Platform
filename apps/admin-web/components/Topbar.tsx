@@ -27,7 +27,7 @@ const initialNotifications: NotificationItem[] = [
     body: "Unit 402 reported 'Kitchen Sink Water Leakage'. Assigned to Plumbing Team.",
     time: "10m ago",
     unread: true,
-    color: "#D99A22"
+    color: "#F59E0B"
   },
   {
     id: "n-2",
@@ -35,7 +35,7 @@ const initialNotifications: NotificationItem[] = [
     body: "Amazon Delivery Agent pre-approved by resident for Tower A Unit 402.",
     time: "24m ago",
     unread: true,
-    color: "#3A8F83"
+    color: "#0D9488"
   },
   {
     id: "n-3",
@@ -43,7 +43,7 @@ const initialNotifications: NotificationItem[] = [
     body: "22 homes have pending maintenance dues awaiting collection reconciliation.",
     time: "1h ago",
     unread: true,
-    color: "#D95757"
+    color: "#EF4444"
   },
   {
     id: "n-4",
@@ -51,7 +51,7 @@ const initialNotifications: NotificationItem[] = [
     body: "Official notice 'Scheduled Power Backup Drill' broadcasted to all residents.",
     time: "3h ago",
     unread: false,
-    color: "#159A72"
+    color: "#10B981"
   }
 ];
 

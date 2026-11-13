@@ -90,19 +90,48 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
     return d.toISOString().split("T")[0];
   };
 
+  const formatIndianTime = (timeStr?: string): string => {
+    if (!timeStr) return "";
+    const parts = timeStr.split(":");
+    if (parts.length >= 2) {
+      let hour = parseInt(parts[0], 10);
+      const minute = parts[1];
+      const ampm = hour >= 12 ? "PM" : "AM";
+      hour = hour % 12;
+      if (hour === 0) hour = 12;
+      return `${hour}:${minute} ${ampm}`;
+    }
+    return timeStr;
+  };
+
+  const formatIndianDateString = (isoDateStr: string): string => {
+    if (!isoDateStr) return "";
+    const parts = isoDateStr.split("-");
+    if (parts.length === 3) {
+      const year = parts[0];
+      const monthIdx = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      return `${day} ${months[monthIdx] || parts[1]} ${year}`;
+    }
+    return isoDateStr;
+  };
+
   const getAvailableBookingDates = () => {
     const list = [];
     const days = ["Today", "Tomorrow", "Day After"];
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     for (let i = 0; i < 3; i++) {
       const d = new Date();
       d.setDate(d.getDate() + i);
       const dateStr = d.toISOString().split("T")[0];
-      const month = d.toLocaleString("en-US", { month: "short" });
       const day = d.getDate();
+      const monthName = months[d.getMonth()];
       list.push({
         dateStr,
-        label: `${days[i]} (${month} ${day})`,
-        dayName: days[i]
+        dayName: days[i],
+        displayDate: `${day} ${monthName}`, // Indian standard: Day first (e.g. 13 Nov, 14 Nov, 15 Nov)
+        fullIndianDate: `${day} ${monthName} ${d.getFullYear()}`
       });
     }
     return list;
@@ -641,6 +670,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
           style={styles.modalOverlay}
         >
           <View style={styles.modalContent}>
@@ -658,6 +688,8 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                 style={styles.textInput}
                 value={editName}
                 onChangeText={setEditName}
+                selectionColor={colors.primary}
+                cursorColor={colors.primary}
               />
 
               <Text style={styles.inputLabel}>Phone Number</Text>
@@ -666,6 +698,8 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                 value={editPhone}
                 onChangeText={setEditPhone}
                 keyboardType="phone-pad"
+                selectionColor={colors.primary}
+                cursorColor={colors.primary}
               />
 
               <View style={styles.modalActions}>
@@ -750,7 +784,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                     <Text style={styles.selectedFacilityTitle}>{selectedAmenity.name}</Text>
                     <Text style={styles.selectedFacilityDesc}>{selectedAmenity.description}</Text>
                     <Text style={styles.selectedFacilityMeta}>
-                      Hours: {selectedAmenity.openTime} - {selectedAmenity.closeTime} • Capacity: {selectedAmenity.capacity} persons
+                      Hours: {formatIndianTime(selectedAmenity.openTime)} - {formatIndianTime(selectedAmenity.closeTime)} • Capacity: {selectedAmenity.capacity} persons
                     </Text>
                     {selectedAmenity.rules ? (
                       <Text style={styles.selectedFacilityRules}>Guidelines: {selectedAmenity.rules}</Text>
@@ -772,7 +806,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                             {item.dayName}
                           </Text>
                           <Text style={[styles.dateChoiceDate, isSelected && styles.dateChoiceDateActive]}>
-                            {item.dateStr.slice(5)}
+                            {item.displayDate}
                           </Text>
                         </TouchableOpacity>
                       );
@@ -826,7 +860,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                     <View style={styles.bookingSummaryBox}>
                       <Text style={styles.summaryTitle}>Reservation Summary</Text>
                       <Text style={styles.summaryRow}>Facility: <Text style={styles.summaryBold}>{selectedAmenity.name}</Text></Text>
-                      <Text style={styles.summaryRow}>Date: <Text style={styles.summaryBold}>{selectedDateStr}</Text></Text>
+                      <Text style={styles.summaryRow}>Date: <Text style={styles.summaryBold}>{formatIndianDateString(selectedDateStr)}</Text></Text>
                       <Text style={styles.summaryRow}>Time: <Text style={styles.summaryBold}>{selectedSlot.label}</Text></Text>
                       <Text style={styles.summaryRow}>Unit Flat: <Text style={styles.summaryBold}>{currentUnit ? `${currentUnit.block} - ${currentUnit.unitNumber}` : "Tower A - 402"}</Text></Text>
 
@@ -853,6 +887,8 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                     placeholderTextColor={colors.textMuted}
                     value={amenitySearch}
                     onChangeText={setAmenitySearch}
+                    selectionColor={colors.primary}
+                    cursorColor={colors.primary}
                   />
                   <ScrollView style={{ maxHeight: 340 }} showsVerticalScrollIndicator={false}>
                     {amenities
@@ -871,7 +907,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                           <Text style={styles.amenityName}>{amenity.name}</Text>
                           <Text style={styles.amenityDesc}>{amenity.description}</Text>
                           <Text style={styles.amenityMeta}>
-                            Capacity: {amenity.capacity} • Hours: {amenity.openTime} - {amenity.closeTime}
+                            Capacity: {amenity.capacity} • Hours: {formatIndianTime(amenity.openTime)} - {formatIndianTime(amenity.closeTime)}
                           </Text>
                           {amenity.rules ? (
                             <Text style={styles.amenityRulesSnippet}>Rule: {amenity.rules}</Text>
@@ -903,10 +939,10 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                   myBookings.map((b) => {
                     const isCancelled = b.status === "CANCELLED";
                     const isCancelling = cancellingBookingId === b.id;
-                    const dateFormatted = new Date(b.startTime).toLocaleDateString("en-US", {
+                    const dateFormatted = new Date(b.startTime).toLocaleDateString("en-IN", {
                       weekday: "short",
-                      month: "short",
                       day: "numeric",
+                      month: "short",
                       year: "numeric"
                     });
                     const timeFormatted = `${new Date(b.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - ${new Date(b.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
@@ -1356,6 +1392,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
           style={styles.modalOverlay}
         >
           <View style={[styles.modalContent, { maxHeight: "88%" }]}>
@@ -1371,6 +1408,8 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                 placeholderTextColor={colors.textMuted}
                 value={newMemberName}
                 onChangeText={setNewMemberName}
+                selectionColor={colors.primary}
+                cursorColor={colors.primary}
               />
               <View style={{ flexDirection: "row", gap: 8, marginVertical: 4 }}>
                 <TextInput
@@ -1379,6 +1418,8 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                   placeholderTextColor={colors.textMuted}
                   value={newMemberRelation}
                   onChangeText={setNewMemberRelation}
+                  selectionColor={colors.primary}
+                  cursorColor={colors.primary}
                 />
                 <TextInput
                   style={[styles.formInput, { flex: 1 }]}
@@ -1387,6 +1428,8 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                   value={newMemberPhone}
                   onChangeText={setNewMemberPhone}
                   keyboardType="phone-pad"
+                  selectionColor={colors.primary}
+                  cursorColor={colors.primary}
                 />
               </View>
               <TouchableOpacity
@@ -1454,6 +1497,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
           style={styles.modalOverlay}
         >
           <View style={[styles.modalContent, { maxHeight: "88%" }]}>
@@ -1483,6 +1527,8 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                 value={newRegNumber}
                 onChangeText={setNewRegNumber}
                 autoCapitalize="characters"
+                selectionColor={colors.primary}
+                cursorColor={colors.primary}
               />
               <View style={{ flexDirection: "row", gap: 8, marginVertical: 4 }}>
                 <TextInput
@@ -1491,6 +1537,8 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                   placeholderTextColor={colors.textMuted}
                   value={newMakeModel}
                   onChangeText={setNewMakeModel}
+                  selectionColor={colors.primary}
+                  cursorColor={colors.primary}
                 />
                 <TouchableOpacity
                   style={[styles.vehTypeToggle, newVehType === "TWO_WHEELER" && styles.vehTypeToggleActive]}
@@ -1639,74 +1687,84 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
 const styles = StyleSheet.create({
   container: {
     padding: spacing.lg,
-    paddingBottom: spacing.xxl
+    paddingBottom: spacing.xxl + 20
   },
   profileCard: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.bgSurface,
-    borderRadius: spacing.radius.md,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: spacing.md,
-    marginBottom: spacing.md
+    padding: 16,
+    marginBottom: spacing.md,
+    elevation: 2,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8
   },
   avatarCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#3b82f620",
-    borderWidth: 1,
-    borderColor: "#3b82f650",
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1.5,
+    borderColor: colors.primary + "35",
     alignItems: "center",
     justifyContent: "center",
     marginRight: spacing.md
   },
   avatarText: {
     fontSize: 20,
-    fontWeight: "700",
-    color: "#3b82f6"
+    fontWeight: "800",
+    color: colors.primaryDark
   },
   profileInfo: {
     flex: 1
   },
   profileName: {
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.bold,
-    color: colors.textMain
+    fontSize: 15,
+    fontWeight: "800",
+    color: colors.textMain,
+    letterSpacing: -0.2
   },
   profileEmail: {
-    fontSize: typography.sizes.caption,
+    fontSize: 12,
     color: colors.textMuted,
-    marginTop: 1
+    marginTop: 2
   },
   profilePhone: {
-    fontSize: typography.sizes.tiny,
+    fontSize: 11,
     color: colors.textMuted,
     marginTop: 1
   },
   roleBadge: {
     alignSelf: "flex-start",
-    backgroundColor: "#10b98120",
+    backgroundColor: colors.primaryLight,
     borderRadius: 6,
-    paddingHorizontal: 6,
+    borderWidth: 1,
+    borderColor: colors.primary + "30",
+    paddingHorizontal: 8,
     paddingVertical: 2,
-    marginTop: 4
+    marginTop: 6
   },
   roleText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "#10b981"
+    fontSize: 10,
+    fontWeight: "700",
+    color: colors.primaryDark,
+    letterSpacing: 0.5,
+    textTransform: "uppercase"
   },
   logoutButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#ef444415",
+    backgroundColor: "#FEF2F2",
     borderWidth: 1,
-    borderColor: "#ef444440",
-    borderRadius: spacing.radius.md,
-    paddingVertical: spacing.sm + 2,
+    borderColor: "#FCA5A5",
+    borderRadius: 12,
+    paddingVertical: 12,
     marginBottom: spacing.lg
   },
   logoutIcon: {
@@ -1714,7 +1772,7 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm
   },
   logoutText: {
-    color: "#ef4444",
+    color: "#DC2626",
     fontWeight: "700",
     fontSize: 14
   },
@@ -1723,11 +1781,12 @@ const styles = StyleSheet.create({
   },
   pageHeading: {
     fontSize: typography.sizes.title,
-    fontWeight: typography.weights.heavy,
-    color: colors.textMain
+    fontWeight: "800",
+    color: colors.textMain,
+    letterSpacing: -0.3
   },
   pageSubheading: {
-    fontSize: typography.sizes.caption,
+    fontSize: 13,
     color: colors.textMuted,
     marginTop: 2
   },
@@ -1739,63 +1798,71 @@ const styles = StyleSheet.create({
   moduleCard: {
     width: "48%",
     backgroundColor: colors.bgSurface,
-    borderRadius: spacing.radius.md,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: spacing.md,
-    marginBottom: spacing.md,
+    padding: 14,
+    marginBottom: 12,
     alignItems: "center",
-    elevation: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2
+    elevation: 2,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6
   },
   moduleTitle: {
-    fontSize: typography.sizes.caption,
-    fontWeight: typography.weights.bold,
+    fontSize: 12,
+    fontWeight: "700",
     color: colors.textMain,
-    marginTop: spacing.sm,
+    marginTop: 8,
     textAlign: "center"
   },
   moduleSubtitle: {
-    fontSize: typography.sizes.tiny,
+    fontSize: 10,
     color: colors.textMuted,
     marginTop: 2,
     textAlign: "center"
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(15, 23, 42, 0.4)",
     justifyContent: "flex-end"
   },
   modalContent: {
     backgroundColor: colors.bgSurface,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: spacing.xl
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: spacing.xl,
+    maxHeight: "90%",
+    elevation: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16
   },
   modalTitle: {
-    fontSize: typography.sizes.title,
-    fontWeight: typography.weights.heavy,
-    color: colors.textMain
+    fontSize: 18,
+    fontWeight: "800",
+    color: colors.textMain,
+    letterSpacing: -0.3
   },
   modalSubtitle: {
-    fontSize: typography.sizes.caption,
+    fontSize: 12,
     color: colors.textMuted,
     marginTop: 2,
     marginBottom: spacing.md
   },
   inputLabel: {
-    fontSize: typography.sizes.caption,
-    fontWeight: typography.weights.bold,
+    fontSize: 11,
+    fontWeight: "700",
     color: colors.textMain,
-    marginBottom: 4,
-    marginTop: 8
+    marginBottom: 6,
+    marginTop: 10,
+    letterSpacing: 0.3
   },
   textInput: {
     backgroundColor: colors.bgPage,
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: 12,
@@ -1806,36 +1873,51 @@ const styles = StyleSheet.create({
   modalActions: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    marginTop: spacing.md
+    marginTop: spacing.md,
+    gap: 8
   },
   cancelBtn: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    marginRight: 8
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center"
   },
   cancelBtnText: {
     color: colors.textMuted,
-    fontWeight: "600"
+    fontWeight: "600",
+    fontSize: 13
   },
   submitBtn: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
+    borderRadius: 10,
     paddingHorizontal: 20,
-    paddingVertical: 10
+    paddingVertical: 11,
+    elevation: 2,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4
   },
   submitBtnText: {
     color: "#fff",
-    fontWeight: "700"
+    fontWeight: "700",
+    fontSize: 13
   },
   amenityCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.bgPage,
-    borderRadius: 8,
+    backgroundColor: colors.bgSurface,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
     padding: 12,
-    marginBottom: 8
+    marginBottom: 8,
+    elevation: 1,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3
   },
   amenityName: {
     fontSize: 14,
@@ -1849,12 +1931,12 @@ const styles = StyleSheet.create({
   },
   amenityMeta: {
     fontSize: 11,
-    color: colors.primary,
+    color: colors.primaryDark,
     fontWeight: "600"
   },
   bookBtn: {
     backgroundColor: colors.primary,
-    borderRadius: 6,
+    borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginLeft: 8
@@ -1867,12 +1949,17 @@ const styles = StyleSheet.create({
   dueCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.bgPage,
-    borderRadius: 8,
+    backgroundColor: colors.bgSurface,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: 12,
-    marginBottom: 8
+    padding: 14,
+    marginBottom: 8,
+    elevation: 1,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4
   },
   dueTitle: {
     fontSize: 14,
@@ -1890,10 +1977,10 @@ const styles = StyleSheet.create({
     color: colors.textMuted
   },
   payBtn: {
-    backgroundColor: colors.success,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     marginTop: 6
   },
   payBtnText: {
@@ -1902,35 +1989,35 @@ const styles = StyleSheet.create({
     fontWeight: "700"
   },
   subformCard: {
-    backgroundColor: colors.bgPage,
-    borderRadius: 8,
+    backgroundColor: colors.bgSurface,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: 10,
+    padding: 14,
     marginTop: 8
   },
   subformTitle: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "700",
     color: colors.textMain,
-    marginBottom: 6
+    marginBottom: 8
   },
   formInput: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.bgPage,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    fontSize: 12,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    fontSize: 13,
     color: colors.textMain
   },
   addSubformBtn: {
     backgroundColor: colors.primary,
-    borderRadius: 6,
-    paddingVertical: 8,
+    borderRadius: 8,
+    paddingVertical: 10,
     alignItems: "center",
-    marginTop: 6
+    marginTop: 8
   },
   addSubformBtnText: {
     color: "#fff",
@@ -1940,12 +2027,17 @@ const styles = StyleSheet.create({
   recordCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.bgPage,
-    borderRadius: 8,
+    backgroundColor: colors.bgSurface,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: 10,
-    marginBottom: 6
+    padding: 12,
+    marginBottom: 8,
+    elevation: 1,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3
   },
   recordTitle: {
     fontSize: 13,
@@ -1958,48 +2050,48 @@ const styles = StyleSheet.create({
     marginTop: 2
   },
   deleteBtn: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    backgroundColor: "#fee2e2",
-    borderRadius: 4
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: "#FEE2E2",
+    borderRadius: 6
   },
   deleteBtnText: {
-    color: "#b91c1c",
+    color: "#DC2626",
     fontSize: 11,
     fontWeight: "700"
   },
   parkingSlotBanner: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#eff6ff",
-    borderRadius: 8,
+    backgroundColor: colors.primaryLight,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#bfdbfe",
-    padding: 10,
+    borderColor: colors.primary + "30",
+    padding: 14,
     marginTop: 8
   },
   parkingSlotTitle: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#1e40af"
+    fontSize: 14,
+    fontWeight: "800",
+    color: colors.primaryDark
   },
   parkingSlotSub: {
     fontSize: 11,
-    color: "#3b82f6",
+    color: colors.textMuted,
     marginTop: 2
   },
   vehTypeToggle: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.bgPage,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 6,
+    borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 6
+    paddingVertical: 8
   },
   vehTypeToggleActive: {
-    backgroundColor: "#dbeafe",
+    backgroundColor: colors.primaryLight,
     borderColor: colors.primary
   },
   vehTypeToggleText: {
@@ -2008,17 +2100,22 @@ const styles = StyleSheet.create({
     color: colors.textMuted
   },
   vehTypeToggleTextActive: {
-    color: colors.primary,
+    color: colors.primaryDark,
     fontWeight: "700"
   },
   docCard: {
     flexDirection: "row",
-    backgroundColor: colors.bgPage,
-    borderRadius: 8,
+    backgroundColor: colors.bgSurface,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: 10,
-    marginBottom: 8
+    padding: 12,
+    marginBottom: 8,
+    elevation: 1,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3
   },
   docCategory: {
     fontSize: 10,
@@ -2066,19 +2163,24 @@ const styles = StyleSheet.create({
   },
   amenityTabBar: {
     flexDirection: "row",
-    backgroundColor: "#f1f5f9",
-    borderRadius: 8,
-    padding: 3,
+    backgroundColor: "#F1F5F9",
+    borderRadius: 10,
+    padding: 4,
     marginVertical: 12
   },
   amenityTabBtn: {
     flex: 1,
     paddingVertical: 8,
     alignItems: "center",
-    borderRadius: 6
+    borderRadius: 7
   },
   amenityTabBtnActive: {
-    backgroundColor: "#fff"
+    backgroundColor: "#fff",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 2
   },
   amenityTabBtnText: {
     fontSize: 12,
@@ -2086,7 +2188,7 @@ const styles = StyleSheet.create({
     color: colors.textMuted
   },
   amenityTabBtnTextActive: {
-    color: colors.primary,
+    color: colors.textMain,
     fontWeight: "700"
   },
   backLink: {
@@ -2099,11 +2201,11 @@ const styles = StyleSheet.create({
     color: colors.primary
   },
   selectedFacilityHeader: {
-    backgroundColor: "#eff6ff",
-    borderRadius: 8,
-    padding: 12,
+    backgroundColor: colors.primaryLight,
+    borderRadius: 12,
+    padding: 14,
     borderWidth: 1,
-    borderColor: "#bfdbfe",
+    borderColor: colors.primary + "30",
     marginBottom: 12
   },
   selectedFacilityTitle: {

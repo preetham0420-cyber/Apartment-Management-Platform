@@ -253,6 +253,8 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   editable={!isLoading}
+                  selectionColor={colors.primary}
+                  cursorColor={colors.primary}
                 />
               </View>
 
@@ -270,6 +272,8 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                   secureTextEntry
                   autoCapitalize="none"
                   editable={!isLoading}
+                  selectionColor={colors.primary}
+                  cursorColor={colors.primary}
                 />
               </View>
 
@@ -472,25 +476,25 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                 <TouchableOpacity
                   style={styles.presetButton}
                   onPress={() => {
-                    const localUrl = "http://10.190.221.208:4000/api";
-                    setServerUrlInput(localUrl);
-                    handleTestConnection(localUrl);
+                    const tunnelUrl = "https://incentives-solar-mount-forty.trycloudflare.com/api";
+                    setServerUrlInput(tunnelUrl);
+                    handleTestConnection(tunnelUrl);
                   }}
                 >
-                  <Text style={styles.presetButtonTitle}>📶 Local Hotspot / Wi-Fi</Text>
-                  <Text style={styles.presetButtonSub}>http://10.190.221.208:4000/api</Text>
+                  <Text style={styles.presetButtonTitle}>🌍 Cloudflare Secure Tunnel (Recommended)</Text>
+                  <Text style={styles.presetButtonSub}>https://incentives-solar-mount-forty.trycloudflare.com/api</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[styles.presetButton, { marginTop: 8 }]}
                   onPress={() => {
-                    const tunnelUrl = "https://figures-born-kidney-cgi.trycloudflare.com/api";
-                    setServerUrlInput(tunnelUrl);
-                    handleTestConnection(tunnelUrl);
+                    const localUrl = "http://172.20.10.3:4000/api";
+                    setServerUrlInput(localUrl);
+                    handleTestConnection(localUrl);
                   }}
                 >
-                  <Text style={styles.presetButtonTitle}>🌍 Remote Tunnel (For Manager)</Text>
-                  <Text style={styles.presetButtonSub}>https://figures-born-kidney-cgi.trycloudflare.com/api</Text>
+                  <Text style={styles.presetButtonTitle}>📶 Direct Local LAN IP</Text>
+                  <Text style={styles.presetButtonSub}>http://172.20.10.3:4000/api</Text>
                 </TouchableOpacity>
               </View>
 
@@ -566,73 +570,79 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   logoBadge: {
-    width: 60,
-    height: 60,
-    borderRadius: 18,
-    backgroundColor: "#E8F4EF",
-    borderWidth: 1,
-    borderColor: "rgba(21, 154, 114, 0.2)",
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1.5,
+    borderColor: colors.primary + "30",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 10
+    marginBottom: 12,
+    elevation: 3,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8
   },
   brandTag: {
     fontSize: 10,
-    fontWeight: typography.weights.bold,
-    color: colors.primary,
-    letterSpacing: 0.8,
-    marginBottom: 2
+    fontWeight: "800",
+    color: colors.primaryDark,
+    letterSpacing: 1.2,
+    marginBottom: 4,
+    textTransform: "uppercase"
   },
   brandTitle: {
-    fontSize: 26,
-    fontWeight: typography.weights.heavy,
+    fontSize: 28,
+    fontWeight: "800",
     color: colors.textMain,
-    letterSpacing: -0.4,
-    marginBottom: 4
+    letterSpacing: -0.6,
+    marginBottom: 6
   },
   brandSubtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.textMuted,
     textAlign: "center",
-    maxWidth: 300,
-    lineHeight: 16
+    maxWidth: 320,
+    lineHeight: 18
   },
   modeTabs: {
     flexDirection: "row",
-    backgroundColor: "#E5E8E5",
-    borderRadius: 12,
-    padding: 3,
-    marginBottom: 16
+    backgroundColor: "#F1F5F9",
+    borderRadius: 14,
+    padding: 4,
+    marginBottom: 18
   },
   modeTab: {
     flex: 1,
-    paddingVertical: 9,
+    paddingVertical: 10,
     alignItems: "center",
-    borderRadius: 9
+    borderRadius: 10
   },
   modeTabActive: {
     backgroundColor: "#FFFFFF",
     elevation: 2,
-    shadowColor: "#000",
+    shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
-    shadowRadius: 2
+    shadowRadius: 3
   },
   modeTabText: {
-    fontSize: 12,
-    fontWeight: typography.weights.medium,
+    fontSize: 13,
+    fontWeight: "600",
     color: colors.textMuted
   },
   modeTabTextActive: {
     color: colors.textMain,
-    fontWeight: typography.weights.bold
+    fontWeight: "800"
   },
   successBanner: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E8F4EF",
+    backgroundColor: colors.primaryLight,
     borderWidth: 1,
-    borderColor: "rgba(21, 154, 114, 0.3)",
+    borderColor: colors.primary + "35",
     borderRadius: 12,
     padding: 12,
     marginBottom: 14,
@@ -641,13 +651,13 @@ const styles = StyleSheet.create({
   successText: {
     flex: 1,
     fontSize: 12,
-    color: colors.primary,
-    fontWeight: typography.weights.medium
+    color: colors.primaryDark,
+    fontWeight: "600"
   },
   errorBanner: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FEE2E2",
+    backgroundColor: "#FEF2F2",
     borderWidth: 1,
     borderColor: "#FCA5A5",
     borderRadius: 12,
@@ -659,51 +669,53 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     color: colors.danger,
-    fontWeight: typography.weights.medium
+    fontWeight: "600"
   },
   formCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 20,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8
+    padding: 22,
+    elevation: 4,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16
   },
   inputGroup: {
     marginBottom: 14
   },
   inputLabel: {
     fontSize: 10,
-    fontWeight: typography.weights.bold,
+    fontWeight: "700",
     color: colors.textMuted,
-    marginBottom: 4,
-    letterSpacing: 0.5
+    marginBottom: 5,
+    letterSpacing: 0.5,
+    textTransform: "uppercase"
   },
   input: {
-    backgroundColor: "#F7F8F6",
+    backgroundColor: "#F8FAFC",
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 10,
+    borderRadius: 12,
     paddingHorizontal: 14,
-    paddingVertical: 11,
+    paddingVertical: 12,
     fontSize: 14,
     color: colors.textMain
   },
   roleSelectBtn: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 11,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 10,
     alignItems: "center",
-    backgroundColor: "#F7F8F6"
+    backgroundColor: "#F8FAFC"
   },
   roleSelectBtnActive: {
     borderColor: colors.primary,
-    backgroundColor: "#E8F4EF"
+    backgroundColor: colors.primaryLight
   },
   roleSelectText: {
     fontSize: 12,
@@ -711,15 +723,20 @@ const styles = StyleSheet.create({
     fontWeight: "600"
   },
   roleSelectTextActive: {
-    color: colors.primary,
-    fontWeight: "700"
+    color: colors.primaryDark,
+    fontWeight: "800"
   },
   submitButton: {
     backgroundColor: colors.primary,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: "center",
-    marginTop: 6
+    marginTop: 8,
+    elevation: 3,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6
   },
   submitButtonDisabled: {
     opacity: 0.6
@@ -727,7 +744,8 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: "#ffffff",
     fontSize: 14,
-    fontWeight: typography.weights.bold
+    fontWeight: "800",
+    letterSpacing: 0.2
   },
   demoSection: {
     marginTop: 20
@@ -735,7 +753,7 @@ const styles = StyleSheet.create({
   dividerRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12
+    marginBottom: 14
   },
   dividerLine: {
     flex: 1,
@@ -743,26 +761,27 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border
   },
   dividerText: {
-    fontSize: 9,
-    fontWeight: typography.weights.bold,
+    fontSize: 10,
+    fontWeight: "700",
     color: colors.textMuted,
-    marginHorizontal: 10,
-    letterSpacing: 0.6
+    marginHorizontal: 12,
+    letterSpacing: 0.6,
+    textTransform: "uppercase"
   },
   demoButton: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#F7F8F6",
+    backgroundColor: "#F8FAFC",
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 14
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16
   },
   demoButtonTitle: {
-    fontSize: 12,
-    fontWeight: typography.weights.bold,
+    fontSize: 13,
+    fontWeight: "700",
     color: colors.textMain
   },
   demoButtonEmail: {

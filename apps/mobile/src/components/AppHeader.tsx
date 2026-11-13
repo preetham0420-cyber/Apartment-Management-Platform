@@ -51,10 +51,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: spacing.lg,
-    paddingVertical: 14,
+    paddingTop: 12,
+    paddingBottom: 14,
     backgroundColor: colors.bgSurface,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border
+    borderBottomColor: colors.border,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 2
   },
   titleArea: {
     flex: 1
@@ -63,7 +69,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
-    backgroundColor: "#E8F4EF",
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1,
+    borderColor: "rgba(16, 185, 129, 0.22)",
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: spacing.radius.sm,
@@ -86,34 +94,42 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: typography.weights.heavy,
     color: colors.textMain,
-    letterSpacing: -0.3
+    letterSpacing: -0.4
   },
   notificationButton: {
     width: 42,
     height: 42,
-    borderRadius: 12,
-    backgroundColor: colors.bgPage,
+    borderRadius: 13,
+    backgroundColor: colors.bgSurface,
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: "center",
     justifyContent: "center",
-    position: "relative"
+    position: "relative",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1
   },
   badge: {
     position: "absolute",
-    top: -3,
-    right: -3,
+    top: -4,
+    right: -4,
     backgroundColor: colors.danger,
     borderRadius: spacing.radius.round,
     paddingHorizontal: 5,
     paddingVertical: 1,
-    minWidth: 16,
+    minWidth: 18,
+    height: 18,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#FFFFFF"
   },
   badgeText: {
     color: "#ffffff",
-    fontSize: 10,
-    fontWeight: typography.weights.bold
+    fontSize: 9,
+    fontWeight: typography.weights.heavy
   }
 });

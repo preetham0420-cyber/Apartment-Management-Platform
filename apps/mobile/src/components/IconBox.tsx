@@ -159,8 +159,9 @@ export function IconBox({ symbol, tone = "emerald", size = 36 }: IconBoxProps) {
         {
           width: size,
           height: size,
-          borderRadius: size / 2,
-          backgroundColor: light
+          borderRadius: Math.round(size * 0.32),
+          backgroundColor: light,
+          borderColor: main + "22"
         }
       ]}
     >
@@ -174,6 +175,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.03)"
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 2
   }
 });

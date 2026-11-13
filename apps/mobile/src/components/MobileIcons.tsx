@@ -25,8 +25,8 @@ function renderNativeChild(
   const type = typeof child.type === "string" ? child.type.toLowerCase() : "";
   const childProps: any = child.props || {};
 
+  const childKey = child.key || String(index);
   const commonProps = {
-    key: child.key || String(index),
     stroke: childProps.stroke || defaultColor,
     strokeWidth: childProps.strokeWidth !== undefined ? childProps.strokeWidth : defaultStrokeWidth,
     strokeLinecap: childProps.strokeLinecap || ("round" as const),
@@ -36,10 +36,11 @@ function renderNativeChild(
 
   switch (type) {
     case "path":
-      return <SvgPath {...commonProps} d={childProps.d} />;
+      return <SvgPath key={childKey} {...commonProps} d={childProps.d} />;
     case "circle":
       return (
         <SvgCircle
+          key={childKey}
           {...commonProps}
           cx={childProps.cx}
           cy={childProps.cy}
@@ -47,10 +48,11 @@ function renderNativeChild(
         />
       );
     case "polyline":
-      return <SvgPolyline {...commonProps} points={childProps.points} />;
+      return <SvgPolyline key={childKey} {...commonProps} points={childProps.points} />;
     case "line":
       return (
         <SvgLine
+          key={childKey}
           {...commonProps}
           x1={childProps.x1}
           y1={childProps.y1}
@@ -61,6 +63,7 @@ function renderNativeChild(
     case "rect":
       return (
         <SvgRect
+          key={childKey}
           {...commonProps}
           x={childProps.x}
           y={childProps.y}

@@ -387,32 +387,35 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: typography.weights.bold,
     color: colors.primary,
-    letterSpacing: 0.8,
+    letterSpacing: 1,
     marginBottom: 2
   },
   greetingTitle: {
     fontSize: 24,
     fontWeight: typography.weights.heavy,
     color: colors.textMain,
-    letterSpacing: -0.4
+    letterSpacing: -0.5
   },
   greetingUnit: {
-    fontSize: 13,
+    fontSize: 12.5,
     color: colors.textMuted,
+    fontWeight: typography.weights.medium,
     marginTop: 2
   },
   avatarButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
-    elevation: 2,
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+    elevation: 3,
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6
   },
   avatarText: {
     color: "#ffffff",
@@ -426,21 +429,26 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: colors.border,
+    borderLeftWidth: 3.5,
+    borderLeftColor: colors.primary,
     marginBottom: spacing.md,
     alignItems: "flex-start",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
-    shadowRadius: 4
+    shadowRadius: 5,
+    elevation: 1
   },
   announcementIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: "#E8F4EF",
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: colors.primaryLight,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: "rgba(16, 185, 129, 0.18)"
   },
   announcementContent: {
     flex: 1
@@ -449,17 +457,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 2
+    marginBottom: 3
   },
   announcementTag: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: typography.weights.bold,
     color: colors.primary,
-    letterSpacing: 0.5
+    letterSpacing: 0.6
   },
   announcementTime: {
     fontSize: 10,
-    color: colors.textMuted
+    color: colors.textMuted,
+    fontWeight: typography.weights.medium
   },
   announcementTitle: {
     fontSize: 13,
@@ -470,41 +479,42 @@ const styles = StyleSheet.create({
   announcementBody: {
     fontSize: 12,
     color: colors.textMuted,
-    lineHeight: 16
+    lineHeight: 17
   },
   unitSummaryCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 18,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.border,
     padding: 18,
     marginBottom: spacing.lg,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.04,
-    shadowRadius: 6
+    shadowRadius: 8,
+    elevation: 2
   },
   unitSummaryHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    paddingBottom: 12,
+    borderBottomColor: colors.borderSubtle,
+    paddingBottom: 14,
     marginBottom: 14
   },
   unitSummaryLabel: {
     fontSize: 9,
     fontWeight: typography.weights.bold,
     color: colors.textMuted,
-    letterSpacing: 0.6
+    letterSpacing: 0.8
   },
   unitSummaryFlat: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: typography.weights.heavy,
     color: colors.textMain,
-    letterSpacing: -0.3,
-    marginTop: 1
+    letterSpacing: -0.5,
+    marginTop: 2
   },
   unitSummaryMeta: {
     fontSize: 12,
@@ -514,12 +524,12 @@ const styles = StyleSheet.create({
   verifiedBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E8F4EF",
+    backgroundColor: colors.primaryLight,
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingVertical: 4.5,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: "rgba(21, 154, 114, 0.2)"
+    borderColor: "rgba(16, 185, 129, 0.25)"
   },
   verifiedDot: {
     width: 6,
@@ -529,40 +539,47 @@ const styles = StyleSheet.create({
     marginRight: 6
   },
   verifiedText: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: typography.weights.bold,
-    color: colors.primary
+    color: colors.primary,
+    letterSpacing: 0.2
   },
   metricsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "stretch",
+    gap: 8
   },
   metricItem: {
     flex: 1,
-    alignItems: "center"
+    alignItems: "center",
+    backgroundColor: colors.bgSecondary,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.borderSubtle
   },
   metricDivider: {
-    width: 1,
-    height: 36,
-    backgroundColor: colors.border
+    display: "none"
   },
   metricLabel: {
-    fontSize: 9,
+    fontSize: 8.5,
     fontWeight: typography.weights.bold,
     color: colors.textMuted,
-    letterSpacing: 0.5
+    letterSpacing: 0.5,
+    textAlign: "center"
   },
   metricValue: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: typography.weights.heavy,
     color: colors.textMain,
-    marginTop: 2
+    marginTop: 3
   },
   metricSub: {
     fontSize: 10,
     color: colors.textMuted,
-    marginTop: 1
+    marginTop: 2
   },
   sectionHeaderRow: {
     marginBottom: spacing.sm,
@@ -572,10 +589,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: typography.weights.bold,
     color: colors.textMain,
-    letterSpacing: -0.2
+    letterSpacing: -0.3
   },
   sectionSubtitle: {
-    fontSize: 11,
+    fontSize: 11.5,
     color: colors.textMuted,
     marginTop: 1
   },
@@ -588,16 +605,17 @@ const styles = StyleSheet.create({
   quickCard: {
     width: "31%",
     backgroundColor: "#FFFFFF",
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.border,
     paddingVertical: 14,
     alignItems: "center",
     marginBottom: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.02,
-    shadowRadius: 3
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1
   },
   quickTitle: {
     fontSize: 12,
@@ -609,7 +627,7 @@ const styles = StyleSheet.create({
   quickDesc: {
     fontSize: 10,
     color: colors.textMuted,
-    marginTop: 1,
+    marginTop: 1.5,
     textAlign: "center"
   },
   activityHeader: {
@@ -622,29 +640,30 @@ const styles = StyleSheet.create({
   viewAllLink: {
     fontSize: 12,
     color: colors.primary,
-    fontWeight: typography.weights.semibold
+    fontWeight: typography.weights.bold
   },
   activityFeed: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.border,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.02,
-    shadowRadius: 4
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1
   },
   activityItem: {
     flexDirection: "row",
     alignItems: "flex-start",
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 14
   },
   activityDivider: {
     height: 1,
-    backgroundColor: "#F7F8F6",
-    marginHorizontal: 14
+    backgroundColor: colors.borderSubtle,
+    marginHorizontal: 16
   },
   activityIconWrapper: {
     marginRight: 12,
@@ -658,7 +677,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
-    marginBottom: 4
+    marginBottom: 3
   },
   activityTitle: {
     flex: 1,
@@ -674,12 +693,12 @@ const styles = StyleSheet.create({
   },
   activityContext: {
     fontSize: 11,
-    fontWeight: typography.weights.medium,
+    fontWeight: typography.weights.semibold,
     color: colors.primary,
     marginBottom: 3
   },
   activitySub: {
-    fontSize: 11,
+    fontSize: 11.5,
     color: colors.textMuted,
     lineHeight: 16,
     marginBottom: 6
@@ -690,7 +709,7 @@ const styles = StyleSheet.create({
     gap: 5
   },
   activityTime: {
-    fontSize: 11,
+    fontSize: 10.5,
     color: colors.textMuted,
     fontWeight: typography.weights.medium
   }

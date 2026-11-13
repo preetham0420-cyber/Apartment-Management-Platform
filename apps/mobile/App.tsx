@@ -64,6 +64,7 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [currentUnit, setCurrentUnit] = useState<UnitSummary | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("home");
+  const [isChatThreadOpen, setIsChatThreadOpen] = useState(false);
   const [notificationModalVisible, setNotificationModalVisible] = useState(false);
   const [notifications, setNotifications] = useState<MobileNotification[]>(initialMobileNotifications);
 
@@ -180,7 +181,7 @@ export default function App() {
       case "services":
         return <ServicesScreen onNavigateTab={(tab) => setActiveTab(tab)} />;
       case "chat":
-        return <ChatScreen />;
+        return <ChatScreen onActiveChannelChange={setIsChatThreadOpen} />;
       case "visitors":
         return <VisitorsScreen />;
       case "more":
@@ -199,6 +200,13 @@ export default function App() {
       case "home":
       default:
         return <HomeScreen currentUnit={currentUnit} onNavigateTab={(tab) => setActiveTab(tab)} />;
+    }
+  };
+
+  const handleTabChange = (tab: TabKey) => {
+    setActiveTab(tab);
+    if (tab !== "chat") {
+      setIsChatThreadOpen(false);
     }
   };
 
@@ -229,7 +237,9 @@ export default function App() {
       <View style={styles.contentContainer}>
         {renderActiveScreen()}
       </View>
-      <BottomTabBar activeTab={activeTab} onTabChange={setActiveTab} />
+      {!(activeTab === "chat" && isChatThreadOpen) && (
+        <BottomTabBar activeTab={activeTab} onTabChange={handleTabChange} />
+      )}
 
       {/* Notifications Drawer Modal */}
       <Modal

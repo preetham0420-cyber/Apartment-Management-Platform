@@ -504,9 +504,9 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
              ========================================================================= */
           <View>
             <View style={styles.deskHeaderRow}>
-              <View>
+              <View style={styles.deskHeaderLeft}>
                 <Text style={styles.sectionHeading}>Maintenance Requests</Text>
-                <Text style={styles.sectionSubtitle}>
+                <Text style={styles.sectionSubtitle} numberOfLines={2}>
                   Track resolution and talk to assigned technicians
                 </Text>
               </View>
@@ -515,7 +515,7 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
                 onPress={() => setCreateModalVisible(true)}
                 activeOpacity={0.8}
               >
-                <PlusIcon size={16} color="#ffffff" strokeWidth={2.5} />
+                <PlusIcon size={15} color="#ffffff" strokeWidth={2.5} />
                 <Text style={styles.newTicketBtnText}>New Request</Text>
               </TouchableOpacity>
             </View>
@@ -650,6 +650,7 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
           style={styles.modalOverlay}
         >
           <View style={styles.modalContent}>
@@ -702,6 +703,8 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
                 placeholderTextColor={colors.textMuted}
                 value={title}
                 onChangeText={setTitle}
+                selectionColor={colors.primary}
+                cursorColor={colors.primary}
               />
 
               <Text style={styles.fieldLabel}>DETAILED DESCRIPTION</Text>
@@ -712,6 +715,8 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
                 multiline
                 value={description}
                 onChangeText={setDescription}
+                selectionColor={colors.primary}
+                cursorColor={colors.primary}
               />
 
               <Text style={styles.fieldLabel}>PRIORITY</Text>
@@ -794,7 +799,7 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 16 : 0}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 44 : 0}
           style={styles.modalOverlay}
         >
           <View style={[styles.modalContent, { maxHeight: "90%", display: "flex", flexDirection: "column" }]}>
@@ -887,6 +892,8 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
                       onChangeText={setCommentText}
                       returnKeyType="send"
                       onSubmitEditing={handleAddComment}
+                      selectionColor={colors.primary}
+                      cursorColor={colors.primary}
                     />
                     <TouchableOpacity
                       style={styles.commentPostBtn}
@@ -930,7 +937,8 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
 const styles = StyleSheet.create({
   container: {
     padding: spacing.lg,
-    paddingBottom: 40
+    paddingBottom: 40,
+    backgroundColor: colors.bgPage
   },
   headerArea: {
     marginBottom: 16
@@ -939,40 +947,42 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: typography.weights.bold,
     color: colors.primary,
-    letterSpacing: 0.8,
+    letterSpacing: 1,
     marginBottom: 3
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: typography.weights.heavy,
     color: colors.textMain,
-    letterSpacing: -0.4
+    letterSpacing: -0.5
   },
   headerDesc: {
-    fontSize: 13,
+    fontSize: 12.5,
     color: colors.textMuted,
     marginTop: 2
   },
   tabSwitchContainer: {
     flexDirection: "row",
-    backgroundColor: "#E5E8E5",
-    borderRadius: 12,
-    padding: 3,
-    marginBottom: 20
+    backgroundColor: colors.bgSecondary,
+    borderRadius: 14,
+    padding: 3.5,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: colors.borderSubtle
   },
   tabSwitchBtn: {
     flex: 1,
-    paddingVertical: 9,
+    paddingVertical: 9.5,
     alignItems: "center",
-    borderRadius: 9
+    borderRadius: 11
   },
   tabSwitchBtnActive: {
     backgroundColor: "#FFFFFF",
     elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 1.5 },
     shadowOpacity: 0.08,
-    shadowRadius: 2
+    shadowRadius: 3
   },
   tabSwitchText: {
     fontSize: 12,
@@ -994,7 +1004,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: typography.weights.heavy,
     color: colors.textMain,
-    letterSpacing: 0.6
+    letterSpacing: 0.8
   },
   categoryMeta: {
     fontSize: 11,
@@ -1003,17 +1013,22 @@ const styles = StyleSheet.create({
   },
   servicesStack: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.border,
-    overflow: "hidden"
+    overflow: "hidden",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1
   },
   serviceCard: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 14,
+    padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: "#F7F8F6"
+    borderBottomColor: colors.borderSubtle
   },
   serviceContent: {
     flex: 1,
@@ -1026,20 +1041,22 @@ const styles = StyleSheet.create({
     color: colors.textMain
   },
   serviceDesc: {
-    fontSize: 11,
+    fontSize: 11.5,
     color: colors.textMuted,
     marginTop: 2,
-    lineHeight: 15
+    lineHeight: 16
   },
   badgeSmall: {
-    backgroundColor: "#FEF3C7",
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 6,
-    marginLeft: 8
+    backgroundColor: colors.warningLight,
+    paddingHorizontal: 7,
+    paddingVertical: 1.5,
+    borderRadius: 8,
+    marginLeft: 8,
+    borderWidth: 1,
+    borderColor: "rgba(245, 158, 11, 0.25)"
   },
   badgeSmallText: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: "700",
     color: "#B45309"
   },
@@ -1047,15 +1064,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 14
+    marginBottom: 14,
+    paddingHorizontal: 2
+  },
+  deskHeaderLeft: {
+    flex: 1,
+    marginRight: 10
   },
   sectionHeading: {
     fontSize: 16,
     fontWeight: typography.weights.bold,
-    color: colors.textMain
+    color: colors.textMain,
+    letterSpacing: -0.3
   },
   sectionSubtitle: {
-    fontSize: 11,
+    fontSize: 11.5,
     color: colors.textMuted,
     marginTop: 1
   },
@@ -1063,10 +1086,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.primary,
-    borderRadius: 10,
+    borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    gap: 4
+    gap: 5,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+    flexShrink: 0
   },
   newTicketBtnText: {
     color: "#FFFFFF",
@@ -1075,11 +1104,16 @@ const styles = StyleSheet.create({
   },
   emptyCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: 28,
-    alignItems: "center"
+    padding: 30,
+    alignItems: "center",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1
   },
   emptyTitle: {
     fontSize: 15,
@@ -1095,24 +1129,34 @@ const styles = StyleSheet.create({
   },
   raisePrimaryBtn: {
     marginTop: 16,
-    backgroundColor: "#E8F4EF",
-    paddingHorizontal: 16,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 18,
     paddingVertical: 10,
-    borderRadius: 10
+    borderRadius: 12,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2
   },
   raisePrimaryBtnText: {
-    color: colors.primary,
-    fontSize: 12,
+    color: "#FFFFFF",
+    fontSize: 12.5,
     fontWeight: typography.weights.bold
   },
   ticketCard: {
     flexDirection: "row",
     backgroundColor: "#FFFFFF",
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.border,
-    marginBottom: 10,
-    overflow: "hidden"
+    marginBottom: 11,
+    overflow: "hidden",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+    elevation: 1
   },
   ticketPriorityBar: {
     width: 5
@@ -1128,10 +1172,10 @@ const styles = StyleSheet.create({
     marginBottom: 4
   },
   ticketCategoryTag: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: typography.weights.bold,
     color: colors.textMuted,
-    letterSpacing: 0.5
+    letterSpacing: 0.6
   },
   ticketTitle: {
     fontSize: 14,
@@ -1142,7 +1186,8 @@ const styles = StyleSheet.create({
   ticketDesc: {
     fontSize: 12,
     color: colors.textMuted,
-    marginBottom: 6
+    marginBottom: 6,
+    lineHeight: 16
   },
   ticketTimeRow: {
     flexDirection: "row",
@@ -1151,7 +1196,7 @@ const styles = StyleSheet.create({
     marginBottom: 8
   },
   ticketTimeText: {
-    fontSize: 11,
+    fontSize: 10.5,
     color: colors.textMuted
   },
   ticketFooter: {
@@ -1159,7 +1204,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     borderTopWidth: 1,
-    borderTopColor: "#F7F8F6",
+    borderTopColor: colors.borderSubtle,
     paddingTop: 8
   },
   ticketActionLink: {
@@ -1173,20 +1218,21 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(24, 32, 29, 0.4)",
+    backgroundColor: "rgba(15, 23, 42, 0.45)",
     justifyContent: "flex-end"
   },
   modalContent: {
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    padding: 20,
-    paddingBottom: 32
+    padding: 22,
+    paddingBottom: 34
   },
   modalHeading: {
     fontSize: 18,
     fontWeight: typography.weights.heavy,
-    color: colors.textMain
+    color: colors.textMain,
+    letterSpacing: -0.3
   },
   modalSubheading: {
     fontSize: 12,
@@ -1196,21 +1242,23 @@ const styles = StyleSheet.create({
   },
   formErrorBox: {
     backgroundColor: "#FEE2E2",
-    borderRadius: 8,
-    padding: 8,
-    marginBottom: 10
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#FECACA"
   },
   formErrorText: {
     color: "#B91C1C",
-    fontSize: 11,
+    fontSize: 11.5,
     fontWeight: "600"
   },
   fieldLabel: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: typography.weights.bold,
     color: colors.textMuted,
-    letterSpacing: 0.6,
-    marginBottom: 4,
+    letterSpacing: 0.7,
+    marginBottom: 5,
     marginTop: 8
   },
   categoryGrid: {
@@ -1220,11 +1268,11 @@ const styles = StyleSheet.create({
   },
   categoryOption: {
     flex: 1,
-    backgroundColor: "#F7F8F6",
+    backgroundColor: colors.bgSecondary,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
-    paddingVertical: 7,
+    borderRadius: 10,
+    paddingVertical: 8,
     alignItems: "center"
   },
   categoryOptionActive: {
@@ -1240,12 +1288,12 @@ const styles = StyleSheet.create({
     color: "#FFFFFF"
   },
   inputField: {
-    backgroundColor: "#F7F8F6",
-    borderRadius: 10,
+    backgroundColor: colors.bgSecondary,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
+    paddingHorizontal: 13,
+    paddingVertical: 10,
     fontSize: 13,
     color: colors.textMain,
     marginBottom: 6

@@ -48,11 +48,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div key={t.id} className={`toast toast-${t.type}`} role="alert">
             <span style={{ display: "inline-flex", alignItems: "center" }}>
               {t.type === "success" ? (
-                <CheckCircleIcon size={16} color="#159A72" />
+                <CheckCircleIcon size={16} color="var(--primary)" />
               ) : t.type === "error" ? (
-                <AlertTriangleIcon size={16} color="#D95757" />
+                <AlertTriangleIcon size={16} color="var(--danger)" />
               ) : (
-                <InfoIcon size={16} color="#3A8F83" />
+                <InfoIcon size={16} color="var(--secondary)" />
               )}
             </span>
             <span className="toast-message">{t.message}</span>

@@ -189,7 +189,7 @@ export function AuditLogViewer() {
       ) : filteredLogs.length === 0 ? (
         <div className="empty-state-box">
           <div style={{ marginBottom: "8px" }}>
-            <AuditIcon size={36} color="#159A72" />
+            <AuditIcon size={36} color="var(--primary)" />
           </div>
           <p style={{ margin: "8px 0 0 0", fontWeight: 600 }}>No audit logs found matching criteria.</p>
           <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: "var(--text-muted)" }}>

@@ -1,53 +1,65 @@
 export const colors = {
-  // Brand colors: Emerald & Teal
-  primary: "#159A72", // Emerald green
-  primaryHover: "#128260",
-  primaryLight: "#E8F4EF", // Soft emerald/sage highlight
-  secondary: "#3A8F83", // Teal
-  secondaryLight: "#E9F4F2",
-  softBrand: "#E8F4EF",
+  // Brand colors: Refined Emerald & Teal
 
-  // Dark structural: Deep charcoal
-  darkStructural: "#18201D",
-  charcoal: "#18201D",
-  textMain: "#18201D",
-  textMuted: "#68716D",
+  primary: "#10B981", // Modern vibrant emerald
+  primaryHover: "#059669",
+  primaryDark: "#047857", // Deep emerald for readable text on light backgrounds
+  primaryLight: "#ECFDF5", // Soft emerald tint
+  primaryMuted: "rgba(16, 185, 129, 0.12)",
+  secondary: "#0D9488", // Teal accent
+  secondaryLight: "#F0FDFA",
+  softBrand: "#ECFDF5",
 
-  // Backgrounds: White dominant (70-80%)
-  bgPage: "#FFFFFF",
-  bgSecondary: "#F7F8F6",
+  // Dark structural: Premium slate / charcoal
+  darkStructural: "#0F172A",
+  charcoal: "#0F172A",
+  textMain: "#0F172A",
+  textMuted: "#64748B",
+  textSubtle: "#94A3B8",
+
+  // Backgrounds: Clean slate canvas with crisp white cards
+  bgPage: "#F8FAFC",
+  bgSecondary: "#F1F5F9",
   bgSurface: "#FFFFFF",
+  bgGlass: "rgba(255, 255, 255, 0.85)",
 
   // Borders & Dividers
-  border: "#E5E8E5",
-  borderSubtle: "#F0F2F0",
-  borderDark: "#D4D8D4",
+  border: "#E2E8F0",
+  borderSubtle: "#F1F5F9",
+  borderDark: "#CBD5E1",
+  borderActive: "#10B981",
 
   // Semantics
-  success: "#159A72",
-  successLight: "#E8F4EF",
-  warning: "#D99A22", // Amber
-  warningLight: "#FBF4E7",
-  danger: "#D95757", // Coral red
-  dangerLight: "#FAEEEE",
-  info: "#3A8F83", // Teal
-  infoLight: "#E9F4F2",
+  success: "#10B981",
+  successLight: "#ECFDF5",
+  warning: "#F59E0B", // Amber
+  warningLight: "#FEF3C7",
+  danger: "#EF4444", // Modern rose red
+  dangerLight: "#FEE2E2",
+  info: "#0D9488", // Teal
+  infoLight: "#F0FDFA",
 
   // Neutral tones for non-colored tags
-  neutral: "#68716D",
-  neutralLight: "#F7F8F6"
+  neutral: "#64748B",
+  neutralLight: "#F1F5F9",
+
+  // Modern Accent Tones for Gen-Z Flair
+  accentPurple: "#8B5CF6",
+  accentPurpleLight: "#F5F3FF",
+  accentIndigo: "#6366F1",
+  accentIndigoLight: "#EEF2FF"
 };
 
 export type ThemeTone =
   | "green"
   | "emerald"
   | "teal"
-  | "blue" // Mapped to teal (no blue)
+  | "blue" // Mapped to teal
   | "orange"
   | "warning"
   | "red"
   | "danger"
-  | "violet" // Mapped to teal
+  | "violet"
   | "charcoal"
   | "neutral";
 
@@ -70,7 +82,6 @@ export function getToneColor(tone: ThemeTone) {
     case "blue":
     case "violet":
     default:
-      // In this new design system, teal replaces blue/violet for secondary accent
       return { main: colors.secondary, light: colors.secondaryLight };
   }
 }

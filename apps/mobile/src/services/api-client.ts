@@ -54,7 +54,7 @@ export const getBaseUrl = (): string => {
     } catch {
       // Fall through to active LAN IP
     }
-    return "http://10.190.221.208:4000/api";
+    return "https://incentives-solar-mount-forty.trycloudflare.com/api";
   }
   return "http://localhost:4000/api";
 };

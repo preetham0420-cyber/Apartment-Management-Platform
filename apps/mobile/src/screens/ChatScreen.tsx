@@ -110,7 +110,11 @@ const defaultChannels: ChatContact[] = [
   }
 ];
 
-export function ChatScreen() {
+interface ChatScreenProps {
+  onActiveChannelChange?: (isOpen: boolean) => void;
+}
+
+export function ChatScreen({ onActiveChannelChange }: ChatScreenProps = {}) {
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [channelsList, setChannelsList] = useState<ChatContact[]>(defaultChannels);
   const [messages, setMessages] = useState<Record<string, ChatMessage[]>>(defaultMessages);
@@ -172,9 +176,16 @@ export function ChatScreen() {
     };
   }, [activeChannelId]);
 
+  useEffect(() => {
+    return () => {
+      onActiveChannelChange?.(false);
+    };
+  }, []);
+
   // Mark channel as read and navigate to conversation
   const handleOpenChannel = (channelId: string) => {
     setActiveChannelId(channelId);
+    onActiveChannelChange?.(true);
 
     // Update unread count for the opened channel to 0 immediately
     setChannelsList((prev) => {
@@ -245,13 +256,16 @@ export function ChatScreen() {
       <KeyboardAvoidingView
         style={styles.chatContainer}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 150 : 0}
       >
         {/* Active Chat Header */}
         <View style={styles.activeChatHeader}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => setActiveChannelId(null)}
+            onPress={() => {
+              setActiveChannelId(null);
+              onActiveChannelChange?.(false);
+            }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Text style={styles.backButtonText}>&larr; Back</Text>
@@ -323,6 +337,8 @@ export function ChatScreen() {
             multiline
             maxLength={500}
             returnKeyType="default"
+            selectionColor={colors.primary}
+            cursorColor={colors.primary}
           />
           <TouchableOpacity
             style={[
@@ -472,43 +488,53 @@ const styles = StyleSheet.create({
   },
   channelList: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.border,
-    overflow: "hidden"
+    overflow: "hidden",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1
   },
   channelRow: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 14,
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#F7F8F6"
+    borderBottomColor: colors.borderSubtle
   },
   avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1
   },
   avatarText: {
     color: "#ffffff",
     fontWeight: typography.weights.bold,
-    fontSize: 14
+    fontSize: 14.5
   },
   channelInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 13,
     marginRight: 8
   },
   channelTop: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 2
+    marginBottom: 3
   },
   channelName: {
-    fontSize: 14,
+    fontSize: 14.5,
     fontWeight: typography.weights.bold,
     color: colors.textMain
   },
@@ -519,21 +545,27 @@ const styles = StyleSheet.create({
   },
   channelSubtext: {
     fontSize: 12,
-    color: colors.textMuted
+    color: colors.textMuted,
+    lineHeight: 16
   },
   unreadBadge: {
     backgroundColor: colors.primary,
-    borderRadius: 10,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    minWidth: 20,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    minWidth: 22,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 1
   },
   unreadText: {
     color: "#ffffff",
     fontSize: 10,
-    fontWeight: typography.weights.bold
+    fontWeight: typography.weights.heavy
   },
   chatContainer: {
     flex: 1,
@@ -543,27 +575,32 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 13,
     backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
-    borderBottomColor: colors.border
+    borderBottomColor: colors.border,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 2
   },
   backButton: {
     paddingVertical: 4,
-    paddingRight: 10
+    paddingRight: 12
   },
   backButtonText: {
     fontSize: 14,
-    fontWeight: typography.weights.semibold,
+    fontWeight: typography.weights.bold,
     color: colors.primary
   },
   miniAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 8
+    marginRight: 9
   },
   miniAvatarText: {
     color: "#FFFFFF",
@@ -574,28 +611,29 @@ const styles = StyleSheet.create({
     flex: 1
   },
   activeChannelTitle: {
-    fontSize: 14,
+    fontSize: 14.5,
     fontWeight: typography.weights.bold,
     color: colors.textMain
   },
   activeChannelStatus: {
-    fontSize: 10,
-    color: colors.textMuted
+    fontSize: 10.5,
+    color: colors.textMuted,
+    marginTop: 1
   },
   channelPrivacyRibbon: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(91, 108, 249, 0.06)",
-    paddingVertical: 6,
+    backgroundColor: "rgba(16, 185, 129, 0.08)",
+    paddingVertical: 7,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(91, 108, 249, 0.15)"
+    borderBottomColor: "rgba(16, 185, 129, 0.16)"
   },
   channelPrivacyRibbonText: {
     fontSize: 11,
     color: colors.primary,
-    marginLeft: 6,
-    fontWeight: typography.weights.medium
+    marginLeft: 7,
+    fontWeight: typography.weights.semibold
   },
   messagesScroll: {
     flex: 1
@@ -605,23 +643,28 @@ const styles = StyleSheet.create({
     paddingBottom: 20
   },
   messageBubble: {
-    maxWidth: "80%",
-    borderRadius: 14,
-    paddingHorizontal: 14,
+    maxWidth: "82%",
+    borderRadius: 16,
+    paddingHorizontal: 15,
     paddingVertical: 10,
-    marginBottom: 10
+    marginBottom: 10,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 1
   },
   myMessage: {
     alignSelf: "flex-end",
     backgroundColor: colors.primary,
-    borderBottomRightRadius: 2
+    borderBottomRightRadius: 4
   },
   theirMessage: {
     alignSelf: "flex-start",
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: colors.border,
-    borderBottomLeftRadius: 2
+    borderBottomLeftRadius: 4
   },
   messageText: {
     fontSize: 14,
@@ -634,7 +677,7 @@ const styles = StyleSheet.create({
     color: colors.textMain
   },
   messageTime: {
-    fontSize: 10,
+    fontSize: 9.5,
     marginTop: 4,
     alignSelf: "flex-end"
   },
@@ -647,37 +690,49 @@ const styles = StyleSheet.create({
   composerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: Platform.OS === "ios" ? 14 : 10,
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === "ios" ? 22 : 12,
     backgroundColor: "#FFFFFF",
     borderTopWidth: 1,
-    borderTopColor: colors.border
+    borderTopColor: colors.border,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 4
   },
   composerInput: {
     flex: 1,
-    minHeight: 40,
+    minHeight: 44,
     maxHeight: 100,
-    backgroundColor: "#F4F6F5",
-    borderRadius: 20,
+    backgroundColor: colors.bgSecondary,
+    borderWidth: 1.5,
+    borderColor: colors.borderDark,
+    borderRadius: 22,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     fontSize: 14,
     color: colors.textMain,
-    marginRight: 8
+    marginRight: 9
   },
   sendButton: {
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: "#D1D5DB"
+    backgroundColor: "#CBD5E1"
   },
   sendButtonActive: {
-    backgroundColor: colors.primary
+    backgroundColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2
   },
   sendButtonText: {
     color: "#FFFFFF",
-    fontSize: 14,
+    fontSize: 13.5,
     fontWeight: typography.weights.bold
   }
 });

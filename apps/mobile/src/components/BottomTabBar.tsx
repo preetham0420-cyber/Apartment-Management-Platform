@@ -89,41 +89,42 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
     paddingTop: 8,
-    paddingBottom: 14,
+    paddingBottom: 16,
     justifyContent: "space-around",
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8
+    elevation: 12,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10
   },
   tabButton: {
     alignItems: "center",
     justifyContent: "center",
     flex: 1,
-    minHeight: 46,
+    minHeight: 48,
     position: "relative"
   },
   activePill: {
     position: "absolute",
     top: -8,
-    width: 24,
-    height: 3,
+    width: 28,
+    height: 3.5,
     borderRadius: 2,
     backgroundColor: colors.primary
   },
   iconWrapper: {
-    width: 32,
-    height: 28,
+    width: 38,
+    height: 30,
+    borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 2
   },
   iconWrapperActive: {
-    transform: [{ scale: 1.05 }]
+    backgroundColor: colors.primaryLight
   },
   tabLabel: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: typography.weights.medium,
     color: colors.textMuted,
     letterSpacing: 0.2

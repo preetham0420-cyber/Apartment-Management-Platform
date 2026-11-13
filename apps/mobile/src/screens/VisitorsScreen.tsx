@@ -196,9 +196,9 @@ export function VisitorsScreen() {
 
         {/* Action Header */}
         <View style={styles.listHeader}>
-          <View>
+          <View style={styles.listHeaderLeft}>
             <Text style={styles.sectionTitle}>Gate Passes</Text>
-            <Text style={styles.sectionSubtitle}>Active passes & arrival history</Text>
+            <Text style={styles.sectionSubtitle} numberOfLines={1}>Active passes & arrival history</Text>
           </View>
           <TouchableOpacity
             style={styles.preApproveBtn}
@@ -220,6 +220,8 @@ export function VisitorsScreen() {
               placeholderTextColor={colors.textMuted}
               value={search}
               onChangeText={setSearch}
+              selectionColor={colors.primary}
+              cursorColor={colors.primary}
             />
             {search.length > 0 && (
               <TouchableOpacity onPress={() => setSearch("")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
@@ -320,6 +322,7 @@ export function VisitorsScreen() {
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
           style={styles.modalOverlay}
         >
           <View style={styles.modalContent}>
@@ -347,6 +350,8 @@ export function VisitorsScreen() {
                 placeholderTextColor={colors.textMuted}
                 value={visitorName}
                 onChangeText={setVisitorName}
+                selectionColor={colors.primary}
+                cursorColor={colors.primary}
               />
 
               <Text style={styles.inputLabel}>PHONE NUMBER</Text>
@@ -357,6 +362,8 @@ export function VisitorsScreen() {
                 keyboardType="phone-pad"
                 value={visitorPhone}
                 onChangeText={setVisitorPhone}
+                selectionColor={colors.primary}
+                cursorColor={colors.primary}
               />
 
               <Text style={styles.inputLabel}>PURPOSE OF VISIT</Text>
@@ -489,6 +496,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 2
   },
+  listHeaderLeft: {
+    flex: 1,
+    marginRight: 10
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: typography.weights.bold,
@@ -506,7 +517,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    gap: 4
+    gap: 4,
+    flexShrink: 0
   },
   preApproveText: {
     color: "#fff",
@@ -515,17 +527,22 @@ const styles = StyleSheet.create({
   },
   visitorList: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.border,
-    overflow: "hidden"
+    overflow: "hidden",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1
   },
   visitorRow: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 14,
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#F7F8F6"
+    borderBottomColor: colors.borderSubtle
   },
   visitorDetails: {
     flex: 1,
@@ -538,41 +555,47 @@ const styles = StyleSheet.create({
     color: colors.textMain
   },
   visitorPurpose: {
-    fontSize: 11,
+    fontSize: 11.5,
     color: colors.textMuted,
     marginTop: 2
   },
   codeBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E8F4EF",
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1,
+    borderColor: "rgba(16, 185, 129, 0.25)",
     alignSelf: "flex-start",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    marginTop: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 8,
+    marginTop: 5,
     gap: 4
   },
   codeBadgeLabel: {
-    fontSize: 9,
+    fontSize: 8.5,
     fontWeight: "700",
-    color: colors.primary
-  },
-  codeBadgeValue: {
-    fontSize: 11,
-    fontWeight: "800",
     color: colors.primary,
     letterSpacing: 0.5
   },
+  codeBadgeValue: {
+    fontSize: 11.5,
+    fontWeight: "800",
+    color: colors.primary,
+    letterSpacing: 1
+  },
   statusCol: {
-    alignItems: "flex-end"
+    alignItems: "flex-end",
+    gap: 6
   },
   actionPillBtn: {
-    backgroundColor: "#E8F4EF",
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginTop: 6
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1,
+    borderColor: "rgba(16, 185, 129, 0.25)",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4.5,
+    marginTop: 2
   },
   actionPillText: {
     fontSize: 10,
@@ -581,14 +604,19 @@ const styles = StyleSheet.create({
   },
   emptyCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: 30,
-    alignItems: "center"
+    padding: 32,
+    alignItems: "center",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1
   },
   emptyText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: typography.weights.bold,
     color: colors.textMain,
     marginTop: 12
@@ -597,85 +625,94 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textMuted,
     marginTop: 4,
-    textAlign: "center"
+    textAlign: "center",
+    lineHeight: 18
   },
   emptyCtaBtn: {
-    marginTop: 14,
-    backgroundColor: "#E8F4EF",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8
+    marginTop: 16,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 12,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2
   },
   emptyCtaText: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: "700",
-    color: colors.primary
+    color: "#FFFFFF"
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(24, 32, 29, 0.4)",
+    backgroundColor: "rgba(15, 23, 42, 0.45)",
     justifyContent: "flex-end"
   },
   modalContent: {
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    padding: 20,
-    paddingBottom: 32
+    padding: 22,
+    paddingBottom: 34
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: typography.weights.heavy,
-    color: colors.textMain
+    color: colors.textMain,
+    letterSpacing: -0.3
   },
   modalSubtitle: {
     fontSize: 12,
     color: colors.textMuted,
     marginTop: 2,
-    marginBottom: 14
+    marginBottom: 16
   },
   errorBox: {
     backgroundColor: "#FEE2E2",
-    borderRadius: 8,
-    padding: 8,
-    marginBottom: 10
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#FECACA"
   },
   errorText: {
     color: "#B91C1C",
-    fontSize: 11,
+    fontSize: 11.5,
     fontWeight: "600"
   },
   inputLabel: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: typography.weights.bold,
     color: colors.textMuted,
-    letterSpacing: 0.6,
-    marginBottom: 4,
-    marginTop: 8
+    letterSpacing: 0.7,
+    marginBottom: 5,
+    marginTop: 10
   },
   textInput: {
-    backgroundColor: "#F7F8F6",
-    borderRadius: 10,
+    backgroundColor: colors.bgSecondary,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 10,
-    fontSize: 13,
+    fontSize: 13.5,
     color: colors.textMain
   },
   purposeRow: {
     flexDirection: "row",
-    gap: 6,
-    marginTop: 4,
-    marginBottom: 14
+    gap: 8,
+    marginTop: 6,
+    marginBottom: 16
   },
   purposeBtn: {
     flex: 1,
-    backgroundColor: "#F7F8F6",
+    backgroundColor: colors.bgSecondary,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
-    paddingVertical: 8,
+    borderRadius: 10,
+    paddingVertical: 9,
     alignItems: "center"
   },
   purposeBtnActive: {
@@ -683,7 +720,7 @@ const styles = StyleSheet.create({
     borderColor: colors.primary
   },
   purposeBtnText: {
-    fontSize: 10,
+    fontSize: 10.5,
     fontWeight: "700",
     color: colors.textMuted
   },
@@ -693,12 +730,13 @@ const styles = StyleSheet.create({
   modalActions: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    gap: 8,
-    marginTop: 8
+    gap: 10,
+    marginTop: 12
   },
   cancelBtn: {
     paddingHorizontal: 16,
-    paddingVertical: 10
+    paddingVertical: 10,
+    borderRadius: 10
   },
   cancelBtnText: {
     color: colors.textMuted,
@@ -707,9 +745,14 @@ const styles = StyleSheet.create({
   },
   submitBtn: {
     backgroundColor: colors.primary,
-    borderRadius: 10,
-    paddingHorizontal: 18,
-    paddingVertical: 10
+    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 11,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2
   },
   submitBtnText: {
     color: "#FFFFFF",
@@ -720,13 +763,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.border,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
     marginBottom: 14,
-    gap: 8
+    gap: 8,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.02,
+    shadowRadius: 3,
+    elevation: 1
   },
   searchInput: {
     flex: 1,
