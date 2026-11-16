@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -10,9 +10,11 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
-  KeyboardAvoidingView,
-  Platform
+  Platform,
+  Keyboard,
+  Dimensions
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
@@ -30,6 +32,10 @@ import {
 } from "../components/MobileIcons";
 
 export function VisitorsScreen() {
+  const insets = useSafeAreaInsets();
+  const scrollRef = useRef<any>(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
   const [visitors, setVisitors] = useState<Visitor[]>([]);
   const [search, setSearch] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
@@ -42,6 +48,32 @@ export function VisitorsScreen() {
   const [visitorPhone, setVisitorPhone] = useState("");
   const [purpose, setPurpose] = useState("GUEST");
   const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+      }
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  const bottomInset = insets.bottom > 0 ? insets.bottom : (Platform.OS === "android" ? 48 : 0);
+  const modalBottomPadding = keyboardHeight > 0 ? 16 : bottomInset + 16;
+  const windowHeight = Dimensions.get("window").height;
+  const maxModalHeight = keyboardHeight > 0
+    ? Math.max(260, windowHeight - keyboardHeight - (insets.top > 0 ? insets.top : 24) - 20)
+    : Math.min(windowHeight * 0.88, windowHeight - bottomInset - 40);
 
   const fetchVisitors = async () => {
     try {
@@ -318,19 +350,27 @@ export function VisitorsScreen() {
         visible={modalVisible}
         animationType="slide"
         transparent
-        onRequestClose={() => setModalVisible(false)}
+        onRequestClose={() => {
+          Keyboard.dismiss();
+          setModalVisible(false);
+        }}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
-          style={styles.modalOverlay}
-        >
-          <View style={styles.modalContent}>
+        <View style={[styles.modalOverlay, { paddingBottom: keyboardHeight }]}>
+          <View
+            style={[
+              styles.modalContent,
+              {
+                paddingBottom: modalBottomPadding,
+                maxHeight: maxModalHeight
+              }
+            ]}
+          >
             <ScrollView
+              ref={scrollRef}
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
               keyboardDismissMode="on-drag"
-              contentContainerStyle={{ paddingBottom: 10 }}
+              contentContainerStyle={{ paddingBottom: keyboardHeight > 0 ? 24 : 10 }}
             >
               <Text style={styles.modalTitle}>Issue Visitor Pass</Text>
               <Text style={styles.modalSubtitle}>
@@ -352,6 +392,11 @@ export function VisitorsScreen() {
                 onChangeText={setVisitorName}
                 selectionColor={colors.primary}
                 cursorColor={colors.primary}
+                onFocus={() => {
+                  setTimeout(() => {
+                    scrollRef.current?.scrollTo({ y: 0, animated: true });
+                  }, 80);
+                }}
               />
 
               <Text style={styles.inputLabel}>PHONE NUMBER</Text>
@@ -364,6 +409,11 @@ export function VisitorsScreen() {
                 onChangeText={setVisitorPhone}
                 selectionColor={colors.primary}
                 cursorColor={colors.primary}
+                onFocus={() => {
+                  setTimeout(() => {
+                    scrollRef.current?.scrollTo({ y: 70, animated: true });
+                  }, 80);
+                }}
               />
 
               <Text style={styles.inputLabel}>PURPOSE OF VISIT</Text>
@@ -389,7 +439,10 @@ export function VisitorsScreen() {
               <View style={styles.modalActions}>
                 <TouchableOpacity
                   style={styles.cancelBtn}
-                  onPress={() => setModalVisible(false)}
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setModalVisible(false);
+                  }}
                   disabled={submitting}
                 >
                   <Text style={styles.cancelBtnText}>Cancel</Text>
@@ -409,7 +462,7 @@ export function VisitorsScreen() {
               </View>
             </ScrollView>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
     </View>
   );

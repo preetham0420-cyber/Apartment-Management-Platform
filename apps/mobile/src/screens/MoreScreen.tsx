@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -9,9 +9,11 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
-  Platform
+  Platform,
+  Keyboard,
+  Dimensions
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, ThemeTone } from "../theme/colors";
 import { spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
@@ -65,6 +67,12 @@ interface MoreScreenProps {
 }
 
 export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, onOpenNotifications }: MoreScreenProps) {
+  const insets = useSafeAreaInsets();
+  const profileScrollRef = useRef<any>(null);
+  const householdScrollRef = useRef<any>(null);
+  const vehiclesScrollRef = useRef<any>(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
   const [profile, setProfile] = useState<AuthUser | null>(currentUser || null);
 
   // Edit Profile Modal State
@@ -72,6 +80,28 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
   const [editName, setEditName] = useState(currentUser?.fullName || "");
   const [editPhone, setEditPhone] = useState(currentUser?.phoneNumber || "");
   const [savingProfile, setSavingProfile] = useState(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      (e) => setKeyboardHeight(e.endCoordinates.height)
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => setKeyboardHeight(0)
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  const bottomInset = insets.bottom > 0 ? insets.bottom : (Platform.OS === "android" ? 48 : 0);
+  const modalBottomPadding = keyboardHeight > 0 ? 16 : bottomInset + 16;
+  const windowHeight = Dimensions.get("window").height;
+  const maxModalHeight = keyboardHeight > 0
+    ? Math.max(260, windowHeight - keyboardHeight - (insets.top > 0 ? insets.top : 24) - 20)
+    : Math.min(windowHeight * 0.88, windowHeight - bottomInset - 40);
 
   // Helper types and slots for Amenities Booking
   const AMENITY_TIME_SLOTS = [
@@ -666,19 +696,27 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
         visible={profileModalVisible}
         animationType="slide"
         transparent
-        onRequestClose={() => setProfileModalVisible(false)}
+        onRequestClose={() => {
+          Keyboard.dismiss();
+          setProfileModalVisible(false);
+        }}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
-          style={styles.modalOverlay}
-        >
-          <View style={styles.modalContent}>
+        <View style={[styles.modalOverlay, { paddingBottom: keyboardHeight }]}>
+          <View
+            style={[
+              styles.modalContent,
+              {
+                paddingBottom: modalBottomPadding,
+                maxHeight: maxModalHeight
+              }
+            ]}
+          >
             <ScrollView
+              ref={profileScrollRef}
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
               keyboardDismissMode="on-drag"
-              contentContainerStyle={{ paddingBottom: 10 }}
+              contentContainerStyle={{ paddingBottom: keyboardHeight > 0 ? 24 : 10 }}
             >
               <Text style={styles.modalTitle}>Edit Resident Profile</Text>
               <Text style={styles.modalSubtitle}>Update your verified contact information</Text>
@@ -690,6 +728,11 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                 onChangeText={setEditName}
                 selectionColor={colors.primary}
                 cursorColor={colors.primary}
+                onFocus={() => {
+                  setTimeout(() => {
+                    profileScrollRef.current?.scrollTo({ y: 0, animated: true });
+                  }, 80);
+                }}
               />
 
               <Text style={styles.inputLabel}>Phone Number</Text>
@@ -700,12 +743,20 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                 keyboardType="phone-pad"
                 selectionColor={colors.primary}
                 cursorColor={colors.primary}
+                onFocus={() => {
+                  setTimeout(() => {
+                    profileScrollRef.current?.scrollTo({ y: 70, animated: true });
+                  }, 80);
+                }}
               />
 
               <View style={styles.modalActions}>
                 <TouchableOpacity
                   style={styles.cancelBtn}
-                  onPress={() => setProfileModalVisible(false)}
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setProfileModalVisible(false);
+                  }}
                   disabled={savingProfile}
                 >
                   <Text style={styles.cancelBtnText}>Cancel</Text>
@@ -724,13 +775,13 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
               </View>
             </ScrollView>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
 
       {/* Amenities Modal */}
       <Modal visible={amenitiesModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxHeight: "90%" }]}>
+          <View style={[styles.modalContent, { maxHeight: "90%", paddingBottom: modalBottomPadding }]}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
               <View>
                 <Text style={styles.modalTitle}>Shared Amenities</Text>
@@ -997,7 +1048,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
       {/* Residents Directory Modal */}
       <Modal visible={directoryModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxHeight: "88%" }]}>
+          <View style={[styles.modalContent, { maxHeight: "88%", paddingBottom: modalBottomPadding }]}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
               <View>
                 <Text style={styles.modalTitle}>Residents Directory</Text>
@@ -1092,7 +1143,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
       {/* Rental & Tenancy Management Modal */}
       <Modal visible={leaseModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxHeight: "88%" }]}>
+          <View style={[styles.modalContent, { maxHeight: "88%", paddingBottom: modalBottomPadding }]}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
               <View>
                 <Text style={styles.modalTitle}>Rental & Lease Records</Text>
@@ -1179,7 +1230,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
       {/* Notices & Circulars Modal */}
       <Modal visible={noticesModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxHeight: "88%" }]}>
+          <View style={[styles.modalContent, { maxHeight: "88%", paddingBottom: modalBottomPadding }]}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
               <View>
                 <Text style={styles.modalTitle}>Notices & Circulars</Text>
@@ -1263,7 +1314,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
       {/* CCTV & Security Desk Modal */}
       <Modal visible={securityModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxHeight: "88%" }]}>
+          <View style={[styles.modalContent, { maxHeight: "88%", paddingBottom: modalBottomPadding }]}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
               <View>
                 <Text style={styles.modalTitle}>Security & Surveillance Desk</Text>
@@ -1335,7 +1386,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
       {/* Dues & Payments Modal */}
       <Modal visible={duesModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxHeight: "85%" }]}>
+          <View style={[styles.modalContent, { maxHeight: "85%", paddingBottom: modalBottomPadding }]}>
             <Text style={styles.modalTitle}>Maintenance Invoices & Dues</Text>
             <Text style={styles.modalSubtitle}>Unit 402 • Financial Ledger</Text>
 
@@ -1388,14 +1439,13 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
         visible={householdModalVisible}
         animationType="slide"
         transparent
-        onRequestClose={() => setHouseholdModalVisible(false)}
+        onRequestClose={() => {
+          Keyboard.dismiss();
+          setHouseholdModalVisible(false);
+        }}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
-          style={styles.modalOverlay}
-        >
-          <View style={[styles.modalContent, { maxHeight: "88%" }]}>
+        <View style={[styles.modalOverlay, { paddingBottom: keyboardHeight }]}>
+          <View style={[styles.modalContent, { maxHeight: maxModalHeight, paddingBottom: modalBottomPadding }]}>
             <Text style={styles.modalTitle}>Household Members</Text>
             <Text style={styles.modalSubtitle}>Family members & co-occupants registered to your unit</Text>
 
@@ -1479,13 +1529,16 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
             <View style={[styles.modalActions, { marginTop: spacing.md }]}>
               <TouchableOpacity
                 style={styles.cancelBtn}
-                onPress={() => setHouseholdModalVisible(false)}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setHouseholdModalVisible(false);
+                }}
               >
                 <Text style={styles.cancelBtnText}>Close</Text>
               </TouchableOpacity>
             </View>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
 
       {/* Vehicles & Parking Modal */}
@@ -1493,14 +1546,13 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
         visible={vehiclesModalVisible}
         animationType="slide"
         transparent
-        onRequestClose={() => setVehiclesModalVisible(false)}
+        onRequestClose={() => {
+          Keyboard.dismiss();
+          setVehiclesModalVisible(false);
+        }}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
-          style={styles.modalOverlay}
-        >
-          <View style={[styles.modalContent, { maxHeight: "88%" }]}>
+        <View style={[styles.modalOverlay, { paddingBottom: keyboardHeight }]}>
+          <View style={[styles.modalContent, { maxHeight: maxModalHeight, paddingBottom: modalBottomPadding }]}>
             <Text style={styles.modalTitle}>Vehicles & Parking</Text>
             <Text style={styles.modalSubtitle}>Registered vehicles and allocated parking bay</Text>
 
@@ -1613,13 +1665,13 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
               </TouchableOpacity>
             </View>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
 
       {/* Documents & Bylaws Modal */}
       <Modal visible={documentsModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxHeight: "88%" }]}>
+          <View style={[styles.modalContent, { maxHeight: "88%", paddingBottom: modalBottomPadding }]}>
             <Text style={styles.modalTitle}>Documents & Bylaws</Text>
             <Text style={styles.modalSubtitle}>Statutory compliance, audit reports, AMC & society guidelines</Text>
 

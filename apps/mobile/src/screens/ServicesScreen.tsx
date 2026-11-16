@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -10,9 +10,11 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
-  KeyboardAvoidingView,
-  Platform
+  Platform,
+  Keyboard,
+  Dimensions
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
@@ -37,6 +39,10 @@ interface ServicesScreenProps {
 }
 
 export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
+  const insets = useSafeAreaInsets();
+  const createScrollRef = useRef<any>(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
   const [activeSection, setActiveSection] = useState<"hub" | "maintenance">("hub");
   const [tickets, setTickets] = useState<MaintenanceRequest[]>([]);
   const [ticketSearch, setTicketSearch] = useState<string>("");
@@ -57,6 +63,28 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
   const [selectedTicket, setSelectedTicket] = useState<MaintenanceRequest | null>(null);
   const [commentText, setCommentText] = useState("");
   const [submittingComment, setSubmittingComment] = useState<boolean>(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      (e) => setKeyboardHeight(e.endCoordinates.height)
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => setKeyboardHeight(0)
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  const bottomInset = insets.bottom > 0 ? insets.bottom : (Platform.OS === "android" ? 48 : 0);
+  const modalBottomPadding = keyboardHeight > 0 ? 16 : bottomInset + 16;
+  const windowHeight = Dimensions.get("window").height;
+  const maxModalHeight = keyboardHeight > 0
+    ? Math.max(260, windowHeight - keyboardHeight - (insets.top > 0 ? insets.top : 24) - 20)
+    : Math.min(windowHeight * 0.88, windowHeight - bottomInset - 40);
 
   const fetchTickets = async () => {
     try {
@@ -646,19 +674,27 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
         visible={createModalVisible}
         animationType="slide"
         transparent
-        onRequestClose={() => setCreateModalVisible(false)}
+        onRequestClose={() => {
+          Keyboard.dismiss();
+          setCreateModalVisible(false);
+        }}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
-          style={styles.modalOverlay}
-        >
-          <View style={styles.modalContent}>
+        <View style={[styles.modalOverlay, { paddingBottom: keyboardHeight }]}>
+          <View
+            style={[
+              styles.modalContent,
+              {
+                paddingBottom: modalBottomPadding,
+                maxHeight: maxModalHeight
+              }
+            ]}
+          >
             <ScrollView
+              ref={createScrollRef}
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
               keyboardDismissMode="on-drag"
-              contentContainerStyle={{ paddingBottom: 16 }}
+              contentContainerStyle={{ paddingBottom: keyboardHeight > 0 ? 28 : 16 }}
             >
               <Text style={styles.modalHeading}>Raise Service Request</Text>
               <Text style={styles.modalSubheading}>
@@ -705,6 +741,11 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
                 onChangeText={setTitle}
                 selectionColor={colors.primary}
                 cursorColor={colors.primary}
+                onFocus={() => {
+                  setTimeout(() => {
+                    createScrollRef.current?.scrollTo({ y: 70, animated: true });
+                  }, 80);
+                }}
               />
 
               <Text style={styles.fieldLabel}>DETAILED DESCRIPTION</Text>
@@ -717,6 +758,11 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
                 onChangeText={setDescription}
                 selectionColor={colors.primary}
                 cursorColor={colors.primary}
+                onFocus={() => {
+                  setTimeout(() => {
+                    createScrollRef.current?.scrollTo({ y: 150, animated: true });
+                  }, 80);
+                }}
               />
 
               <Text style={styles.fieldLabel}>PRIORITY</Text>
@@ -765,7 +811,10 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
               <View style={styles.modalButtonsRow}>
                 <TouchableOpacity
                   style={styles.modalCancelBtn}
-                  onPress={() => setCreateModalVisible(false)}
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setCreateModalVisible(false);
+                  }}
                   disabled={submitting}
                 >
                   <Text style={styles.modalCancelText}>Cancel</Text>
@@ -785,7 +834,7 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
               </View>
             </ScrollView>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
 
       {/* =========================================================================
@@ -795,14 +844,23 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
         visible={Boolean(selectedTicket)}
         animationType="slide"
         transparent
-        onRequestClose={() => setSelectedTicket(null)}
+        onRequestClose={() => {
+          Keyboard.dismiss();
+          setSelectedTicket(null);
+        }}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 44 : 0}
-          style={styles.modalOverlay}
-        >
-          <View style={[styles.modalContent, { maxHeight: "90%", display: "flex", flexDirection: "column" }]}>
+        <View style={[styles.modalOverlay, { paddingBottom: keyboardHeight }]}>
+          <View
+            style={[
+              styles.modalContent,
+              {
+                paddingBottom: modalBottomPadding,
+                maxHeight: maxModalHeight,
+                display: "flex",
+                flexDirection: "column"
+              }
+            ]}
+          >
             {selectedTicket && (
               <>
                 <ScrollView
@@ -928,7 +986,7 @@ export function ServicesScreen({ onNavigateTab }: ServicesScreenProps) {
               </>
             )}
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
     </View>
   );
