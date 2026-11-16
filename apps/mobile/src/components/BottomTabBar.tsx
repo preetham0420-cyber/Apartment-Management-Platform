@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
@@ -55,7 +55,8 @@ interface BottomTabBarProps {
 
 export function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const bottomInset = Math.max(insets.bottom, 12);
+  // Ensure tab items and labels sit safely above Android 3-button navigation (48dp) or gesture bar (~20dp)
+  const bottomInset = (insets.bottom > 0 ? insets.bottom : (Platform.OS === "android" ? 48 : 0)) + 6;
 
   return (
     <View style={[styles.tabBar, { paddingBottom: bottomInset }]}>

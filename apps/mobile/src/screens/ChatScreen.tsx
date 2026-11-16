@@ -274,17 +274,12 @@ export function ChatScreen({ onActiveChannelChange }: ChatScreenProps = {}) {
   // If a channel is selected, render the conversation view with message composer
   if (activeChannel) {
     const channelMessages = messages[activeChannel.id] || [];
-    const screenHeight = Dimensions.get("screen").height;
-    const windowHeight = Dimensions.get("window").height;
-    // Detect whether Android OS already resized the window (Expo Go) or edge-to-edge kept it fixed (standalone APK)
-    const windowDidShrink = (screenHeight - windowHeight) >= (androidKeyboardHeight - 20);
-    const androidKeyboardOffset = (androidKeyboardHeight > 0 && !windowDidShrink)
+    // Ensure the composer shifts above the Android keyboard and preserves safe area clearance
+    const androidKeyboardOffset = Platform.OS === "android" && androidKeyboardHeight > 0
       ? androidKeyboardHeight
       : 0;
 
-    const composerBottomPadding = isKeyboardOpen
-      ? 12
-      : Math.max(insets.bottom, 12);
+    const composerBottomPadding = (insets.bottom > 0 ? insets.bottom : (Platform.OS === "android" ? 48 : 0)) + 8;
 
     return (
       <KeyboardAvoidingView
@@ -376,6 +371,15 @@ export function ChatScreen({ onActiveChannelChange }: ChatScreenProps = {}) {
             placeholderTextColor={colors.textMuted}
             value={inputText}
             onChangeText={setInputText}
+            onFocus={() => {
+              setIsKeyboardOpen(true);
+              setTimeout(() => {
+                scrollViewRef.current?.scrollToEnd({ animated: true });
+              }, 60);
+            }}
+            onBlur={() => {
+              setIsKeyboardOpen(false);
+            }}
             multiline
             maxLength={500}
             returnKeyType="default"

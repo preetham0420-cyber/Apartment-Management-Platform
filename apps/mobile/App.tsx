@@ -10,7 +10,7 @@ import {
   Platform
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaProvider, initialWindowMetrics, useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "./src/theme/colors";
 import { AppHeader } from "./src/components/AppHeader";
 import { BottomTabBar, TabKey } from "./src/components/BottomTabBar";
@@ -233,6 +233,8 @@ function AppContent() {
     ? `${currentUnit.block} - ${currentUnit.unitNumber}`
     : "Tower A - 402";
 
+  const modalBottomPadding = (insets.bottom > 0 ? insets.bottom : (Platform.OS === "android" ? 48 : 0)) + 16;
+
   return (
     <View style={[styles.safeArea, { paddingTop: insets.top }]}>
       <StatusBar style="dark" />
@@ -260,7 +262,7 @@ function AppContent() {
         onRequestClose={() => setNotificationModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { paddingBottom: modalBottomPadding }]}>
             <View style={styles.modalHeader}>
               <View>
                 <Text style={styles.modalTitle}>Community Alerts</Text>
@@ -314,7 +316,7 @@ function AppContent() {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <AppContent />
     </SafeAreaProvider>
   );
