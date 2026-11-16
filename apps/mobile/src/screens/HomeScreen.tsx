@@ -13,7 +13,7 @@ import { spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
 import { StatusPill } from "../components/StatusPill";
 import { IconBox } from "../components/IconBox";
-import { UnitSummary } from "@apartment/shared";
+import { UnitSummary, AuthUser } from "@apartment/shared";
 import { mobileApiClient } from "../services/api-client";
 import {
   BellIcon,
@@ -22,11 +22,12 @@ import {
 } from "../components/MobileIcons";
 
 interface HomeScreenProps {
+  currentUser?: AuthUser | null;
   currentUnit?: UnitSummary | null;
   onNavigateTab: (tab: "services" | "chat" | "visitors" | "more") => void;
 }
 
-export function HomeScreen({ currentUnit, onNavigateTab }: HomeScreenProps) {
+export function HomeScreen({ currentUser, currentUnit, onNavigateTab }: HomeScreenProps) {
   const [homeData, setHomeData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -36,7 +37,7 @@ export function HomeScreen({ currentUnit, onNavigateTab }: HomeScreenProps) {
       const data = await mobileApiClient.getResidentHome();
       setHomeData(data);
     } catch {
-      // Fallback gracefully
+      // Keep existing data or null
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -44,32 +45,45 @@ export function HomeScreen({ currentUnit, onNavigateTab }: HomeScreenProps) {
   };
 
   useEffect(() => {
+    setLoading(true);
     fetchHomeData();
-  }, []);
+  }, [currentUser?.id]);
 
   const onRefresh = () => {
     setRefreshing(true);
     fetchHomeData();
   };
 
+  // Prevent rendering uninitialized/mock dashboard
+  if (loading && !homeData) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Loading dashboard...</Text>
+      </View>
+    );
+  }
+
   const activeNotice = homeData?.notices?.[0];
   const unit = homeData?.unit || currentUnit;
-  const unitNumber = unit ? unit.unitNumber : "101";
+  const unitNumber = unit?.unitNumber || "";
   const unitFloor = unit?.floor || (unitNumber ? Math.floor(parseInt(unitNumber, 10) / 100) : 1);
-  const unitBlock = unit?.block || "Tower A";
-  const residentName = homeData?.resident?.fullName || "Ananya Sharma";
+  const unitBlock = unit?.block || "";
+  const residentName = homeData?.resident?.fullName || currentUser?.fullName || "Resident";
+  const residentRole = homeData?.resident?.role || currentUser?.role || "RESIDENT_TENANT";
+  const isOwner = residentRole === "RESIDENT_OWNER";
 
   const currentDueFormatted =
     homeData?.metrics?.currentDue !== undefined
       ? `₹${homeData.metrics.currentDue.toLocaleString()}`
-      : "₹4,850";
-  const openRequests = homeData?.metrics?.openRequestsCount ?? 1;
-  const expectedGuests = homeData?.metrics?.expectedGuestsCount ?? 2;
+      : "₹0";
+  const openRequests = homeData?.metrics?.openRequestsCount ?? 0;
+  const expectedGuests = homeData?.metrics?.expectedGuestsCount ?? 0;
 
   const nextPendingDue = homeData?.dues?.find((d: any) => d.status === "PENDING" || d.status === "OVERDUE") || homeData?.dues?.[0];
   const formattedDueDate = (() => {
     if (!nextPendingDue?.dueDate) {
-      return homeData?.metrics?.currentDue === 0 ? "All Cleared" : "Due Soon";
+      return homeData?.metrics?.currentDue === 0 ? "All Cleared" : "No Pending Dues";
     }
     try {
       const d = new Date(nextPendingDue.dueDate);
@@ -140,12 +154,12 @@ export function HomeScreen({ currentUnit, onNavigateTab }: HomeScreenProps) {
           </View>
           <View style={styles.announcementContent}>
             <View style={styles.announcementTop}>
-              <Text style={styles.announcementTag}>SOCIETY UPDATE</Text>
-              <Text style={styles.announcementTime}>Today</Text>
+              <Text style={styles.announcementTag}>COMMUNITY NOTICE</Text>
+              <Text style={styles.announcementTime}>Official</Text>
             </View>
-            <Text style={styles.announcementTitle}>Scheduled Power Backup Drill</Text>
+            <Text style={styles.announcementTitle}>No New Announcements</Text>
             <Text style={styles.announcementBody}>
-              Routine maintenance between 10:00 AM - 12:00 PM this Saturday. Elevators will operate on DG.
+              All community operations and facility services are functioning normally.
             </Text>
           </View>
         </View>
@@ -163,7 +177,7 @@ export function HomeScreen({ currentUnit, onNavigateTab }: HomeScreenProps) {
           </View>
           <View style={styles.verifiedBadge}>
             <View style={styles.verifiedDot} />
-            <Text style={styles.verifiedText}>Verified Tenant</Text>
+            <Text style={styles.verifiedText}>{isOwner ? "Resident Owner" : "Verified Tenant"}</Text>
           </View>
         </View>
 
@@ -710,6 +724,19 @@ const styles = StyleSheet.create({
   },
   activityTime: {
     fontSize: 10.5,
+    color: colors.textMuted,
+    fontWeight: typography.weights.medium
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.bgPage,
+    padding: 24
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 13,
     color: colors.textMuted,
     fontWeight: typography.weights.medium
   }

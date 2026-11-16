@@ -165,10 +165,16 @@ export const authStorage = {
     try {
       if (Platform.OS !== "web") {
         await SecureStore.deleteItemAsync(USER_KEY);
+        await SecureStore.deleteItemAsync("apartment_chat_channels_state");
+        await SecureStore.deleteItemAsync("apartment_chat_messages_state");
       } else if (typeof localStorage !== "undefined") {
         localStorage.removeItem(USER_KEY);
+        localStorage.removeItem("apartment_chat_channels_state");
+        localStorage.removeItem("apartment_chat_messages_state");
       }
       delete memoryStore[USER_KEY];
+      delete memoryStore["apartment_chat_channels_state"];
+      delete memoryStore["apartment_chat_messages_state"];
     } catch {
       delete memoryStore[USER_KEY];
     }

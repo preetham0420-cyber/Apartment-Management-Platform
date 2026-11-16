@@ -647,10 +647,10 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
             <View style={styles.profileInfo}>
               <Text style={styles.profileName}>{profile.fullName}</Text>
               <Text style={styles.profileEmail}>{profile.email}</Text>
-              <Text style={styles.profilePhone}>{profile.phoneNumber || "+91 91234 56789"}</Text>
+              <Text style={styles.profilePhone}>{profile.phoneNumber || ""}</Text>
               <View style={styles.roleBadge}>
                 <Text style={styles.roleText}>
-                  {currentUnit ? `${currentUnit.block} - ${currentUnit.unitNumber}` : "Tower A - 402"} • {profile.role}
+                  {currentUnit ? `${currentUnit.block} - ${currentUnit.unitNumber} • ` : ""}{profile.role}
                 </Text>
               </View>
             </View>
@@ -913,7 +913,7 @@ export function MoreScreen({ currentUser, currentUnit, onLogout, onNavigateTab, 
                       <Text style={styles.summaryRow}>Facility: <Text style={styles.summaryBold}>{selectedAmenity.name}</Text></Text>
                       <Text style={styles.summaryRow}>Date: <Text style={styles.summaryBold}>{formatIndianDateString(selectedDateStr)}</Text></Text>
                       <Text style={styles.summaryRow}>Time: <Text style={styles.summaryBold}>{selectedSlot.label}</Text></Text>
-                      <Text style={styles.summaryRow}>Unit Flat: <Text style={styles.summaryBold}>{currentUnit ? `${currentUnit.block} - ${currentUnit.unitNumber}` : "Tower A - 402"}</Text></Text>
+                      <Text style={styles.summaryRow}>Unit Flat: <Text style={styles.summaryBold}>{currentUnit ? `${currentUnit.block} - ${currentUnit.unitNumber}` : "—"}</Text></Text>
 
                       <TouchableOpacity
                         style={styles.confirmReservationBtn}

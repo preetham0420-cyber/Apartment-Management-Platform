@@ -77,7 +77,7 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<TabKey>("home");
   const [isChatThreadOpen, setIsChatThreadOpen] = useState(false);
   const [notificationModalVisible, setNotificationModalVisible] = useState(false);
-  const [notifications, setNotifications] = useState<MobileNotification[]>(initialMobileNotifications);
+  const [notifications, setNotifications] = useState<MobileNotification[]>([]);
 
   const unreadCount = notifications.filter((n) => n.unread).length;
 
@@ -153,6 +153,7 @@ function AppContent() {
     await mobileApiClient.logout();
     setCurrentUser(null);
     setCurrentUnit(null);
+    setNotifications([]);
     setIsAuthenticated(false);
     setActiveTab("home");
   };
@@ -210,7 +211,13 @@ function AppContent() {
         );
       case "home":
       default:
-        return <HomeScreen currentUnit={currentUnit} onNavigateTab={(tab) => setActiveTab(tab)} />;
+        return (
+          <HomeScreen
+            currentUser={currentUser}
+            currentUnit={currentUnit}
+            onNavigateTab={(tab) => setActiveTab(tab)}
+          />
+        );
     }
   };
 
@@ -231,7 +238,11 @@ function AppContent() {
 
   const unitTag = currentUnit
     ? `${currentUnit.block} - ${currentUnit.unitNumber}`
-    : "Tower A - 402";
+    : "";
+
+  const roleBadge = unitTag
+    ? `${unitTag} • ${currentUser?.fullName || "Resident"}`
+    : (currentUser?.fullName || "Resident");
 
   const modalBottomPadding = (insets.bottom > 0 ? insets.bottom : (Platform.OS === "android" ? 48 : 0)) + 16;
 
@@ -240,7 +251,7 @@ function AppContent() {
       <StatusBar style="dark" />
       <AppHeader
         title={screenTitles[activeTab]}
-        roleBadge={`${unitTag} • ${currentUser?.fullName || "Resident"}`}
+        roleBadge={roleBadge}
         unreadNotifications={unreadCount}
         onNotificationPress={() => {
           loadNotifications();
