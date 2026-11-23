@@ -29,6 +29,10 @@ export default function SuperAdminHomePage() {
 
   // Restore authenticated session on mount
   useEffect(() => {
+    const fallbackTimer = setTimeout(() => {
+      setIsCheckingAuth(false);
+    }, 300);
+
     try {
       const storedUser = localStorage.getItem(USER_SESSION_KEY);
       const storedToken = localStorage.getItem(TOKEN_SESSION_KEY);
@@ -46,8 +50,11 @@ export default function SuperAdminHomePage() {
       localStorage.removeItem(USER_SESSION_KEY);
       localStorage.removeItem(TOKEN_SESSION_KEY);
     } finally {
+      clearTimeout(fallbackTimer);
       setIsCheckingAuth(false);
     }
+
+    return () => clearTimeout(fallbackTimer);
   }, []);
 
   const handleLoginSuccess = (user: AuthUser, token: string) => {
