@@ -67,6 +67,16 @@ const DEV_SEED_USERS: UserRecord[] = [
     roleId: 4,
     roleCode: "RESIDENT_TENANT",
     isActive: true
+  },
+  {
+    id: "user-security-guard-00000001",
+    email: "guard.main@community.local",
+    passwordHash: "$2b$10$eI88iFekCz5XarHpHvxJCODZtyiPxmIDOxTN14eFEaElQy6Csy.Wa", // Guard@12345
+    fullName: "Surender Singh (Main Gate Security)",
+    phoneNumber: "+91 99000 11223",
+    roleId: 5,
+    roleCode: "SECURITY_GUARD",
+    isActive: true
   }
 ];
 
@@ -270,6 +280,33 @@ export class UserRepository {
     } catch {
       const assigned = DEV_SEED_UNITS[userId];
       return assigned ? assigned.id === unitId : false;
+    }
+  }
+
+  /**
+   * Find the active resident assigned to a unit.
+   */
+  public async getPrimaryResidentByUnitId(unitId: string): Promise<UserRecord | null> {
+    try {
+      const sql = `
+        SELECT u.id, u.email, u.password_hash AS passwordHash, u.full_name AS fullName,
+               u.phone_number AS phoneNumber, u.role_id AS roleId, r.code AS roleCode, u.is_active AS isActive
+        FROM user_unit_assignments a
+        INNER JOIN users u ON a.user_id = u.id
+        INNER JOIN roles r ON u.role_id = r.id
+        WHERE a.unit_id = ? AND a.status = 'ACTIVE'
+        ORDER BY a.is_primary DESC, a.created_at ASC
+        LIMIT 1
+      `;
+      const [rows] = await pool.execute<RowDataPacket[]>(sql, [unitId]);
+      return rows.length > 0 ? (rows[0] as UserRecord) : null;
+    } catch {
+      for (const [userId, unit] of Object.entries(DEV_SEED_UNITS)) {
+        if (unit.id === unitId) {
+          return DEV_SEED_USERS.find((u) => u.id === userId) || null;
+        }
+      }
+      return DEV_SEED_USERS.find((u) => u.roleCode === "RESIDENT_TENANT") || null;
     }
   }
 

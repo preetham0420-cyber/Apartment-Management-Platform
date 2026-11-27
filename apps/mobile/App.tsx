@@ -232,7 +232,7 @@ function AppContent() {
     home: "Community Portal",
     services: "Maintenance & Services",
     chat: "Messages & Helpdesk",
-    visitors: "Gate & Visitor Desk",
+    visitors: "My Gate & Visitors",
     more: "Community Services"
   };
 
@@ -257,6 +257,7 @@ function AppContent() {
           loadNotifications();
           setNotificationModalVisible(true);
         }}
+        onSettingsPress={() => setActiveTab("more")}
       />
       <View style={styles.contentContainer}>
         {renderActiveScreen()}

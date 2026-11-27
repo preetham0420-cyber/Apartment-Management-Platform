@@ -85,7 +85,19 @@ export interface Notice {
   updatedAt?: string;
 }
 
-export type VisitorStatus = "PRE_APPROVED" | "AT_GATE" | "CHECKED_IN" | "CHECKED_OUT" | "REJECTED" | "CANCELLED";
+export type VisitorStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "PRE_APPROVED"
+  | "AT_GATE"
+  | "CHECKED_IN"
+  | "CHECKED_OUT"
+  | "REJECTED"
+  | "EXPIRED"
+  | "CANCELLED";
+
+export type VisitorType = "GUEST" | "DELIVERY" | "CAB" | "SERVICE" | "OTHER";
+export type VisitorEntryType = "PRE_APPROVED" | "WALK_IN";
 
 export interface Visitor {
   id: string;
@@ -100,6 +112,30 @@ export interface Visitor {
   expectedArrival: string;
   status: VisitorStatus;
   accessCode: string;
+  entryType?: VisitorEntryType;
+  visitorType?: VisitorType;
+  vehicleNumber?: string;
+  notes?: string;
+  rejectionReason?: string;
+  approvedByUserId?: string;
+  approvedAt?: string;
+  validUntil?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface SecurityGuard {
+  id: string;
+  userId: string;
+  propertyId: string;
+  propertyName?: string;
+  fullName?: string;
+  email?: string;
+  phoneNumber?: string;
+  gateName: string;
+  shift: "MORNING" | "EVENING" | "NIGHT" | "GENERAL";
+  badgeNumber?: string;
+  isActive: boolean;
   createdAt: string;
   updatedAt?: string;
 }

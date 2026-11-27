@@ -13,8 +13,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://isa-vertical-welding-acrobat.trycloudflare.com/api",
-        "EXPO_PUBLIC_API_BASE_URL": "https://isa-vertical-welding-acrobat.trycloudflare.com/api",
+        "EXPO_PUBLIC_API_URL": "https://plenty-essays-calculate-boxing.trycloudflare.com/api",
+        "EXPO_PUBLIC_API_BASE_URL": "https://plenty-essays-calculate-boxing.trycloudflare.com/api",
         "EXPO_PUBLIC_APP_ENV": "preview"
       }
     },

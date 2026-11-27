@@ -258,10 +258,26 @@ export const mobileApiClient = {
   },
 
   /**
-   * Visitor Management APIs.
+   * My Gate Visitor Management APIs.
    */
-  async getVisitors(): Promise<any[]> {
-    return await request<any[]>("/visitors", { method: "GET" });
+  async getVisitors(params?: { status?: string; entryType?: string }): Promise<any[]> {
+    let url = "/visitors";
+    if (params) {
+      const q = new URLSearchParams();
+      if (params.status) q.append("status", params.status);
+      if (params.entryType) q.append("entryType", params.entryType);
+      const str = q.toString();
+      if (str) url += `?${str}`;
+    }
+    return await request<any[]>(url, { method: "GET" });
+  },
+
+  async getPendingApprovals(): Promise<any[]> {
+    return await request<any[]>("/visitors/pending", { method: "GET" });
+  },
+
+  async getVisitorById(id: string): Promise<any> {
+    return await request<any>(`/visitors/${id}`, { method: "GET" });
   },
 
   async createVisitor(data: {
@@ -269,10 +285,26 @@ export const mobileApiClient = {
     visitorPhone: string;
     purpose?: string;
     expectedArrival: string;
+    visitorType?: string;
+    vehicleNumber?: string;
+    notes?: string;
   }): Promise<any> {
     return await request<any>("/visitors", {
       method: "POST",
       body: JSON.stringify(data)
+    });
+  },
+
+  async approveVisitor(visitorId: string): Promise<any> {
+    return await request<any>(`/visitors/${visitorId}/approve`, {
+      method: "PATCH"
+    });
+  },
+
+  async rejectVisitor(visitorId: string, rejectionReason?: string): Promise<any> {
+    return await request<any>(`/visitors/${visitorId}/reject`, {
+      method: "PATCH",
+      body: JSON.stringify({ rejectionReason: rejectionReason || "Declined by resident" })
     });
   },
 

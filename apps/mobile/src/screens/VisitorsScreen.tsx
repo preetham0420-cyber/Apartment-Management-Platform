@@ -21,7 +21,7 @@ import { typography } from "../theme/typography";
 import { StatusPill } from "../components/StatusPill";
 import { IconBox } from "../components/IconBox";
 import { mobileApiClient } from "../services/api-client";
-import { Visitor } from "@apartment/shared";
+import { Visitor, VisitorStatus, VisitorType } from "@apartment/shared";
 import {
   ShieldIcon,
   PlusIcon,
@@ -31,6 +31,8 @@ import {
   SearchIcon
 } from "../components/MobileIcons";
 
+type FilterTab = "ALL" | "PENDING" | "APPROVED" | "INSIDE" | "HISTORY";
+
 export function VisitorsScreen() {
   const insets = useSafeAreaInsets();
   const scrollRef = useRef<any>(null);
@@ -38,29 +40,38 @@ export function VisitorsScreen() {
 
   const [visitors, setVisitors] = useState<Visitor[]>([]);
   const [search, setSearch] = useState<string>("");
+  const [activeFilter, setActiveFilter] = useState<FilterTab>("ALL");
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+
+  // Pre-approve modal
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
-
-  // Form State
   const [visitorName, setVisitorName] = useState("");
   const [visitorPhone, setVisitorPhone] = useState("");
+  const [visitorType, setVisitorType] = useState<VisitorType>("GUEST");
   const [purpose, setPurpose] = useState("GUEST");
+  const [vehicleNumber, setVehicleNumber] = useState("");
+  const [notes, setNotes] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Detail modal
+  const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
+
+  // Reject modal
+  const [rejectModalVisible, setRejectModalVisible] = useState<boolean>(false);
+  const [rejectingVisitorId, setRejectingVisitorId] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [actionLoading, setActionLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const showSub = Keyboard.addListener(
       Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
-      (e) => {
-        setKeyboardHeight(e.endCoordinates.height);
-      }
+      (e) => setKeyboardHeight(e.endCoordinates.height)
     );
     const hideSub = Keyboard.addListener(
       Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
-      () => {
-        setKeyboardHeight(0);
-      }
+      () => setKeyboardHeight(0)
     );
     return () => {
       showSub.remove();
@@ -68,12 +79,13 @@ export function VisitorsScreen() {
     };
   }, []);
 
-  const bottomInset = insets.bottom > 0 ? insets.bottom : (Platform.OS === "android" ? 48 : 0);
+  const bottomInset = insets.bottom > 0 ? insets.bottom : Platform.OS === "android" ? 48 : 0;
   const modalBottomPadding = keyboardHeight > 0 ? 16 : bottomInset + 16;
   const windowHeight = Dimensions.get("window").height;
-  const maxModalHeight = keyboardHeight > 0
-    ? Math.max(260, windowHeight - keyboardHeight - (insets.top > 0 ? insets.top : 24) - 20)
-    : Math.min(windowHeight * 0.88, windowHeight - bottomInset - 40);
+  const maxModalHeight =
+    keyboardHeight > 0
+      ? Math.max(260, windowHeight - keyboardHeight - (insets.top > 0 ? insets.top : 24) - 20)
+      : Math.min(windowHeight * 0.88, windowHeight - bottomInset - 40);
 
   const fetchVisitors = async () => {
     try {
@@ -114,8 +126,11 @@ export function VisitorsScreen() {
       const newVisitor = await mobileApiClient.createVisitor({
         visitorName: visitorName.trim(),
         visitorPhone: visitorPhone.trim(),
-        purpose,
-        expectedArrival: arrival
+        purpose: purpose.trim() || visitorType,
+        expectedArrival: arrival,
+        visitorType,
+        vehicleNumber: vehicleNumber.trim() || undefined,
+        notes: notes.trim() || undefined
       });
 
       setVisitors([newVisitor, ...visitors]);
@@ -123,9 +138,13 @@ export function VisitorsScreen() {
       setVisitorName("");
       setVisitorPhone("");
       setPurpose("GUEST");
+      setVisitorType("GUEST");
+      setVehicleNumber("");
+      setNotes("");
+
       Alert.alert(
-        "Digital Pass Issued",
-        `Access Code: ${newVisitor.accessCode}\nShare this with ${newVisitor.visitorName} for instant gate clearance.`
+        "Digital Gate Pass Issued",
+        `Pass Code: ${newVisitor.accessCode}\n\nShare this pass code with ${newVisitor.visitorName} for instant clearance at society security gates.`
       );
     } catch (err: any) {
       setFormError(err.message || "Failed to create visitor pass.");
@@ -134,12 +153,62 @@ export function VisitorsScreen() {
     }
   };
 
+  const handleApprove = async (visitorId: string) => {
+    setActionLoading(true);
+    try {
+      const updated = await mobileApiClient.approveVisitor(visitorId);
+      setVisitors((prev) => prev.map((v) => (v.id === visitorId ? updated : v)));
+      if (selectedVisitor?.id === visitorId) {
+        setSelectedVisitor(updated);
+      }
+      Alert.alert("Visitor Approved", "Security at Main Gate 1 has been notified to allow entry.");
+    } catch (err: any) {
+      Alert.alert("Approval Failed", err.message || "Could not approve visitor.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleOpenReject = (visitorId: string) => {
+    setRejectingVisitorId(visitorId);
+    setRejectionReason("Not expecting this visitor");
+    setRejectModalVisible(true);
+  };
+
+  const handleConfirmReject = async () => {
+    if (!rejectingVisitorId) return;
+    setActionLoading(true);
+    try {
+      const updated = await mobileApiClient.rejectVisitor(
+        rejectingVisitorId,
+        rejectionReason || "Entry declined by resident"
+      );
+      setVisitors((prev) => prev.map((v) => (v.id === rejectingVisitorId ? updated : v)));
+      if (selectedVisitor?.id === rejectingVisitorId) {
+        setSelectedVisitor(updated);
+      }
+      setRejectModalVisible(false);
+      setRejectingVisitorId(null);
+      Alert.alert("Entry Declined", "Gate security has been instructed to turn away this visitor.");
+    } catch (err: any) {
+      Alert.alert("Decline Failed", err.message || "Could not decline entry.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleUpdateStatus = async (visitorId: string, newStatus: string) => {
+    setActionLoading(true);
     try {
       const updated = await mobileApiClient.updateVisitorStatus(visitorId, newStatus);
       setVisitors((prev) => prev.map((v) => (v.id === visitorId ? updated : v)));
+      if (selectedVisitor?.id === visitorId) {
+        setSelectedVisitor(updated);
+      }
     } catch (err: any) {
       Alert.alert("Update Failed", err.message || "Could not update status.");
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -157,33 +226,114 @@ export function VisitorsScreen() {
     }
   };
 
-  const getStatusTone = (status: string): "teal" | "green" | "orange" | "red" => {
+  const getStatusTone = (
+    status: VisitorStatus
+  ): "teal" | "green" | "orange" | "red" => {
     switch (status) {
       case "CHECKED_IN":
         return "green";
+      case "PENDING":
       case "AT_GATE":
         return "orange";
       case "REJECTED":
+      case "CANCELLED":
         return "red";
+      case "APPROVED":
       case "PRE_APPROVED":
       default:
         return "teal";
     }
   };
 
+  const pendingVisitors = visitors.filter(
+    (v) => v.status === "PENDING" || v.status === "AT_GATE"
+  );
   const insideCount = visitors.filter((v) => v.status === "CHECKED_IN").length;
-  const expectedCount = visitors.filter(
-    (v) => v.status === "PRE_APPROVED" || v.status === "AT_GATE"
+  const approvedCount = visitors.filter(
+    (v) => v.status === "APPROVED" || v.status === "PRE_APPROVED"
   ).length;
+  const historyCount = visitors.filter(
+    (v) =>
+      v.status === "CHECKED_OUT" ||
+      v.status === "REJECTED" ||
+      v.status === "CANCELLED" ||
+      v.status === "EXPIRED"
+  ).length;
+
+  const getEmptyStateContent = () => {
+    if (search.trim()) {
+      return {
+        title: "No matching passes",
+        subtext: `No visitor passes found matching "${search}".`,
+        showCta: false
+      };
+    }
+    switch (activeFilter) {
+      case "PENDING":
+        return {
+          title: "No Pending Approvals",
+          subtext: "All gate entry requests have been addressed.",
+          showCta: false
+        };
+      case "APPROVED":
+        return {
+          title: "No Expected Visitors",
+          subtext: "No upcoming pre-approved visitor passes scheduled for today.",
+          showCta: true
+        };
+      case "INSIDE":
+        return {
+          title: "No Visitors Currently Inside",
+          subtext: "No active guests are currently checked into your flat.",
+          showCta: false
+        };
+      case "HISTORY":
+        return {
+          title: "No Past Visitors",
+          subtext: "Your completed visitor entries and history will appear here.",
+          showCta: false
+        };
+      case "ALL":
+      default:
+        return {
+          title: "No Active Visitor Passes",
+          subtext: "Generate a digital gate pass for deliveries, cab drivers, or guests.",
+          showCta: true
+        };
+    }
+  };
+
+  const emptyState = getEmptyStateContent();
 
   const filteredVisitors = visitors.filter((v) => {
     const q = search.toLowerCase();
-    return (
+    const matchesSearch =
       v.visitorName.toLowerCase().includes(q) ||
       v.visitorPhone.includes(q) ||
       v.accessCode.toLowerCase().includes(q) ||
-      (v.purpose && v.purpose.toLowerCase().includes(q))
-    );
+      (v.purpose && v.purpose.toLowerCase().includes(q)) ||
+      (v.vehicleNumber && v.vehicleNumber.toLowerCase().includes(q));
+
+    if (!matchesSearch) return false;
+
+    if (activeFilter === "PENDING") {
+      return v.status === "PENDING" || v.status === "AT_GATE";
+    }
+    if (activeFilter === "APPROVED") {
+      return v.status === "APPROVED" || v.status === "PRE_APPROVED";
+    }
+    if (activeFilter === "INSIDE") {
+      return v.status === "CHECKED_IN";
+    }
+    if (activeFilter === "HISTORY") {
+      return (
+        v.status === "CHECKED_OUT" ||
+        v.status === "REJECTED" ||
+        v.status === "CANCELLED" ||
+        v.status === "EXPIRED"
+      );
+    }
+    return true;
   });
 
   return (
@@ -195,42 +345,111 @@ export function VisitorsScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
         }
       >
-        {/* Gate Live Monitor Banner */}
+        {/* Gate Live Monitor Dashboard Banner */}
         <View style={styles.gateBanner}>
           <View style={styles.gateLiveTag}>
             <View style={styles.livePulseDot} />
-            <Text style={styles.gateLiveText}>PERIMETER ACCESS • GATE 1</Text>
+            <Text style={styles.gateLiveText}>MY GATE • PERIMETER VERIFICATION</Text>
           </View>
           <Text style={styles.gateTitle}>
-            {insideCount === 1 ? "1 Guest Inside Unit" : `${insideCount} Guests Inside Unit`}
+            {insideCount === 1 ? "1 Visitor Currently Inside" : `${insideCount} Visitors Currently Inside`}
           </Text>
           <Text style={styles.gateSubtitle}>
-            Pre-approved entry codes and digital visitor register
+            Pre-approved passes, walk-in clearances & gate history
           </Text>
 
           <View style={styles.countersRow}>
             <View style={styles.counterBox}>
               <Text style={styles.counterNum}>{visitors.length}</Text>
-              <Text style={styles.counterLabel}>Total Registered</Text>
+              <Text style={styles.counterLabel}>Total Passes</Text>
             </View>
             <View style={styles.counterDivider} />
             <View style={styles.counterBox}>
               <Text style={[styles.counterNum, { color: colors.primary }]}>{insideCount}</Text>
-              <Text style={styles.counterLabel}>Checked In</Text>
+              <Text style={styles.counterLabel}>Inside Flat</Text>
             </View>
             <View style={styles.counterDivider} />
             <View style={styles.counterBox}>
-              <Text style={[styles.counterNum, { color: colors.warning }]}>{expectedCount}</Text>
+              <Text
+                style={[
+                  styles.counterNum,
+                  { color: pendingVisitors.length > 0 ? colors.warning : colors.textMain }
+                ]}
+              >
+                {pendingVisitors.length}
+              </Text>
+              <Text style={styles.counterLabel}>Pending Action</Text>
+            </View>
+            <View style={styles.counterDivider} />
+            <View style={styles.counterBox}>
+              <Text style={[styles.counterNum, { color: colors.primary }]}>{approvedCount}</Text>
               <Text style={styles.counterLabel}>Expected Today</Text>
             </View>
           </View>
         </View>
 
-        {/* Action Header */}
+        {/* High-Priority Urgent Action Card for Walk-In / Pending Visitors */}
+        {pendingVisitors.length > 0 && (
+          <View style={styles.urgentBanner}>
+            <View style={styles.urgentHeader}>
+              <View style={styles.urgentBadge}>
+                <Text style={styles.urgentBadgeText}>⚠️ GATE ENTRY AWAITING APPROVAL</Text>
+              </View>
+              <Text style={styles.urgentCountText}>
+                {pendingVisitors.length} Request{pendingVisitors.length > 1 ? "s" : ""}
+              </Text>
+            </View>
+
+            {pendingVisitors.map((pv) => (
+              <View key={pv.id} style={styles.urgentCard}>
+                <View style={styles.urgentCardTop}>
+                  <IconBox
+                    symbol={getPurposeIcon(pv.purpose)}
+                    tone="orange"
+                    size={40}
+                  />
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={styles.urgentVisitorName}>{pv.visitorName}</Text>
+                    <Text style={styles.urgentVisitorMeta}>
+                      {pv.visitorType || pv.purpose} • {pv.visitorPhone}
+                    </Text>
+                    <Text style={styles.urgentGateNote}>
+                      {pv.entryType === "WALK_IN"
+                        ? "Waiting at Main Gate 1 (Security Request)"
+                        : "Arrival pending verification"}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.urgentActions}>
+                  <TouchableOpacity
+                    style={styles.declineBtn}
+                    onPress={() => handleOpenReject(pv.id)}
+                    disabled={actionLoading}
+                  >
+                    <Text style={styles.declineBtnText}>✕ Decline</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.approveBtn}
+                    onPress={() => handleApprove(pv.id)}
+                    disabled={actionLoading}
+                  >
+                    <Text style={styles.approveBtnText}>✓ Approve Entry</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Action Header & Pre-Approve Button */}
         <View style={styles.listHeader}>
           <View style={styles.listHeaderLeft}>
-            <Text style={styles.sectionTitle}>Gate Passes</Text>
-            <Text style={styles.sectionSubtitle} numberOfLines={1}>Active passes & arrival history</Text>
+            <Text style={styles.sectionTitle}>Gate Register</Text>
+            <Text style={styles.sectionSubtitle} numberOfLines={1}>
+              Active digital passes & entry timeline
+            </Text>
           </View>
           <TouchableOpacity
             style={styles.preApproveBtn}
@@ -238,9 +457,50 @@ export function VisitorsScreen() {
             activeOpacity={0.8}
           >
             <PlusIcon size={14} color="#ffffff" strokeWidth={2.5} />
-            <Text style={styles.preApproveText}>Add Visitor</Text>
+            <Text style={styles.preApproveText}>Pre-Approve</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Category Filter Tabs */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterTabsRow}
+        >
+          {(
+            [
+              { key: "ALL", label: `All (${visitors.length})` },
+              {
+                key: "PENDING",
+                label: `Pending (${pendingVisitors.length})`,
+                hasBadge: pendingVisitors.length > 0
+              },
+              { key: "APPROVED", label: `Expected (${approvedCount})` },
+              { key: "INSIDE", label: `Inside (${insideCount})` },
+              { key: "HISTORY", label: `History (${historyCount})` }
+            ] as const
+          ).map((tab) => {
+            const isActive = activeFilter === tab.key;
+            return (
+              <TouchableOpacity
+                key={tab.key}
+                style={[styles.filterTab, isActive && styles.filterTabActive]}
+                onPress={() => setActiveFilter(tab.key)}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.filterTabText,
+                    isActive && styles.filterTabTextActive,
+                    Boolean((tab as any).hasBadge) && { color: colors.warning }
+                  ]}
+                >
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
 
         {/* Search Bar when visitors exist */}
         {visitors.length > 0 && (
@@ -248,7 +508,7 @@ export function VisitorsScreen() {
             <SearchIcon size={16} color={colors.textMuted} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search by visitor name, pass code, phone..."
+              placeholder="Search by name, pass code, vehicle..."
               placeholderTextColor={colors.textMuted}
               value={search}
               onChangeText={setSearch}
@@ -256,47 +516,46 @@ export function VisitorsScreen() {
               cursorColor={colors.primary}
             />
             {search.length > 0 && (
-              <TouchableOpacity onPress={() => setSearch("")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <TouchableOpacity
+                onPress={() => setSearch("")}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
                 <Text style={styles.clearSearchBtn}>✕</Text>
               </TouchableOpacity>
             )}
           </View>
         )}
 
-        {/* Visitor Register Cards */}
+        {/* Visitor Cards List */}
         {loading ? (
           <ActivityIndicator size="small" color={colors.primary} style={{ marginTop: 24 }} />
-        ) : visitors.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <IconBox symbol="shield" tone="emerald" size={48} />
-            <Text style={styles.emptyText}>No Active Visitor Passes</Text>
-            <Text style={styles.emptySubtext}>
-              Generate a digital OTP pass for deliveries, cab drivers, or guests.
-            </Text>
-            <TouchableOpacity
-              style={styles.emptyCtaBtn}
-              onPress={() => setModalVisible(true)}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.emptyCtaText}>+ Pre-Approve Visitor</Text>
-            </TouchableOpacity>
-          </View>
         ) : filteredVisitors.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>No matching visitors</Text>
-            <Text style={styles.emptySubtext}>
-              No visitors found matching "{search}".
-            </Text>
+            <IconBox symbol="shield" tone="emerald" size={38} />
+            <Text style={styles.emptyText}>{emptyState.title}</Text>
+            <Text style={styles.emptySubtext}>{emptyState.subtext}</Text>
+            {emptyState.showCta && (
+              <TouchableOpacity
+                style={styles.emptyCtaBtn}
+                onPress={() => setModalVisible(true)}
+                activeOpacity={0.8}
+              >
+                <PlusIcon size={13} color="#ffffff" strokeWidth={2.5} />
+                <Text style={styles.emptyCtaText}>Pre-Approve Visitor</Text>
+              </TouchableOpacity>
+            )}
           </View>
         ) : (
           <View style={styles.visitorList}>
             {filteredVisitors.map((visitor, index) => (
-              <View
+              <TouchableOpacity
                 key={visitor.id}
                 style={[
                   styles.visitorRow,
-                  index === visitors.length - 1 && { borderBottomWidth: 0 }
+                  index === filteredVisitors.length - 1 && { borderBottomWidth: 0 }
                 ]}
+                onPress={() => setSelectedVisitor(visitor)}
+                activeOpacity={0.7}
               >
                 <IconBox
                   symbol={getPurposeIcon(visitor.purpose)}
@@ -305,10 +564,25 @@ export function VisitorsScreen() {
                 />
 
                 <View style={styles.visitorDetails}>
-                  <Text style={styles.visitorName}>{visitor.visitorName}</Text>
-                  <Text style={styles.visitorPurpose}>
-                    {visitor.purpose} • {visitor.visitorPhone}
+                  <View style={styles.visitorNameRow}>
+                    <Text style={styles.visitorName} numberOfLines={1}>
+                      {visitor.visitorName}
+                    </Text>
+                    {visitor.entryType === "WALK_IN" && (
+                      <View style={styles.walkInBadge}>
+                        <Text style={styles.walkInBadgeText}>WALK-IN</Text>
+                      </View>
+                    )}
+                  </View>
+
+                  <Text style={styles.visitorPurpose} numberOfLines={1}>
+                    {visitor.visitorType || visitor.purpose} • {visitor.visitorPhone}
                   </Text>
+
+                  {Boolean(visitor.vehicleNumber) && (
+                    <Text style={styles.vehicleText}>🚗 {visitor.vehicleNumber}</Text>
+                  )}
+
                   <View style={styles.codeBadge}>
                     <Text style={styles.codeBadgeLabel}>PASS CODE:</Text>
                     <Text style={styles.codeBadgeValue}>{visitor.accessCode}</Text>
@@ -320,18 +594,37 @@ export function VisitorsScreen() {
                     label={visitor.status.replace("_", " ")}
                     tone={getStatusTone(visitor.status)}
                   />
-                  {visitor.status === "AT_GATE" && (
-                    <TouchableOpacity
-                      style={styles.actionPillBtn}
-                      onPress={() => handleUpdateStatus(visitor.id, "CHECKED_IN")}
-                    >
-                      <Text style={styles.actionPillText}>Approve Entry</Text>
-                    </TouchableOpacity>
+
+                  {visitor.status === "PENDING" && (
+                    <View style={{ flexDirection: "row", gap: 4, marginTop: 4 }}>
+                      <TouchableOpacity
+                        style={styles.cardQuickDecline}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          handleOpenReject(visitor.id);
+                        }}
+                      >
+                        <Text style={styles.cardQuickDeclineText}>✕</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.cardQuickApprove}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          handleApprove(visitor.id);
+                        }}
+                      >
+                        <Text style={styles.cardQuickApproveText}>Approve</Text>
+                      </TouchableOpacity>
+                    </View>
                   )}
+
                   {visitor.status === "CHECKED_IN" && (
                     <TouchableOpacity
                       style={[styles.actionPillBtn, { backgroundColor: "#FEE2E2" }]}
-                      onPress={() => handleUpdateStatus(visitor.id, "CHECKED_OUT")}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        handleUpdateStatus(visitor.id, "CHECKED_OUT");
+                      }}
                     >
                       <Text style={[styles.actionPillText, { color: colors.danger }]}>
                         Check Out
@@ -339,13 +632,13 @@ export function VisitorsScreen() {
                     </TouchableOpacity>
                   )}
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         )}
       </ScrollView>
 
-      {/* Add Visitor Modal Form */}
+      {/* 1. Pre-Approve Visitor Modal */}
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -372,9 +665,9 @@ export function VisitorsScreen() {
               keyboardDismissMode="on-drag"
               contentContainerStyle={{ paddingBottom: keyboardHeight > 0 ? 24 : 10 }}
             >
-              <Text style={styles.modalTitle}>Issue Visitor Pass</Text>
+              <Text style={styles.modalTitle}>Pre-Approve Visitor</Text>
               <Text style={styles.modalSubtitle}>
-                Pre-authorizes digital clearance at society security gates
+                Issue an OTP entry pass for instant clearance at the security gate
               </Text>
 
               {formError && (
@@ -382,6 +675,29 @@ export function VisitorsScreen() {
                   <Text style={styles.errorText}>{formError}</Text>
                 </View>
               )}
+
+              <Text style={styles.inputLabel}>VISITOR CATEGORY</Text>
+              <View style={styles.purposeRow}>
+                {(["GUEST", "DELIVERY", "CAB", "SERVICE", "OTHER"] as VisitorType[]).map((vt) => (
+                  <TouchableOpacity
+                    key={vt}
+                    style={[styles.purposeBtn, visitorType === vt && styles.purposeBtnActive]}
+                    onPress={() => {
+                      setVisitorType(vt);
+                      if (vt !== "OTHER") setPurpose(vt);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.purposeBtnText,
+                        visitorType === vt && styles.purposeBtnTextActive
+                      ]}
+                    >
+                      {vt}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
 
               <Text style={styles.inputLabel}>VISITOR FULL NAME</Text>
               <TextInput
@@ -392,11 +708,6 @@ export function VisitorsScreen() {
                 onChangeText={setVisitorName}
                 selectionColor={colors.primary}
                 cursorColor={colors.primary}
-                onFocus={() => {
-                  setTimeout(() => {
-                    scrollRef.current?.scrollTo({ y: 0, animated: true });
-                  }, 80);
-                }}
               />
 
               <Text style={styles.inputLabel}>PHONE NUMBER</Text>
@@ -409,32 +720,32 @@ export function VisitorsScreen() {
                 onChangeText={setVisitorPhone}
                 selectionColor={colors.primary}
                 cursorColor={colors.primary}
-                onFocus={() => {
-                  setTimeout(() => {
-                    scrollRef.current?.scrollTo({ y: 70, animated: true });
-                  }, 80);
-                }}
               />
 
-              <Text style={styles.inputLabel}>PURPOSE OF VISIT</Text>
-              <View style={styles.purposeRow}>
-                {["GUEST", "DELIVERY", "CAB", "SERVICE"].map((p) => (
-                  <TouchableOpacity
-                    key={p}
-                    style={[styles.purposeBtn, purpose === p && styles.purposeBtnActive]}
-                    onPress={() => setPurpose(p)}
-                  >
-                    <Text
-                      style={[
-                        styles.purposeBtnText,
-                        purpose === p && styles.purposeBtnTextActive
-                      ]}
-                    >
-                      {p}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+              <Text style={styles.inputLabel}>VEHICLE NUMBER (OPTIONAL)</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="e.g. KA-01-AB-1234"
+                placeholderTextColor={colors.textMuted}
+                autoCapitalize="characters"
+                value={vehicleNumber}
+                onChangeText={setVehicleNumber}
+                selectionColor={colors.primary}
+                cursorColor={colors.primary}
+              />
+
+              <Text style={styles.inputLabel}>SPECIAL INSTRUCTIONS / NOTES (OPTIONAL)</Text>
+              <TextInput
+                style={[styles.textInput, { height: 64, textAlignVertical: "top" }]}
+                placeholder="e.g. Leave parcel at front door if not answered"
+                placeholderTextColor={colors.textMuted}
+                multiline
+                numberOfLines={2}
+                value={notes}
+                onChangeText={setNotes}
+                selectionColor={colors.primary}
+                cursorColor={colors.primary}
+              />
 
               <View style={styles.modalActions}>
                 <TouchableOpacity
@@ -464,6 +775,217 @@ export function VisitorsScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* 2. Visitor Details Modal */}
+      <Modal
+        visible={selectedVisitor !== null}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setSelectedVisitor(null)}
+      >
+        <View style={styles.detailOverlay}>
+          <View style={styles.detailCard}>
+            {selectedVisitor && (
+              <>
+                <View style={styles.detailHeader}>
+                  <View>
+                    <Text style={styles.detailTitle}>{selectedVisitor.visitorName}</Text>
+                    <Text style={styles.detailSubtitle}>
+                      {selectedVisitor.visitorType || selectedVisitor.purpose} • Flat{" "}
+                      {selectedVisitor.unitNumber || "402"}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => setSelectedVisitor(null)}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <Text style={styles.detailCloseBtn}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Big Pass Code Display */}
+                <View style={styles.detailPassCodeBox}>
+                  <Text style={styles.detailPassCodeLabel}>GATE CLEARANCE PASS CODE</Text>
+                  <Text style={styles.detailPassCodeText}>{selectedVisitor.accessCode}</Text>
+                  <Text style={styles.detailPassCodeSub}>
+                    Show or read this code to gate security upon arrival
+                  </Text>
+                </View>
+
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailRowLabel}>Status</Text>
+                  <StatusPill
+                    label={selectedVisitor.status.replace("_", " ")}
+                    tone={getStatusTone(selectedVisitor.status)}
+                  />
+                </View>
+
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailRowLabel}>Contact</Text>
+                  <Text style={styles.detailRowVal}>{selectedVisitor.visitorPhone}</Text>
+                </View>
+
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailRowLabel}>Entry Channel</Text>
+                  <Text style={styles.detailRowVal}>
+                    {selectedVisitor.entryType === "WALK_IN"
+                      ? "Walk-in (Created by Gate Security)"
+                      : "Resident Pre-approved Pass"}
+                  </Text>
+                </View>
+
+                {Boolean(selectedVisitor.vehicleNumber) && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailRowLabel}>Vehicle</Text>
+                    <Text style={styles.detailRowVal}>{selectedVisitor.vehicleNumber}</Text>
+                  </View>
+                )}
+
+                {Boolean(selectedVisitor.notes) && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailRowLabel}>Notes</Text>
+                    <Text style={styles.detailRowVal}>{selectedVisitor.notes}</Text>
+                  </View>
+                )}
+
+                {Boolean(selectedVisitor.rejectionReason) && (
+                  <View style={styles.detailRow}>
+                    <Text style={[styles.detailRowLabel, { color: colors.danger }]}>
+                      Decline Reason
+                    </Text>
+                    <Text style={[styles.detailRowVal, { color: colors.danger }]}>
+                      {selectedVisitor.rejectionReason}
+                    </Text>
+                  </View>
+                )}
+
+                <View style={styles.detailActions}>
+                  {selectedVisitor.status === "PENDING" && (
+                    <>
+                      <TouchableOpacity
+                        style={styles.detailDeclineBtn}
+                        onPress={() => {
+                          const id = selectedVisitor.id;
+                          setSelectedVisitor(null);
+                          handleOpenReject(id);
+                        }}
+                      >
+                        <Text style={styles.detailDeclineText}>✕ Decline Entry</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.detailApproveBtn}
+                        onPress={() => handleApprove(selectedVisitor.id)}
+                      >
+                        <Text style={styles.detailApproveText}>✓ Approve Entry</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+
+                  {selectedVisitor.status === "CHECKED_IN" && (
+                    <TouchableOpacity
+                      style={[styles.detailDeclineBtn, { backgroundColor: "#FEE2E2", flex: 1 }]}
+                      onPress={() => handleUpdateStatus(selectedVisitor.id, "CHECKED_OUT")}
+                    >
+                      <Text style={[styles.detailDeclineText, { color: colors.danger }]}>
+                        Record Check Out
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+
+                  {(selectedVisitor.status === "APPROVED" ||
+                    selectedVisitor.status === "PRE_APPROVED") && (
+                    <TouchableOpacity
+                      style={[styles.detailDeclineBtn, { flex: 1 }]}
+                      onPress={() => handleUpdateStatus(selectedVisitor.id, "CANCELLED")}
+                    >
+                      <Text style={styles.detailDeclineText}>Cancel Pass</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* 3. Rejection Reason Modal */}
+      <Modal
+        visible={rejectModalVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setRejectModalVisible(false)}
+      >
+        <View style={styles.detailOverlay}>
+          <View style={styles.detailCard}>
+            <Text style={styles.detailTitle}>Decline Visitor Entry</Text>
+            <Text style={styles.detailSubtitle}>
+              Select a reason to record and instruct gate security
+            </Text>
+
+            <View style={{ gap: 8, marginTop: 12, marginBottom: 16 }}>
+              {[
+                "Not expecting this visitor",
+                "Not available at home",
+                "Wrong apartment unit address",
+                "Instruct visitor to leave parcel at gate"
+              ].map((r) => (
+                <TouchableOpacity
+                  key={r}
+                  style={[
+                    styles.reasonChip,
+                    rejectionReason === r && styles.reasonChipActive
+                  ]}
+                  onPress={() => setRejectionReason(r)}
+                >
+                  <Text
+                    style={[
+                      styles.reasonChipText,
+                      rejectionReason === r && styles.reasonChipTextActive
+                    ]}
+                  >
+                    {r}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TextInput
+              style={styles.textInput}
+              placeholder="Or type a custom decline note..."
+              placeholderTextColor={colors.textMuted}
+              value={rejectionReason}
+              onChangeText={setRejectionReason}
+              selectionColor={colors.primary}
+              cursorColor={colors.primary}
+            />
+
+            <View style={[styles.modalActions, { marginTop: 16 }]}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => {
+                  setRejectModalVisible(false);
+                  setRejectingVisitorId(null);
+                }}
+                disabled={actionLoading}
+              >
+                <Text style={styles.cancelBtnText}>Back</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.submitBtn, { backgroundColor: colors.danger }]}
+                onPress={handleConfirmReject}
+                disabled={actionLoading}
+              >
+                {actionLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.submitBtnText}>Confirm Decline</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -479,11 +1001,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     padding: 18,
-    marginBottom: 20,
+    marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
-    shadowRadius: 6
+    shadowRadius: 6,
+    elevation: 1
   },
   gateLiveTag: {
     flexDirection: "row",
@@ -533,20 +1056,109 @@ const styles = StyleSheet.create({
     color: colors.textMain
   },
   counterLabel: {
-    fontSize: 10,
+    fontSize: 9.5,
     color: colors.textMuted,
-    marginTop: 1
+    marginTop: 1,
+    textAlign: "center"
   },
   counterDivider: {
     width: 1,
     height: 28,
     backgroundColor: colors.border
   },
+  urgentBanner: {
+    backgroundColor: "#FFFBEB",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    padding: 14,
+    marginBottom: 18
+  },
+  urgentHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10
+  },
+  urgentBadge: {
+    backgroundColor: "#FEF3C7",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6
+  },
+  urgentBadgeText: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#B45309",
+    letterSpacing: 0.5
+  },
+  urgentCountText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#B45309"
+  },
+  urgentCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: "#FDE68A"
+  },
+  urgentCardTop: {
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  urgentVisitorName: {
+    fontSize: 14,
+    fontWeight: typography.weights.bold,
+    color: colors.textMain
+  },
+  urgentVisitorMeta: {
+    fontSize: 11.5,
+    color: colors.textMuted,
+    marginTop: 1
+  },
+  urgentGateNote: {
+    fontSize: 11,
+    color: "#D97706",
+    fontWeight: "600",
+    marginTop: 2
+  },
+  urgentActions: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 12
+  },
+  declineBtn: {
+    flex: 1,
+    backgroundColor: "#FEE2E2",
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: "center"
+  },
+  declineBtnText: {
+    fontSize: 11.5,
+    fontWeight: "700",
+    color: colors.danger
+  },
+  approveBtn: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: "center"
+  },
+  approveBtnText: {
+    fontSize: 11.5,
+    fontWeight: "700",
+    color: "#FFFFFF"
+  },
   listHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginBottom: 10,
     paddingHorizontal: 2
   },
   listHeaderLeft: {
@@ -578,6 +1190,63 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: typography.weights.bold
   },
+  filterTabsRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 12,
+    paddingHorizontal: 2,
+    paddingRight: 20
+  },
+  filterTab: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 13,
+    paddingVertical: 7,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  filterTabActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary
+  },
+  filterTabText: {
+    fontSize: 11.5,
+    fontWeight: "700",
+    color: colors.textMuted
+  },
+  filterTabTextActive: {
+    color: "#FFFFFF"
+  },
+  searchBarContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    marginBottom: 14,
+    gap: 8,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.02,
+    shadowRadius: 3,
+    elevation: 1
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.textMain,
+    paddingVertical: 0
+  },
+  clearSearchBtn: {
+    fontSize: 13,
+    color: colors.textMuted,
+    paddingHorizontal: 4
+  },
   visitorList: {
     backgroundColor: "#FFFFFF",
     borderRadius: 18,
@@ -602,13 +1271,35 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     marginRight: 8
   },
+  visitorNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6
+  },
   visitorName: {
     fontSize: 14,
     fontWeight: typography.weights.bold,
-    color: colors.textMain
+    color: colors.textMain,
+    flexShrink: 1
+  },
+  walkInBadge: {
+    backgroundColor: "#FEF3C7",
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 4
+  },
+  walkInBadgeText: {
+    fontSize: 8.5,
+    fontWeight: "800",
+    color: "#B45309"
   },
   visitorPurpose: {
     fontSize: 11.5,
+    color: colors.textMuted,
+    marginTop: 2
+  },
+  vehicleText: {
+    fontSize: 10.5,
     color: colors.textMuted,
     marginTop: 2
   },
@@ -641,6 +1332,28 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     gap: 6
   },
+  cardQuickApprove: {
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4
+  },
+  cardQuickApproveText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#FFFFFF"
+  },
+  cardQuickDecline: {
+    backgroundColor: "#FEE2E2",
+    borderRadius: 6,
+    paddingHorizontal: 7,
+    paddingVertical: 4
+  },
+  cardQuickDeclineText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: colors.danger
+  },
   actionPillBtn: {
     backgroundColor: colors.primaryLight,
     borderWidth: 1,
@@ -657,44 +1370,48 @@ const styles = StyleSheet.create({
   },
   emptyCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: 32,
+    paddingVertical: 22,
+    paddingHorizontal: 16,
     alignItems: "center",
     shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.02,
+    shadowRadius: 4,
     elevation: 1
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: typography.weights.bold,
     color: colors.textMain,
-    marginTop: 12
+    marginTop: 8
   },
   emptySubtext: {
-    fontSize: 12,
+    fontSize: 11.5,
     color: colors.textMuted,
-    marginTop: 4,
+    marginTop: 3,
     textAlign: "center",
-    lineHeight: 18
+    lineHeight: 16
   },
   emptyCtaBtn: {
-    marginTop: 16,
+    marginTop: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
     backgroundColor: colors.primary,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 1
   },
   emptyCtaText: {
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: "700",
     color: "#FFFFFF"
   },
@@ -755,9 +1472,9 @@ const styles = StyleSheet.create({
   },
   purposeRow: {
     flexDirection: "row",
-    gap: 8,
+    gap: 6,
     marginTop: 6,
-    marginBottom: 16
+    marginBottom: 10
   },
   purposeBtn: {
     flex: 1,
@@ -765,7 +1482,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 10,
-    paddingVertical: 9,
+    paddingVertical: 8,
     alignItems: "center"
   },
   purposeBtnActive: {
@@ -773,7 +1490,7 @@ const styles = StyleSheet.create({
     borderColor: colors.primary
   },
   purposeBtnText: {
-    fontSize: 10.5,
+    fontSize: 9.5,
     fontWeight: "700",
     color: colors.textMuted
   },
@@ -784,7 +1501,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     gap: 10,
-    marginTop: 12
+    marginTop: 14
   },
   cancelBtn: {
     paddingHorizontal: 16,
@@ -812,32 +1529,139 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 13
   },
-  searchBarContainer: {
-    flexDirection: "row",
+  detailOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(15, 23, 42, 0.55)",
+    justifyContent: "center",
     alignItems: "center",
+    padding: 20
+  },
+  detailCard: {
     backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 20,
+    width: "100%",
+    maxWidth: 400,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 4
+  },
+  detailHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 14
+  },
+  detailTitle: {
+    fontSize: 18,
+    fontWeight: typography.weights.heavy,
+    color: colors.textMain
+  },
+  detailSubtitle: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 1
+  },
+  detailCloseBtn: {
+    fontSize: 16,
+    color: colors.textMuted,
+    padding: 4
+  },
+  detailPassCodeBox: {
+    backgroundColor: colors.primaryLight,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    marginBottom: 14,
-    gap: 8,
-    shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.02,
-    shadowRadius: 3,
-    elevation: 1
+    borderColor: "rgba(16, 185, 129, 0.25)",
+    padding: 14,
+    alignItems: "center",
+    marginBottom: 14
   },
-  searchInput: {
-    flex: 1,
-    fontSize: 13,
-    color: colors.textMain,
-    paddingVertical: 0
+  detailPassCodeLabel: {
+    fontSize: 9,
+    fontWeight: "800",
+    color: colors.primary,
+    letterSpacing: 0.7
   },
-  clearSearchBtn: {
-    fontSize: 13,
+  detailPassCodeText: {
+    fontSize: 26,
+    fontWeight: "900",
+    color: colors.primary,
+    letterSpacing: 2,
+    marginVertical: 4
+  },
+  detailPassCodeSub: {
+    fontSize: 10.5,
     color: colors.textMuted,
-    paddingHorizontal: 4
+    textAlign: "center"
+  },
+  detailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderSubtle
+  },
+  detailRowLabel: {
+    fontSize: 11.5,
+    fontWeight: "600",
+    color: colors.textMuted
+  },
+  detailRowVal: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.textMain
+  },
+  detailActions: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 16
+  },
+  detailDeclineBtn: {
+    flex: 1,
+    backgroundColor: "#FEE2E2",
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: "center"
+  },
+  detailDeclineText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.danger
+  },
+  detailApproveBtn: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: "center"
+  },
+  detailApproveText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#FFFFFF"
+  },
+  reasonChip: {
+    backgroundColor: colors.bgSecondary,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  reasonChipActive: {
+    backgroundColor: "#FEE2E2",
+    borderColor: colors.danger
+  },
+  reasonChipText: {
+    fontSize: 11.5,
+    fontWeight: "600",
+    color: colors.textMain
+  },
+  reasonChipTextActive: {
+    color: colors.danger,
+    fontWeight: "700"
   }
 });

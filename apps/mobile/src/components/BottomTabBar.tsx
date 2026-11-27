@@ -38,7 +38,7 @@ const tabs: TabItem[] = [
   },
   {
     key: "visitors",
-    label: "Visitors",
+    label: "My Gate",
     renderIcon: (color) => <ShieldIcon size={20} color={color} strokeWidth={2.1} />
   },
   {

@@ -3,20 +3,22 @@ import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
-import { BellIcon } from "./MobileIcons";
+import { BellIcon, SettingsIcon } from "./MobileIcons";
 
 interface AppHeaderProps {
   title?: string;
   roleBadge?: string;
   unreadNotifications?: number;
   onNotificationPress?: () => void;
+  onSettingsPress?: () => void;
 }
 
 export function AppHeader({
   title = "Community Portal",
   roleBadge = "Resident Access",
   unreadNotifications = 3,
-  onNotificationPress
+  onNotificationPress,
+  onSettingsPress
 }: AppHeaderProps) {
   return (
     <View style={styles.header}>
@@ -28,19 +30,32 @@ export function AppHeader({
         <Text style={styles.titleText}>{title}</Text>
       </View>
 
-      <TouchableOpacity
-        style={styles.notificationButton}
-        onPress={onNotificationPress}
-        activeOpacity={0.7}
-        accessibilityLabel="Notifications"
-      >
-        <BellIcon size={18} color={colors.textMain} />
-        {unreadNotifications > 0 && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{unreadNotifications}</Text>
-          </View>
+      <View style={styles.actionsCluster}>
+        <TouchableOpacity
+          style={styles.notificationButton}
+          onPress={onNotificationPress}
+          activeOpacity={0.7}
+          accessibilityLabel="Notifications"
+        >
+          <BellIcon size={18} color={colors.textMain} />
+          {unreadNotifications > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{unreadNotifications}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
+        {onSettingsPress && (
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={onSettingsPress}
+            activeOpacity={0.7}
+            accessibilityLabel="Settings"
+          >
+            <SettingsIcon size={18} color={colors.textMain} />
+          </TouchableOpacity>
         )}
-      </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -96,16 +111,37 @@ const styles = StyleSheet.create({
     color: colors.textMain,
     letterSpacing: -0.4
   },
+  actionsCluster: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginLeft: 12
+  },
   notificationButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 13,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     backgroundColor: colors.bgSurface,
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1
+  },
+  settingsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: colors.bgSurface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center",
     shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
